@@ -88,6 +88,8 @@ Transaction* deser_tx(char *data){
     printf("prev_tx_id: %s\n", new_tx->inputs[1].prev_tx_id);
     printf("Output Amount: %i\n", new_tx->outputs[0].amt);
     printf("Output PubKey: %s\n", new_tx->outputs[0].public_key_hash);
+    
+    return new_tx;
 }
 
 int main() {
