@@ -1,9 +1,10 @@
 #ifndef BASE_TX_H
 #define BASE_TX_H
 
+#include "constants.h"
+
 #define LOCK_SCRIPT_LEN 48
 #define SIGNATURE_LEN 48
-#define TX_ID_LEN 32
 
 typedef struct Output{
     unsigned long amt;
@@ -12,7 +13,7 @@ typedef struct Output{
 
 typedef struct Input{
     char signature[SIGNATURE_LEN];
-    char prev_tx_id[TX_ID_LEN];
+    char prev_tx_id[TX_HASH_LEN];
     int prev_utxo_output;
 } Input; 
 
