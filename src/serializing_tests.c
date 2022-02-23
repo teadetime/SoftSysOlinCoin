@@ -59,6 +59,8 @@ UTXO * dser_UTXO(char * data){
 
     char * spent = sig + sizeof(((UTXO*)0)->signature);
     memcpy(&(new_UTXO->spent), spent, sizeof(((UTXO*)0)->spent));
+
+    return new_UTXO;
 }
 
 char * ser_Tx(Transaction *tx){
@@ -71,7 +73,6 @@ char * ser_Tx(Transaction *tx){
     //Pack it all in
     char * data = malloc(total_size);
 
-    int offset = 0;
     memcpy(data, &(tx->num_inputs), sizeof(tx->num_inputs));
 
     char * num_outputs = data+sizeof(tx->num_inputs);
@@ -117,37 +118,55 @@ Transaction* deser_tx(char *data){
     printf("num_outputs: %i\n", new_tx->num_outputs);
     printf("prev_tx_id: %s\n", new_tx->inputs->prev_tx_id);
     printf("prev_tx_id: %s\n", new_tx->inputs[1].prev_tx_id);
-    printf("Output Amount: %i\n", new_tx->outputs[0].amt);
+    printf("Output Amount: %li\n", new_tx->outputs[0].amt);
     printf("Output PubKey: %s\n", new_tx->outputs[0].public_key_hash);
     
     return new_tx;
 }
 
+void print_input(Input *input){
+    printf("\nInput Data:\n");
+    printf("sig: %s\n", input->signature);
+    printf("prev_tx_id: %s\n", input->prev_tx_id);
+    printf("prev_output_num: %i\n", input->prev_utxo_output);
+    printf("Size of Input(Bytes): %li\n", sizeof(Input));
+}
+
+void print_output(Output *output){
+    printf("\nOutput Data:\n");
+    printf("amt: %li\n", output->amt);
+    printf("private Key: %s\n", output->public_key_hash);
+    printf("Size Output(Bytes): %li\n", sizeof(Output));
+
+}
+
+void print_tx(Transaction *tx){
+    printf("\nTransaction Data:\n");
+    printf("num_inputs: %i\n", tx->num_inputs);
+    printf("num_outputs: %i\n", tx->num_outputs);
+
+    for(int i=0;i<tx->num_inputs;i++){
+        print_input(&(tx->inputs[i]));
+    }
+
+    for(int i=0;i<tx->num_outputs;i++){
+        print_output(&(tx->outputs[i]));
+    }
+   
+    printf("Tx(Bytes): %li\n", sizeof(*tx)); // Check i
+}
+
 int main() {
 
     Output *an_Output = malloc(sizeof(Output));
-
     an_Output->amt = 5;
     strcpy(an_Output->public_key_hash, "a_val");
 
-    printf("amt: %i\n", an_Output->amt);
-    printf("private Key: %s\n", an_Output->public_key_hash);
-    printf("Output(Bytes): %li\n", sizeof(Output));
-
-
-
     Input *an_Input = malloc(sizeof(Input));
-
     an_Input->prev_utxo_output = 2;
-    strcpy(an_Input->signature, "signature");
-    strcpy(an_Input->prev_tx_id, "prev_tx_id");
 
-    printf("\nINPUTS!\n");
-    printf("sig: %s\n", an_Input->signature);
-    printf("prev_tx_id: %s\n", an_Input->prev_tx_id);
-    printf("prev_output_num: %i\n", an_Input->prev_utxo_output);
-    printf("Input(Bytes): %li\n", sizeof(Input));
-
+    print_input(an_Input);
+    print_output(an_Output);
 
     Transaction *a_Tx = malloc(sizeof(Transaction));
     a_Tx->num_inputs = 2;
@@ -163,20 +182,15 @@ int main() {
     //Copy an Output
     memcpy(a_Tx->outputs, an_Output, sizeof(*an_Output) );
 
-    printf("\nnum_inputs: %i\n", a_Tx->num_inputs);
-    printf("num_outputs: %i\n", a_Tx->num_outputs);
+    print_tx(a_Tx);
 
+    // Other Access ways
+    // printf("prev_tx_id[0]: %s\n", a_Tx->inputs->prev_tx_id);
+    // printf("prev_tx_id[1]: %s\n", a_Tx->inputs[1].prev_tx_id);
 
-    printf("prev_tx_id[0]: %s\n", a_Tx->inputs->prev_tx_id);
-    printf("prev_tx_id[1]: %s\n", a_Tx->inputs[1].prev_tx_id);
-
-    printf("Output Amount: %i\n", a_Tx->outputs[0].amt);
-    printf("Output PubKey: %s\n", a_Tx->outputs[0].public_key_hash);
-    //printf("prev_tx_id: %s\n", ((a_Tx->inputs)+1)->prev_tx_id);
-
-
-    printf("Tx(Bytes): %li\n", sizeof(Transaction));
-
+    // printf("Output Amount: %li\n", a_Tx->outputs[0].amt);
+    // printf("Output PubKey: %s\n", a_Tx->outputs[0].public_key_hash);
+    // //printf("prev_tx_id: %s\n", ((a_Tx->inputs)+1)->prev_tx_id);
 
     //Serialization Testing
     char* char_tx = ser_Tx(a_Tx);
@@ -184,4 +198,3 @@ int main() {
     Transaction * other_tx = deser_tx(char_tx);
     return 0;
 }
-
