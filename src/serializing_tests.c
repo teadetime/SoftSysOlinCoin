@@ -196,5 +196,7 @@ int main() {
     char* char_tx = ser_Tx(a_Tx);
 
     Transaction * other_tx = deser_tx(char_tx);
+
+    print_tx(other_tx);
     return 0;
 }
