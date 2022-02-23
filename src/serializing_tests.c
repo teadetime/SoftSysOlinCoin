@@ -8,7 +8,7 @@
 #define tx_id_len 32
 
 struct Output{
-    int amt;
+    unsigned long amt;
     char public_key_hash[lockScriptLen];
 };
 typedef struct Output Output;
@@ -26,8 +26,40 @@ struct Transaction{
     Input *inputs;
     Output *outputs;
 };
-
 typedef struct Transaction Transaction;
+
+struct UTXO{
+    unsigned long amt;
+    char signature[signatureLen];
+    short spent;
+};
+typedef struct UTXO UTXO;
+
+char * ser_UTXO(UTXO *utxo){
+    char * data = malloc(sizeof(UTXO));
+    memcpy(data, &(utxo->amt), sizeof(utxo->amt));
+
+    char * sig = data+sizeof(utxo->amt);
+    memcpy(sig, &(utxo->signature), sizeof(utxo->signature));
+
+    char * spent = sig+sizeof(utxo->signature);
+    memcpy(spent, &(utxo->spent), sizeof(utxo->spent));
+
+    return data;
+}
+
+UTXO * dser_UTXO(char * data){
+    UTXO * new_UTXO = malloc(sizeof(UTXO));
+
+    // Stolen from https://cboard.cprogramming.com/cplusplus-programming/43180-sizeof-struct-member-problem.html
+    memcpy(&(new_UTXO->amt), data, sizeof(((UTXO*)0)->amt)); 
+
+    char * sig = data + sizeof(((UTXO*)0)->amt);
+    memcpy(&(new_UTXO->signature), sig, sizeof(((UTXO*)0)->signature));
+
+    char * spent = sig + sizeof(((UTXO*)0)->signature);
+    memcpy(&(new_UTXO->spent), spent, sizeof(((UTXO*)0)->spent));
+}
 
 char * ser_Tx(Transaction *tx){
     // Determine total Size in bytes
@@ -65,7 +97,6 @@ char * ser_Tx(Transaction *tx){
 Transaction* deser_tx(char *data){
     Transaction * new_tx = malloc(sizeof(Transaction));
     
-
     memcpy(&(new_tx->num_inputs), data, sizeof(int));
 
     char * nm_outputs = data+sizeof(int);
