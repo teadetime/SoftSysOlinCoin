@@ -32,7 +32,7 @@ typedef struct UTXO{
 
 char * ser_UTXO(UTXO *utxo);
 UTXO * dser_UTXO(char * data);
-char * ser_Tx(Transaction *tx);
+char * ser_tx(Transaction *tx);
 Transaction* deser_tx(char *data);
 
 void print_input(Input *input);
