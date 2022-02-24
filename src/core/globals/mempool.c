@@ -13,7 +13,7 @@ Transaction* mempool_add(Transaction *tx) {
 
   found_entry = mempool_find(new_entry->id);
   if (found_entry == NULL) {
-    HASH_ADD_STR(mempool, id, new_entry);
+    HASH_ADD(hh, mempool, id, TX_HASH_LEN, new_entry);
     return tx;
   } else {
     // In practice this should never happen
@@ -24,7 +24,7 @@ Transaction* mempool_add(Transaction *tx) {
 
 Transaction* mempool_remove(Transaction *tx) {
   MemPool *entry;
-  char buf[TX_HASH_LEN];
+  unsigned char buf[TX_HASH_LEN];
 
   hash_tx(tx, buf);
   entry = mempool_find(buf);
@@ -36,8 +36,8 @@ Transaction* mempool_remove(Transaction *tx) {
   return NULL;
 }
 
-MemPool* mempool_find(char *tx_hash) {
+MemPool* mempool_find(unsigned char *tx_hash) {
   MemPool *found_entry;
-  HASH_FIND_STR(mempool, tx_hash, found_entry);
+  HASH_FIND(hh, mempool, tx_hash, TX_HASH_LEN, found_entry);
   return found_entry;
 }
