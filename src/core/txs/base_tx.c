@@ -32,7 +32,7 @@ UTXO * dser_UTXO(char * data){
   return new_UTXO;
 }
 
-char * ser_Tx(Transaction *tx){
+char * ser_tx(Transaction *tx){
   // Determine total Size in bytes
   // This might be bad...https://stackoverflow.com/questions/119123/why-isnt-sizeof-for-a-struct-equal-to-the-sum-of-sizeof-of-each-member?rq=1
   int total_size = (sizeof(tx->num_inputs)+sizeof(tx->num_outputs) +

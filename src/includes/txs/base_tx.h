@@ -30,10 +30,11 @@ typedef struct UTXO{
     short spent;
 } UTXO;
 
-char * ser_UTXO(UTXO *utxo);
-UTXO * dser_UTXO(char * data);
-char * ser_Tx(Transaction *tx);
+char* ser_UTXO(UTXO *utxo);
+UTXO* dser_UTXO(char *data);
+char* ser_tx(Transaction *tx);
 Transaction* deser_tx(char *data);
+void hash_tx(Transaction *tx, unsigned char *buf);
 
 void print_input(Input *input);
 void print_output(Output *output);

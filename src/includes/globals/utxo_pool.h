@@ -6,7 +6,7 @@
 #include "base_tx.h"
 
 typedef struct UTXOPoolKey {
-    char tx_hash[TX_HASH_LEN];
+    unsigned char tx_hash[TX_HASH_LEN];
     unsigned int vout;
 } UTXOPoolKey;
 
