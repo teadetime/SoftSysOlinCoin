@@ -8,12 +8,12 @@
 
 typedef struct Output{
     unsigned long amt;
-    char public_key_hash[LOCK_SCRIPT_LEN];
+    unsigned char public_key_hash[LOCK_SCRIPT_LEN];
 } Output;
 
 typedef struct Input{
     char signature[SIGNATURE_LEN];
-    char prev_tx_id[TX_HASH_LEN];
+    unsigned char prev_tx_id[TX_HASH_LEN];
     int prev_utxo_output;
 } Input; 
 
@@ -30,9 +30,16 @@ typedef struct UTXO{
     short spent;
 } UTXO;
 
-char* ser_UTXO(UTXO *utxo);
-UTXO* dser_UTXO(char *data);
-char* ser_tx(Transaction *tx);
+char *ser_utxo(UTXO *utxo);
+UTXO *dser_utxo(char *data);
+
+/*
+Return Size of a transaction, used for serialization and memory allocation
+*/
+int size_tx(Transaction *tx);
+
+char *ser_tx(char *dest, Transaction *tx);
+char *ser_tx_alloc(Transaction *tx);
 Transaction* deser_tx(char *data);
 void hash_tx(Transaction *tx, unsigned char *buf);
 
