@@ -19,7 +19,9 @@ typedef struct Block{
 
 #endif
 
-char * ser_BlockHeader(BlockHeader *block_header, char* dest);
-char * ser_BlockHeader_alloc(BlockHeader *block_header);
+char *ser_blockheader(char *dest, BlockHeader *block_header);
+char *ser_blockheader_alloc(BlockHeader *block_header);
 
-char * ser_Block(Block *block);
+int size_block(Block *Block);
+char *ser_block(char *dest, Block *block);
+char *ser_block_alloc(Block *block);
