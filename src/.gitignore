@@ -1,6 +1,0 @@
-# Ignore the cmake build stuff
-*.cmake
-CMakeCache.txt
-Makefile
-# Except this file
-#!.gitignore
