@@ -1,5 +1,4 @@
-#ifndef UTXO_POOL_H
-#define UTXO_POOL_H
+#pragma 1
 
 #include "constants.h"
 #include "uthash.h"
@@ -12,10 +11,16 @@ typedef struct UTXOPoolKey {
 
 typedef struct UTXOPool {
     UTXOPoolKey id;
-    UTXO utxo;
+    UTXO *utxo;
     UT_hash_handle hh;
 } UTXOPool;
 
 UTXOPool *utxo_pool;
 
-#endif
+void utxo_pool_init();
+UTXO *utxo_pool_add(Transaction *tx, unsigned int vout);
+UTXO *utxo_pool_remove(unsigned char *tx_hash, unsigned int vout);
+UTXO *utxo_pool_remove_key(UTXOPoolKey *key);
+UTXO *utxo_pool_find(unsigned char *tx_hash, unsigned int vout);
+UTXOPool *utxo_pool_find_node(unsigned char *tx_hash, unsigned int vout);
+UTXOPool *utxo_pool_find_node_key(UTXOPoolKey *key);
