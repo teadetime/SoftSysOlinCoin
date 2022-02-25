@@ -114,6 +114,16 @@ Transaction* deser_tx(char *data){
   return new_tx;
 }
 
+void hash_tx(Transaction *tx, unsigned char *buf) {
+  char *tx_buf;
+  int tx_buf_size;
+
+  tx_buf_size = size_tx(tx);
+  tx_buf = ser_tx_alloc(tx);
+  hash_sha256(buf, tx_buf, tx_buf_size);
+  free(tx_buf);
+}
+
 void print_input(Input *input){
   printf("\nInput Data:\n");
   printf("sig: %s\n", input->signature);
