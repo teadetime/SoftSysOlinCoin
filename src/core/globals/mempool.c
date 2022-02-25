@@ -4,7 +4,7 @@ void mempool_init() {
   mempool = NULL;
 }
 
-Transaction* mempool_add(Transaction *tx) {
+Transaction *mempool_add(Transaction *tx) {
   MemPool *new_entry, *found_entry;
 
   new_entry = malloc(sizeof(MemPool));
@@ -22,7 +22,7 @@ Transaction* mempool_add(Transaction *tx) {
   }
 }
 
-Transaction* mempool_remove(Transaction *tx) {
+Transaction *mempool_remove(Transaction *tx) {
   MemPool *entry;
   unsigned char buf[TX_HASH_LEN];
 
@@ -36,7 +36,7 @@ Transaction* mempool_remove(Transaction *tx) {
   return NULL;
 }
 
-MemPool* mempool_find(unsigned char *tx_hash) {
+MemPool *mempool_find(unsigned char *tx_hash) {
   MemPool *found_entry;
   HASH_FIND(hh, mempool, tx_hash, TX_HASH_LEN, found_entry);
   return found_entry;

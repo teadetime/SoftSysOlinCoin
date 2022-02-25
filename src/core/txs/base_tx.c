@@ -18,23 +18,23 @@ char *ser_utxo(UTXO *utxo){
 }
 
 UTXO *dser_utxo(char *data){
-  UTXO * new_UTXO = malloc(sizeof(UTXO));
+  UTXO *new_UTXO = malloc(sizeof(UTXO));
 
   // Stolen from https://cboard.cprogramming.com/cplusplus-programming/43180-sizeof-struct-member-problem.html
   memcpy(&(new_UTXO->amt), data, sizeof(((UTXO*)0)->amt));
 
-  char * sig = data + sizeof(((UTXO*)0)->amt);
+  char *sig = data + sizeof(((UTXO*)0)->amt);
   memcpy(&(new_UTXO->signature), sig, sizeof(((UTXO*)0)->signature));
 
-  char * spent = sig + sizeof(((UTXO*)0)->signature);
+  char *spent = sig + sizeof(((UTXO*)0)->signature);
   memcpy(&(new_UTXO->spent), spent, sizeof(((UTXO*)0)->spent));
 
   return new_UTXO;
 }
 
 int size_tx(Transaction *tx){
-    return (sizeof(tx->num_inputs) + sizeof(tx->num_outputs) +
-      tx->num_inputs * sizeof(Input) + tx->num_outputs * sizeof(Output));
+  return (sizeof(tx->num_inputs) + sizeof(tx->num_outputs) +
+    tx->num_inputs * sizeof(Input) + tx->num_outputs * sizeof(Output));
 }
 
 char *ser_tx( char *dest, Transaction *tx){
