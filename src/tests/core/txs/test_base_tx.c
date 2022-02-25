@@ -6,7 +6,6 @@
 
 
 int main() {
-
   Output *an_Output = malloc(sizeof(Output));
   an_Output->amt = 5;
   strcpy(an_Output->public_key_hash, "a_val");

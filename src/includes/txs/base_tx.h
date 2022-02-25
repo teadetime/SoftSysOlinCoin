@@ -1,5 +1,4 @@
-#ifndef BASE_TX_H
-#define BASE_TX_H
+#pragma once
 
 #include "constants.h"
 
@@ -46,5 +45,3 @@ void hash_tx(Transaction *tx, unsigned char *buf);
 void print_input(Input *input);
 void print_output(Output *output);
 void print_tx(Transaction *tx);
-
-#endif

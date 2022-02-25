@@ -1,5 +1,4 @@
-#ifndef BLOCKCHAIN_H
-#define BLOCKCHAIN_H
+#pragma once
 
 #include "constants.h"
 #include "uthash.h"
@@ -11,5 +10,3 @@ typedef struct BlockChain {
 } BlockChain;
 
 BlockChain *blockchain;
-
-#endif

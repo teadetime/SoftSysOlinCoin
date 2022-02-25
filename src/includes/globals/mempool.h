@@ -1,5 +1,4 @@
-#ifndef MEMPOOL_H
-#define MEMPOOL_H
+#pragma once
 
 #include "constants.h"
 #include "uthash.h"
@@ -14,8 +13,6 @@ typedef struct MemPool {
 MemPool *mempool;
 
 void mempool_init();
-Transaction* mempool_add(Transaction *tx);
-Transaction* mempool_remove(Transaction *tx);
-MemPool* mempool_find(unsigned char *tx_hash);
-
-#endif
+Transaction *mempool_add(Transaction *tx);
+Transaction *mempool_remove(Transaction *tx);
+MemPool *mempool_find(unsigned char *tx_hash);

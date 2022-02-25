@@ -1,5 +1,4 @@
-#ifndef UTXO_POOL_H
-#define UTXO_POOL_H
+#pragma once
 
 #include "constants.h"
 #include "uthash.h"
@@ -17,5 +16,3 @@ typedef struct UTXOPool {
 } UTXOPool;
 
 UTXOPool *utxo_pool;
-
-#endif
