@@ -33,8 +33,8 @@ UTXO *dser_utxo(char *data){
 }
 
 int size_tx(Transaction *tx){
-    return (sizeof(tx->num_inputs) + sizeof(tx->num_outputs) +
-      tx->num_inputs * sizeof(Input) + tx->num_outputs * sizeof(Output));
+  return (sizeof(tx->num_inputs) + sizeof(tx->num_outputs) +
+    tx->num_inputs * sizeof(Input) + tx->num_outputs * sizeof(Output));
 }
 
 char *ser_tx( char *dest, Transaction *tx){
