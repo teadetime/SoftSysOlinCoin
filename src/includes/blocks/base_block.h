@@ -6,15 +6,20 @@
 
 typedef struct BlockHeader{
     unsigned long timestamp;
-    char all_tx[TX_HASH_LEN];
-    char prev_header_hash[BLOCK_HASH_LEN];
+    unsigned char all_tx[TX_HASH_LEN];
+    unsigned char prev_header_hash[BLOCK_HASH_LEN];
     int nonce;
 } BlockHeader;
 
 typedef struct Block{
-    int num_txs;
+    unsigned int num_txs;
     BlockHeader header;
     Transaction *txs;
 } Block;
 
 #endif
+
+char * ser_BlockHeader(BlockHeader *block_header, char* dest);
+char * ser_BlockHeader_alloc(BlockHeader *block_header);
+
+char * ser_Block(Block *block);

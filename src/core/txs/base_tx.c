@@ -32,11 +32,32 @@ UTXO * dser_UTXO(char * data){
   return new_UTXO;
 }
 
-char * ser_tx(Transaction *tx){
+int size_tx(Transaction *tx){
+    return (sizeof(tx->num_inputs)+sizeof(tx->num_outputs) +
+      tx->num_inputs*sizeof(Input) + tx->num_outputs*sizeof(Output)+sizeof(char));
+}
+
+char * ser_tx(Transaction *tx, char* dest){
+  memcpy(dest, &(tx->num_inputs), sizeof(tx->num_inputs));
+
+  char * num_outputs = dest+sizeof(tx->num_inputs);
+  memcpy(num_outputs, &(tx->num_outputs), sizeof(tx->num_outputs));
+
+  char * inputs = num_outputs+sizeof(tx->num_outputs);
+  memcpy(inputs, tx->inputs, tx->num_inputs*sizeof(Input));
+
+  char * outputs = inputs + tx->num_inputs*sizeof(Input);
+  memcpy(outputs, tx->outputs, tx->num_outputs*sizeof(Output));
+
+  char * terminate = outputs + tx->num_outputs*sizeof(Output);
+  terminate = '\0';
+  return terminate;
+}
+
+char * ser_tx_alloc(Transaction *tx){
   // Determine total Size in bytes
   // This might be bad...https://stackoverflow.com/questions/119123/why-isnt-sizeof-for-a-struct-equal-to-the-sum-of-sizeof-of-each-member?rq=1
-  int total_size = (sizeof(tx->num_inputs)+sizeof(tx->num_outputs) +
-      tx->num_inputs*sizeof(Input) + tx->num_outputs*sizeof(Output)+sizeof(char));
+  int total_size = size_tx(tx);
 
   printf("Size Transaction (Bytes): %i\n", total_size);
   //Pack it all in

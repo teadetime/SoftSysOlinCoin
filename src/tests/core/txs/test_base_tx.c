@@ -42,7 +42,7 @@ int main() {
   // //printf("prev_tx_id: %s\n", ((a_Tx->inputs)+1)->prev_tx_id);
 
   //Serialization Testing
-  char* char_tx = ser_tx(a_Tx);
+  char* char_tx = ser_tx_alloc(a_Tx);
 
   Transaction * other_tx = deser_tx(char_tx);
 
