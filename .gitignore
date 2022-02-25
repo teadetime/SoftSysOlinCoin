@@ -55,6 +55,7 @@ dkms.conf
 
 # VSCODE
 *settings.json
+c_cpp_properties.json
 
 # CMAKE ignores from https://github.com/github/gitignore/blob/main/CMake.gitignore
 

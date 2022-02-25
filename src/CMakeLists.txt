@@ -1,7 +1,20 @@
 cmake_minimum_required(VERSION 3.13)
-
+include(ExternalProject)
 # set the project name
 project(OlinCoin C)
+
+set(MBED_PROJECT_NAME "mbed_tls")
+set(EXTERN_LIB_NAME "extern_lib")
+
+ExternalProject_Add(${MBED_PROJECT_NAME}
+  GIT_REPOSITORY https://github.com/ARMmbed/mbedtls.git
+  GIT_TAG v3.1.0
+  UPDATE_DISCONNECTED true
+  PREFIX ${CMAKE_CURRENT_BINARY_DIR}/${EXTERN_LIB_NAME}
+  CONFIGURE_COMMAND 
+  BUILD_COMMAND 
+  INSTALL_COMMAND
+)
 
 # ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -18,23 +31,17 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 #   "${PROJECT_BINARY_DIR}/includes/txs"
 #   "${PROJECT_BINARY_DIR}/includes/globals"
 #   )
+# target_compile_options(OlinCoin PRIVATE  -Wall -Wextra -pedantic) #-O2)
 
-set(MbedTLS_DIR "/home/nathan/Downloads/build_test/cmake")
+set(MbedTLS_DIR "/${CMAKE_BINARY_DIR}/${EXTERN_LIB_NAME}/src/${MBED_PROJECT_NAME}}/cmake")
 
 find_package(MbedTLS REQUIRED)
 
 #ind_library(MBED_LIB mbedtls REQUIRED HINTS "/home/nathan/Downloads/build_test/library")
 
 add_executable(mbed ${CMAKE_SOURCE_DIR}/tests/core/blocks/mbed_test.c)
-target_include_directories(mbed PUBLIC
-#"/home/nathan/Downloads/build_test/include/"
-# "${PROJECT_BINARY_DIR}/includes/blocks"
-# "${PROJECT_BINARY_DIR}/includes/txs"
-# "${PROJECT_BINARY_DIR}/includes/globals"
-)
+
 target_link_libraries(mbed PUBLIC MbedTLS::mbedtls
   MbedTLS::mbedcrypto
   MbedTLS::mbedx509)
 message(STATUS "mbed_found?: ${MbedTLS_FOUND}")
-
-# target_compile_options(OlinCoin PRIVATE  -Wall -Wextra -pedantic) #-O2)
