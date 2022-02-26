@@ -19,10 +19,10 @@ typedef struct Block{
 
 #endif
 
-char *ser_blockheader(char *dest, BlockHeader *block_header);
-char *ser_blockheader_alloc(BlockHeader *block_header);
+unsigned char *ser_blockheader(unsigned char *dest, BlockHeader *block_header);
+unsigned char *ser_blockheader_alloc(BlockHeader *block_header);
 void hash_blockheader(BlockHeader *header, unsigned char *buf);
 
 int size_block(Block *Block);
-char *ser_block(char *dest, Block *block);
-char *ser_block_alloc(Block *block);
+unsigned char *ser_block(unsigned char *dest, Block *block);
+unsigned char *ser_block_alloc(Block *block);

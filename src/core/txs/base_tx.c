@@ -4,29 +4,29 @@
 
 #include "base_tx.h"
 
-char *ser_utxo(UTXO *utxo){
-  char *data = malloc(sizeof(UTXO));
+unsigned char *ser_utxo(UTXO *utxo){
+  unsigned char *data = malloc(sizeof(UTXO));
   memcpy(data, &(utxo->amt), sizeof(utxo->amt));
 
-  char *sig = data + sizeof(utxo->amt);
+  unsigned char *sig = data + sizeof(utxo->amt);
   memcpy(sig, &(utxo->public_key_hash), sizeof(utxo->public_key_hash));
 
-  char *spent = sig + sizeof(utxo->public_key_hash);
+  unsigned char *spent = sig + sizeof(utxo->public_key_hash);
   memcpy(spent, &(utxo->spent), sizeof(utxo->spent));
 
   return data;
 }
 
-UTXO *dser_utxo(char *data){
+UTXO *dser_utxo(unsigned char *data){
   UTXO *new_UTXO = malloc(sizeof(UTXO));
 
   // Stolen from https://cboard.cprogramming.com/cplusplus-programming/43180-sizeof-struct-member-problem.html
   memcpy(&(new_UTXO->amt), data, sizeof(((UTXO*)0)->amt));
 
-  char *sig = data + sizeof(((UTXO*)0)->amt);
+  unsigned char *sig = data + sizeof(((UTXO*)0)->amt);
   memcpy(&(new_UTXO->public_key_hash), sig, sizeof(((UTXO*)0)->public_key_hash));
 
-  char *spent = sig + sizeof(((UTXO*)0)->public_key_hash);
+  unsigned char *spent = sig + sizeof(((UTXO*)0)->public_key_hash);
   memcpy(&(new_UTXO->spent), spent, sizeof(((UTXO*)0)->spent));
 
   return new_UTXO;
@@ -37,43 +37,43 @@ int size_tx(Transaction *tx){
     tx->num_inputs * sizeof(Input) + tx->num_outputs * sizeof(Output));
 }
 
-char *ser_tx( char *dest, Transaction *tx){
+unsigned char *ser_tx(unsigned char *dest, Transaction *tx){
   memcpy(dest, &(tx->num_inputs), sizeof(tx->num_inputs));
 
-  char *num_outputs = dest + sizeof(tx->num_inputs);
+  unsigned char *num_outputs = dest + sizeof(tx->num_inputs);
   memcpy(num_outputs, &(tx->num_outputs), sizeof(tx->num_outputs));
 
-  char *inputs = num_outputs + sizeof(tx->num_outputs);
+  unsigned char *inputs = num_outputs + sizeof(tx->num_outputs);
   memcpy(inputs, tx->inputs, tx->num_inputs * sizeof(Input));
 
-  char *outputs = inputs + tx->num_inputs * sizeof(Input);
+  unsigned char *outputs = inputs + tx->num_inputs * sizeof(Input);
   memcpy(outputs, tx->outputs, tx->num_outputs * sizeof(Output));
 
-  char * end = outputs + tx->num_outputs * sizeof(Output);
+  unsigned char * end = outputs + tx->num_outputs * sizeof(Output);
   return end;
 }
 
-char *ser_tx_alloc(Transaction *tx){
-  char *data = malloc(size_tx(tx));
+unsigned char *ser_tx_alloc(Transaction *tx){
+  unsigned char *data = malloc(size_tx(tx));
   ser_tx(data, tx);
   return data;
 }
 
-Transaction *deser_tx(char *data){
+Transaction *deser_tx(unsigned char *data){
   Transaction *new_tx = malloc(sizeof(Transaction));
 
   memcpy(&(new_tx->num_inputs), data, sizeof(int));
 
-  char *nm_outputs = data + sizeof(int);
+  unsigned char *nm_outputs = data + sizeof(int);
   memcpy(&(new_tx->num_outputs), nm_outputs, sizeof(int));
 
-  char *inputs = nm_outputs + sizeof(int);
-  int input_sz = new_tx->num_inputs * sizeof(Input);
+  unsigned char *inputs = nm_outputs + sizeof(int);
+  unsigned int input_sz = new_tx->num_inputs * sizeof(Input);
   new_tx->inputs = malloc(input_sz);
   memcpy(new_tx->inputs, inputs, input_sz);
 
-  char *outputs = inputs + input_sz;
-  int output_sz = new_tx->num_outputs * sizeof(Output);
+  unsigned char *outputs = inputs + input_sz;
+  unsigned int output_sz = new_tx->num_outputs * sizeof(Output);
   new_tx->outputs = malloc(output_sz);
   memcpy(new_tx->outputs, outputs, output_sz);
 
@@ -81,7 +81,7 @@ Transaction *deser_tx(char *data){
 }
 
 void hash_tx(Transaction *tx, unsigned char *buf) {
-  char *tx_buf;
+  unsigned char *tx_buf;
   int tx_buf_size;
 
   tx_buf_size = size_tx(tx);
