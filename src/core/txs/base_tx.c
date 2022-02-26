@@ -9,9 +9,9 @@ char *ser_utxo(UTXO *utxo){
   memcpy(data, &(utxo->amt), sizeof(utxo->amt));
 
   char *sig = data + sizeof(utxo->amt);
-  memcpy(sig, &(utxo->signature), sizeof(utxo->signature));
+  memcpy(sig, &(utxo->public_key_hash), sizeof(utxo->public_key_hash));
 
-  char *spent = sig + sizeof(utxo->signature);
+  char *spent = sig + sizeof(utxo->public_key_hash);
   memcpy(spent, &(utxo->spent), sizeof(utxo->spent));
 
   return data;
@@ -24,9 +24,9 @@ UTXO *dser_utxo(char *data){
   memcpy(&(new_UTXO->amt), data, sizeof(((UTXO*)0)->amt));
 
   char *sig = data + sizeof(((UTXO*)0)->amt);
-  memcpy(&(new_UTXO->signature), sig, sizeof(((UTXO*)0)->signature));
+  memcpy(&(new_UTXO->public_key_hash), sig, sizeof(((UTXO*)0)->public_key_hash));
 
-  char *spent = sig + sizeof(((UTXO*)0)->signature);
+  char *spent = sig + sizeof(((UTXO*)0)->public_key_hash);
   memcpy(&(new_UTXO->spent), spent, sizeof(((UTXO*)0)->spent));
 
   return new_UTXO;
