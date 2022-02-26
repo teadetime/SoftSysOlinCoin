@@ -53,6 +53,7 @@ char *ser_block(char *dest, Block *block){
   char *end = txs;
   return end;
 }
+
 char *ser_block_alloc(Block *block){
   char *data = malloc(size_block(block));
   ser_block(data, block);
