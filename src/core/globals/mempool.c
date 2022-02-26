@@ -7,6 +7,7 @@ void mempool_init() {
 Transaction *mempool_add(Transaction *tx) {
   MemPool *new_entry, *found_entry;
 
+  new_entry = malloc(sizeof(MemPool));
   hash_tx(tx, new_entry->id);
   new_entry->tx = tx;
 
@@ -19,32 +20,29 @@ Transaction *mempool_add(Transaction *tx) {
   return NULL;
 }
 
-Transaction *mempool_remove(Transaction *tx) {
+Transaction *mempool_remove(unsigned char *tx_hash) {
   MemPool *entry;
-  char *tx_buf;
-  int tx_buf_size;
-  unsigned char buf[TX_HASH_LEN];
+  Transaction *tx;
 
-  hash_tx(tx, buf);
-  entry = mempool_find_node(buf);
-
+  entry = mempool_find_node(tx_hash);
   if (entry != NULL) {
+    tx = entry->tx;
     HASH_DEL(mempool, entry);
     free(entry);
     return tx;
   }
+
   return NULL;
 }
 
-Transaction *mempool_find(Transaction *tx) {
+Transaction *mempool_find(unsigned char *tx_hash) {
   MemPool *found_entry;
-  unsigned char buf[TX_HASH_LEN];
 
-  hash_tx(tx, buf);
-  found_entry = mempool_find_node(buf);
+  found_entry = mempool_find_node(tx_hash);
   if (found_entry != NULL) {
     return found_entry->tx;
   }
+
   return NULL;
 }
 

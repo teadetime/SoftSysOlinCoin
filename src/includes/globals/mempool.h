@@ -14,6 +14,6 @@ MemPool *mempool;
 
 void mempool_init();
 Transaction *mempool_add(Transaction *tx);
-Transaction *mempool_remove(Transaction *tx);
-Transaction *mempool_find(Transaction *tx);
+Transaction *mempool_remove(unsigned char *tx_hash);
+Transaction *mempool_find(unsigned char *tx_hash);
 MemPool *mempool_find_node(unsigned char *tx_hash);
