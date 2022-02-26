@@ -21,12 +21,14 @@ include(FetchContent)
 FetchContent_Declare(MbedTLS
 GIT_REPOSITORY https://github.com/ARMmbed/mbedtls.git
 GIT_TAG v3.1.0
-SOURCE_DIR    ${CMAKE_BINARY_DIR}/../test
+SOURCE_DIR    ${CMAKE_BINARY_DIR}/../external/src
+BINARY_DIR    ${CMAKE_BINARY_DIR}/../external/bin
 )
 
 # ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
+set(CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR}/../bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 FetchContent_MakeAvailable(MbedTLS)
 # add the executable
 # add_executable(OlinCoin
@@ -45,6 +47,7 @@ FetchContent_MakeAvailable(MbedTLS)
 #message(STATUS "Looking for mbed config: ${MbedTLS_DIR}")
 #ind_library(MBED_LIB mbedtls REQUIRED HINTS "/home/nathan/Downloads/build_test/library")
 
+set(CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR}/../our_files)
 add_executable(mbed ${CMAKE_SOURCE_DIR}/tests/core/blocks/mbed_test.c)
 
 
