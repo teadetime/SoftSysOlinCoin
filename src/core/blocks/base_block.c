@@ -26,6 +26,13 @@ char *ser_blockheader_alloc(BlockHeader *block_header){
   return data;
 }
 
+void hash_blockheader(BlockHeader *header, unsigned char *buf) {
+  char *header_buf;
+  header_buf = ser_blockheader_alloc(header);
+  hash_sha256(buf, header_buf, sizeof(BlockHeader));
+  free(header_buf);
+}
+
 int size_block(Block *block){
   int size = (sizeof(block->num_txs) + sizeof(block->header));
   for(int i = 0; i < block->num_txs; i++){
