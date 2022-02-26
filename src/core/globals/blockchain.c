@@ -1,7 +1,22 @@
 #include "blockchain.h"
 
 void blockchain_init() {
-  blockchain = NULL;
+  Block* genesis_block;
+
+  blockchain = NULL;  // Must always start at NULL
+
+  genesis_block = malloc(sizeof(Block));
+
+  // Initialize with a totally empty block
+  genesis_block->num_txs = 0;
+  genesis_block->txs = NULL;
+
+  genesis_block->header.timestamp = 0;
+  genesis_block->header.nonce = 0;
+  memset(&(genesis_block->header.all_tx), 0, TX_HASH_LEN);
+  memset(&(genesis_block->header.prev_header_hash), 0, BLOCK_HASH_LEN);
+
+  blockchain_add(genesis_block);
 }
 
 Block *blockchain_add(Block *block) {
