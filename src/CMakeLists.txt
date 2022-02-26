@@ -6,20 +6,28 @@ project(OlinCoin C)
 set(MBED_PROJECT_NAME "mbed_tls")
 set(EXTERN_LIB_NAME "extern_lib")
 
-ExternalProject_Add(${MBED_PROJECT_NAME}
-  GIT_REPOSITORY https://github.com/ARMmbed/mbedtls.git
-  GIT_TAG v3.1.0
-  UPDATE_DISCONNECTED true
-  PREFIX ${CMAKE_CURRENT_BINARY_DIR}/${EXTERN_LIB_NAME}
-  CONFIGURE_COMMAND 
-  BUILD_COMMAND 
-  INSTALL_COMMAND
+# ExternalProject_Add(test
+#   GIT_REPOSITORY https://github.com/ARMmbed/mbedtls.git
+#   GIT_TAG v3.1.0
+#   UPDATE_DISCONNECTED true
+#   PREFIX ${CMAKE_CURRENT_BINARY_DIR}/${EXTERN_LIB_NAME}
+#   CONFIGURE_COMMAND 
+#   STEP_TARGETS build
+#   BUILD_COMMAND 
+#   INSTALL_COMMAND
+# )
+
+include(FetchContent)
+FetchContent_Declare(MbedTLS
+GIT_REPOSITORY https://github.com/ARMmbed/mbedtls.git
+GIT_TAG v3.1.0
+SOURCE_DIR    ${CMAKE_BINARY_DIR}/../test
 )
 
 # ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
-
+FetchContent_MakeAvailable(MbedTLS)
 # add the executable
 # add_executable(OlinCoin
 #   ${CMAKE_SOURCE_DIR}/tests/core/txs/test_base_tx.c 
@@ -33,16 +41,16 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 #   )
 # target_compile_options(OlinCoin PRIVATE  -Wall -Wextra -pedantic) #-O2)
 
-set(MbedTLS_DIR "/${CMAKE_BINARY_DIR}/${EXTERN_LIB_NAME}/src/${MBED_PROJECT_NAME}}/cmake")
-message(STATUS "Looking for mbed config: ${MbedTLS_DIR}")
-
-find_package(MbedTLS REQUIRED)
-
+#set(MbedTLS_DIR "${CMAKE_BINARY_DIR}/${EXTERN_LIB_NAME}/src/${MBED_PROJECT_NAME}/cmake")
+#message(STATUS "Looking for mbed config: ${MbedTLS_DIR}")
 #ind_library(MBED_LIB mbedtls REQUIRED HINTS "/home/nathan/Downloads/build_test/library")
 
 add_executable(mbed ${CMAKE_SOURCE_DIR}/tests/core/blocks/mbed_test.c)
 
-target_link_libraries(mbed PUBLIC MbedTLS::mbedtls
-  MbedTLS::mbedcrypto
-  MbedTLS::mbedx509)
+
+#find_package(MbedTLS REQUIRED)
+target_link_libraries(mbed PUBLIC mbedtls
+mbedcrypto
+mbedx509)
+
 message(STATUS "mbed_found?: ${MbedTLS_FOUND}")
