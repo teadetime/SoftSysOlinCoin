@@ -34,6 +34,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 # target_compile_options(OlinCoin PRIVATE  -Wall -Wextra -pedantic) #-O2)
 
 set(MbedTLS_DIR "/${CMAKE_BINARY_DIR}/${EXTERN_LIB_NAME}/src/${MBED_PROJECT_NAME}}/cmake")
+message(STATUS "Looking for mbed config: ${MbedTLS_DIR}")
 
 find_package(MbedTLS REQUIRED)
 
