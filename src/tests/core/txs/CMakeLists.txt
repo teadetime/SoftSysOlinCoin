@@ -10,7 +10,7 @@ message(STATUS "Txs Test: ${CMAKE_SOURCE_DIR}")
   message(STATUS "Sources @ executable: ${TX_SOURCES}")
 add_executable(nathan
   test_base_tx.c ${SOURCES_ALL})
-
+target_compile_options(nathan PRIVATE ${COMPILE_OPTIONS_STD})
 message(STATUS "INCLUDE_BLOCKS @ executable: ${INCLUDE_BLOCKS}")
 message(STATUS "INCLUDE_TX @ executable: ${INCLUDE_TX}")
 message(STATUS "INCLUDE_GL @ executable: ${INCLUDE_GLOBAL}")
