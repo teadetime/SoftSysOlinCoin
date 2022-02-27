@@ -73,5 +73,5 @@ _deps
 
 
 # ginore bin
-bin/*
+build/*
 external/*
