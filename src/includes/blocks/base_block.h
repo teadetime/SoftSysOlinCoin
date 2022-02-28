@@ -21,6 +21,12 @@ typedef struct Block{
 
 unsigned char *ser_blockheader(unsigned char *dest, BlockHeader *block_header);
 unsigned char *ser_blockheader_alloc(BlockHeader *block_header);
+
+/* Hashes passed block header
+ *
+ * dest: Buffer to write hash to, expected to be of size BLOCK_HASH_LEN
+ * header: Block header to hash
+ */
 void hash_blockheader(unsigned char *dest, BlockHeader *header);
 
 int size_block(Block *Block);

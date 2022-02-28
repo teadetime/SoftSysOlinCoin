@@ -40,6 +40,12 @@ int size_tx(Transaction *tx);
 unsigned char *ser_tx(unsigned char *dest, Transaction *tx);
 unsigned char *ser_tx_alloc(Transaction *tx);
 Transaction* deser_tx(unsigned char *data);
+
+/* Hashes passed transaction
+ *
+ * dest: Buffer to write hash to, expected to be of size TX_HASH_LEN
+ * tx: Transaction to hash
+ */
 void hash_tx(unsigned char *dest, Transaction *tx);
 
 void print_input(Input *input);
