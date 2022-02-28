@@ -40,7 +40,7 @@ int size_tx(Transaction *tx);
 unsigned char *ser_tx(unsigned char *dest, Transaction *tx);
 unsigned char *ser_tx_alloc(Transaction *tx);
 Transaction* deser_tx(unsigned char *data);
-void hash_tx(Transaction *tx, unsigned char *buf);
+void hash_tx(unsigned char *dest, Transaction *tx);
 
 void print_input(Input *input);
 void print_output(Output *output);

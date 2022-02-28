@@ -21,7 +21,7 @@ typedef struct Block{
 
 unsigned char *ser_blockheader(unsigned char *dest, BlockHeader *block_header);
 unsigned char *ser_blockheader_alloc(BlockHeader *block_header);
-void hash_blockheader(BlockHeader *header, unsigned char *buf);
+void hash_blockheader(unsigned char *dest, BlockHeader *header);
 
 int size_block(Block *Block);
 unsigned char *ser_block(unsigned char *dest, Block *block);

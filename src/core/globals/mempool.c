@@ -8,7 +8,7 @@ Transaction *mempool_add(Transaction *tx) {
   MemPool *new_entry, *found_entry;
 
   new_entry = malloc(sizeof(MemPool));
-  hash_tx(tx, new_entry->id);
+  hash_tx(new_entry->id, tx);
   new_entry->tx = tx;
 
   found_entry = mempool_find_node(new_entry->id);

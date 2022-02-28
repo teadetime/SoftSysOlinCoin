@@ -12,7 +12,7 @@ UTXO *utxo_pool_add(Transaction *tx, unsigned int vout) {
 
   // Build key
   memset(&(new_entry->id), 0, sizeof(UTXOPoolKey));
-  hash_tx(tx, new_entry->id.tx_hash);
+  hash_tx(new_entry->id.tx_hash, tx);
   new_entry->id.vout = vout;
 
   // Build new UTXO

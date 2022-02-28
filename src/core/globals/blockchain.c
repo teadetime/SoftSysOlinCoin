@@ -23,7 +23,7 @@ Block *blockchain_add(Block *block) {
   BlockChain *new_entry, *found_entry;
 
   new_entry = malloc(sizeof(BlockChain));
-  hash_blockheader(&(block->header), new_entry->id);
+  hash_blockheader(new_entry->id, &(block->header));
   new_entry->block = block;
 
   found_entry = blockchain_find_node(new_entry->id);

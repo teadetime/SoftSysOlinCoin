@@ -26,10 +26,10 @@ unsigned char *ser_blockheader_alloc(BlockHeader *block_header){
   return data;
 }
 
-void hash_blockheader(BlockHeader *header, unsigned char *buf) {
+void hash_blockheader(unsigned char *dest, BlockHeader *header) {
   unsigned char *header_buf;
   header_buf = ser_blockheader_alloc(header);
-  hash_sha256(buf, header_buf, sizeof(BlockHeader));
+  hash_sha256(dest, header_buf, sizeof(BlockHeader));
   free(header_buf);
 }
 
