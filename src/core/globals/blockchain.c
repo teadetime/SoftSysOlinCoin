@@ -28,7 +28,7 @@ Block *blockchain_add(Block *block) {
 
   found_entry = blockchain_find_node(new_entry->id);
   if (found_entry == NULL) {
-    HASH_ADD(hh, blockchain, id, TX_HASH_LEN, new_entry);
+    HASH_ADD(hh, blockchain, id, BLOCK_HASH_LEN, new_entry);
     return block;
   }
   free(new_entry);

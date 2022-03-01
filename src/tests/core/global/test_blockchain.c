@@ -77,14 +77,19 @@ static char *test_blockchain_init_correct() {
 }
 
 static char  *test_blockchain_add() {
-  Block block, *ret_block;
+  Block *block, *ret_block;
 
+  block = _make_block();
   blockchain_init();
-  ret_block = blockchain_add(&block);
+  ret_block = blockchain_add(block);
   mu_assert(
     "Add did not return correct block",
-    ret_block == &block
+    ret_block == block
   );
+
+  free(block->txs);
+  free(block);
+
   return NULL;
 }
 
