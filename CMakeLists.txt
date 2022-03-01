@@ -16,6 +16,8 @@ set(SOURCES_BLOCK ""CACHE INTERNAL "used internally")
 set(SOURCES_GLOBAL ""CACHE INTERNAL "used internally")
 
 set(COMPILE_OPTIONS_STD -Wall -Wextra -pedantic -O2 CACHE INTERNAL "used internally")
+set(BUILD_TESTS ON)
+set(BUILD_RUNTIME ON)  
 add_subdirectory(src)
 
 add_custom_target(really-clean
