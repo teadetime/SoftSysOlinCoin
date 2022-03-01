@@ -110,3 +110,7 @@ void print_tx(Transaction *tx){
   }
   printf("Tx(Bytes): %li\n", sizeof(*tx)); // Check i
 }
+
+void hash_tx(Transaction *tx, unsigned char *buf){
+  return 0;
+}

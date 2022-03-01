@@ -55,6 +55,7 @@ dkms.conf
 
 # VSCODE
 *settings.json
+c_cpp_properties.json
 
 # CMAKE ignores from https://github.com/github/gitignore/blob/main/CMake.gitignore
 
@@ -69,3 +70,9 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
+
+
+# ginore bin
+build/*
+external/*
+compile_flags.txt

@@ -1,21 +1,25 @@
-cmake_minimum_required(VERSION 3.10)
+message(STATUS "root cmake Source: ${CMAKE_SOURCE_DIR}")
+message(STATUS "root Cmake/Bin?: ${CMAKE_BINARY_DIR}")
+message(STATUS "root Cmake Output: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+# Build mbed tls first!
+add_subdirectory(external)
+# Then Let's add the include files
+add_subdirectory(includes)
+# Then Build sources core
+add_subdirectory(core)
+# Then Build tests
+IF(BUILD_TESTS)
+  message(STATUS "Building Tests!")
+  add_subdirectory(tests)
+ENDIF()
+IF(BUILD_RUNTIME)
+  message(STATUS "Building Runtime!")
+  add_subdirectory(runtime)
+ENDIF()
 
-# set the project name
-project(OlinCoin C)
+# add_executable(mbed ${CMAKE_SOURCE_DIR}/src/tests/core/blocks/mbed_test.c)
+# target_link_libraries(mbed PUBLIC mbedtls
+# mbedcrypto
+# mbedx509)
 
-# ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
 
-# add the executable
-add_executable(OlinCoin
-  ${CMAKE_SOURCE_DIR}/tests/core/txs/test_base_tx.c 
-  ${CMAKE_SOURCE_DIR}/core/txs/base_tx.c)
-
-target_include_directories(OlinCoin PUBLIC
-  "${PROJECT_BINARY_DIR}/includes/blocks"
-  "${PROJECT_BINARY_DIR}/includes/txs"
-  "${PROJECT_BINARY_DIR}/includes/globals"
-  )
-
-target_compile_options(OlinCoin PRIVATE  -Wall -Wextra -pedantic) #-O2)
