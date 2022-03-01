@@ -12,7 +12,10 @@ IF(BUILD_TESTS)
   message(STATUS "Building Tests!")
   add_subdirectory(tests)
 ENDIF()
-
+IF(BUILD_RUNTIME)
+  message(STATUS "Building Runtime!")
+  add_subdirectory(runtime)
+ENDIF()
 
 # add_executable(mbed ${CMAKE_SOURCE_DIR}/src/tests/core/blocks/mbed_test.c)
 # target_link_libraries(mbed PUBLIC mbedtls
