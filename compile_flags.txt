@@ -4,3 +4,5 @@ src/includes/globals/
 src/includes/txs/
 -I
 src/includes/blocks/
+-I
+src/includes/tests/

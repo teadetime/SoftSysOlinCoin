@@ -13,8 +13,8 @@ void blockchain_init() {
 
   genesis_block->header.timestamp = 0;
   genesis_block->header.nonce = 0;
-  memset(&(genesis_block->header.all_tx), 0, TX_HASH_LEN);
-  memset(&(genesis_block->header.prev_header_hash), 0, BLOCK_HASH_LEN);
+  memset(genesis_block->header.all_tx, 0, TX_HASH_LEN);
+  memset(genesis_block->header.prev_header_hash, 0, BLOCK_HASH_LEN);
 
   blockchain_add(genesis_block);
 }
