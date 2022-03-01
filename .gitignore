@@ -75,3 +75,4 @@ _deps
 # ginore bin
 build/*
 external/*
+compile_flags.txt
