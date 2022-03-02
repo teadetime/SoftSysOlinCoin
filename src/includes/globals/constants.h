@@ -10,4 +10,4 @@
  input_sz: number of bytes in input
  output_hash: unsigned * of size TX_HASH_LEN
  */
-int hash_sha256(unsigned char * output_hash, char * input_data, unsigned int input_sz); 
+int hash_sha256(unsigned char * output_hash, unsigned char * input_data, unsigned int input_sz); 

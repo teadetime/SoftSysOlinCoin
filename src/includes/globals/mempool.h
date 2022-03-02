@@ -12,7 +12,38 @@ typedef struct MemPool {
 
 MemPool *mempool;
 
+/* Initializes the global mempool variable */
 void mempool_init();
+
+/* Creates a new entry in the hashmap with the passed transaction
+ *
+ * Returns passed transaction pointer if entry created, NULL otherwise
+ *
+ * transaction: Transaction pointer that will be stored in entry
+ */
 Transaction *mempool_add(Transaction *tx);
-Transaction *mempool_remove(Transaction *tx);
-MemPool *mempool_find(unsigned char *tx_hash);
+
+/* Removes the entry corresponding to tx_hash
+ *
+ * Returns the transaction pointer stored in removed entry if succesfully
+ * removed, NULL otherwise
+ *
+ * tx_hash: Buffer of length TX_HASH_LEN, hash of transaction
+ */
+Transaction *mempool_remove(unsigned char *tx_hash);
+
+/* Finds transaction corresponding to tx_hash
+ *
+ * Returns transaction pointer if found, NULL otherwise
+ *
+ * tx_hash: Buffer of length TX_HASH_LEN, hash of transaction
+ */
+Transaction *mempool_find(unsigned char *tx_hash);
+
+/* Finds entry corresponding to tx_hash
+ *
+ * Returns entry if found, NULL otherwise
+ *
+ * tx_hash: Buffer of length TX_HASH_LEN, hash of transaction
+ */
+MemPool *mempool_find_node(unsigned char *tx_hash);

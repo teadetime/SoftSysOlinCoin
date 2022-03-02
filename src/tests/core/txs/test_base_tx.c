@@ -8,7 +8,7 @@
 int main() {
   Output *an_Output = malloc(sizeof(Output));
   an_Output->amt = 5;
-  strcpy(an_Output->public_key_hash, "a_val");
+  strcpy((char*)an_Output->public_key_hash, "a_val");
 
   Input *an_Input = malloc(sizeof(Input));
   an_Input->prev_utxo_output = 2;
@@ -41,7 +41,7 @@ int main() {
   // //printf("prev_tx_id: %s\n", ((a_Tx->inputs)+1)->prev_tx_id);
 
   //Serialization Testing
-  char *char_tx = ser_tx_alloc(a_Tx);
+  unsigned char *char_tx = ser_tx_alloc(a_Tx);
 
   Transaction *other_tx = deser_tx(char_tx);
 
