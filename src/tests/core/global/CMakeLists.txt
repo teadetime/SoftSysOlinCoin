@@ -1,14 +1,26 @@
-# add_executable(test_global
-#   some global test.c) # This doesn't need our sources currently ${SOURCES_ALL})
-# target_compile_options(test_global PRIVATE ${COMPILE_OPTIONS_STD})
-# target_include_directories(test_global PUBLIC
-#   ${INCLUDE_ALL}
-#   # # Same as these
-#   # ${INCLUDE_BLOCKS}
-#   # ${INCLUDE_TX}
-#   # ${INCLUDE_GLOBAL}
-#   )
+add_executable(test_blockchain
+  test_blockchain.c
+  ${SOURCES_ALL})
+target_compile_options(test_blockchain PRIVATE ${COMPILE_OPTIONS_STD})
+target_include_directories(test_blockchain PUBLIC
+  ${INCLUDE_ALL}
+  )
 
+add_executable(test_mempool
+  test_mempool.c
+  ${SOURCES_ALL})
+target_compile_options(test_mempool PRIVATE ${COMPILE_OPTIONS_STD})
+target_include_directories(test_mempool PUBLIC
+  ${INCLUDE_ALL}
+  )
+
+add_executable(test_utxo_pool
+  test_utxo_pool.c
+  ${SOURCES_ALL})
+target_compile_options(test_utxo_pool PRIVATE ${COMPILE_OPTIONS_STD})
+target_include_directories(test_utxo_pool PUBLIC
+  ${INCLUDE_ALL}
+  )
 # # Link libraries for the mbed stuff if needed
 # target_link_libraries(test_global  
 #   mbedtls

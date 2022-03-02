@@ -8,9 +8,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 set(INCLUDE_ALL "" CACHE INTERNAL "used internally")
 set(SOURCES_ALL "" CACHE INTERNAL "used internally")
+
+
 set(INCLUDE_TX "" CACHE INTERNAL "used internally")
 set(INCLUDE_BLOCK "" CACHE INTERNAL "used internally")
 set(INCLUDE_GLOBAL "" CACHE INTERNAL "used internally")
+set(INCLUDE_TEST "" CACHE INTERNAL "used internally")
 set(SOURCES_TX "" CACHE INTERNAL "used internally")
 set(SOURCES_BLOCK "" CACHE INTERNAL "used internally")
 set(SOURCES_GLOBAL "" CACHE INTERNAL "used internally")

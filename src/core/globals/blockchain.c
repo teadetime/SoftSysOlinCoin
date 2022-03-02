@@ -13,8 +13,8 @@ void blockchain_init() {
 
   genesis_block->header.timestamp = 0;
   genesis_block->header.nonce = 0;
-  memset(&(genesis_block->header.all_tx), 0, TX_HASH_LEN);
-  memset(&(genesis_block->header.prev_header_hash), 0, BLOCK_HASH_LEN);
+  memset(genesis_block->header.all_tx, 0, TX_HASH_LEN);
+  memset(genesis_block->header.prev_header_hash, 0, BLOCK_HASH_LEN);
 
   blockchain_add(genesis_block);
 }
@@ -28,7 +28,7 @@ Block *blockchain_add(Block *block) {
 
   found_entry = blockchain_find_node(new_entry->id);
   if (found_entry == NULL) {
-    HASH_ADD(hh, blockchain, id, TX_HASH_LEN, new_entry);
+    HASH_ADD(hh, blockchain, id, BLOCK_HASH_LEN, new_entry);
     return block;
   }
   free(new_entry);

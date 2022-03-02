@@ -1,5 +1,6 @@
 add_executable(test_base_tx
-  test_base_tx.c ${SOURCES_ALL})
+  test_base_tx.c 
+  ${SOURCES_ALL})
 target_compile_options(test_base_tx PRIVATE ${COMPILE_OPTIONS_STD})
 target_include_directories(test_base_tx PUBLIC
   #${INCLUDE_ALL}
