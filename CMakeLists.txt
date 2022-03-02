@@ -23,16 +23,14 @@ set(BUILD_TESTS ON)
 set(BUILD_RUNTIME ON)  
 add_subdirectory(src)
 
-add_custom_target(really-clean
+message(STATUS "Top Level")
+message(STATUS "CLEAN: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tests")
+add_custom_target(_clean
   #COMMAND "$(CMAKE)" --build "${CMAKE_BINARY_DIR}" clean
-  COMMAND cd "${CMAKE_BINARY_DIR}"
+  COMMAND cd ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} &&  rm -rf tests/* 
+  COMMAND cd ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} &&  rm -rf runtime/* 
+  COMMAND cd "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
   COMMAND rm -r "CMakeFiles"
   COMMAND rm -r "cmake_install.cmake"
   COMMAND rm -r "CMakeCache.txt"
-
-  # Should get list of executables or cd into a dir with them
-  COMMAND rm -r "mbed"
-
-  # COMMAND cd "src"
-  # COMMAND rm -r * 
 )
