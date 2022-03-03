@@ -9,7 +9,11 @@ target_include_directories(test_base_tx PUBLIC
   ${INCLUDE_TX}
   ${INCLUDE_GLOBAL}
   )
-
+# Link libraries for the mbed stuff
+target_link_libraries(test_base_tx  
+  mbedtls
+  mbedcrypto
+  mbedx509)
   # # Link libraries for the mbed stuff if needed
 # target_link_libraries(test_base_tx 
 #   mbedtls
