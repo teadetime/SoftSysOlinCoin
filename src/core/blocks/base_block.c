@@ -59,3 +59,9 @@ unsigned char *ser_block_alloc(Block *block){
   ser_block(data, block);
   return data;
 }
+
+void print_block_header(BlockHeader *header){
+}
+
+void print_block(Block *block){
+}
