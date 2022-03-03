@@ -24,6 +24,9 @@ buf: buffer to be printed
 len: size of buffer in bytes
 
 EXample Code:
-dump_buf( "Hash: ", output_hash, TX_HASH_LEN );
+unsigned char *dest = malloc(TX_HASH_LEN);
+unsigned char tx_buf[] = "THIS IS A TEST";
+hash_sha256(dest, tx_buf, sizeof(tx_buf));
+dump_buf("Hash: ",dest, TX_HASH_LEN);
 */
 void dump_buf( const char *title, unsigned char *buf, size_t len );

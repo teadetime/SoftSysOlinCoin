@@ -1,11 +1,7 @@
 // # include mbedtls.h
 #include <string.h>
 #include <constants.h>
-
-#include "mbedtls/build_info.h"
-#include "mbedtls/entropy.h"
-#include "mbedtls/ctr_drbg.h"
-#include "mbedtls/ecdsa.h"
+#include <stdio.h>
 #include "mbedtls/sha256.h"
 
 

@@ -38,13 +38,6 @@ static char *all_tests() {
 }
 
 int main() {
-  // unsigned char *dest = malloc(TX_HASH_LEN);
-  // unsigned char tx_buf[] = "THIS IS A TEST";
-  // hash_sha256(dest, tx_buf, sizeof(tx_buf));
-  // dump_buf("Hash: ",dest, TX_HASH_LEN);
-
-
-
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);
