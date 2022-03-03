@@ -35,7 +35,7 @@ void hash_blockheader(unsigned char *dest, BlockHeader *header) {
 
 int size_block(Block *block){
   int size = (sizeof(block->num_txs) + sizeof(block->header));
-  for(int i = 0; i < block->num_txs; i++){
+  for(unsigned int i = 0; i < block->num_txs; i++){
       size += size_tx(&(block->txs[i]));
   }
   return size;
@@ -47,8 +47,8 @@ unsigned char *ser_block(unsigned char *dest, Block *block){
   unsigned char *block_header = dest + sizeof(block->num_txs);
   unsigned char *txs = ser_blockheader(block_header, &(block->header));
 
-  for(int i = 0; i < block->num_txs; i++){
-      unsigned char *txs = ser_tx(txs, &(block->txs[i]));
+  for(unsigned int i = 0; i < block->num_txs; i++){
+      txs = ser_tx(txs, &(block->txs[i]));
   }
   unsigned char *end = txs;
   return end;
