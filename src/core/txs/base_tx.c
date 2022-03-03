@@ -111,11 +111,11 @@ void print_tx(Transaction *tx){
   printf("num_inputs: %i\n", tx->num_inputs);
   printf("num_outputs: %i\n", tx->num_outputs);
 
-  for(int i = 0; i < tx->num_inputs; i++){
+  for(unsigned int i = 0; i < tx->num_inputs; i++){
     print_input(&(tx->inputs[i]));
   }
 
-  for(int i = 0; i < tx->num_outputs; i++){
+  for(unsigned int i = 0; i < tx->num_outputs; i++){
     print_output(&(tx->outputs[i]));
   }
   printf("Tx(Bytes): %li\n", sizeof(*tx)); // Check i

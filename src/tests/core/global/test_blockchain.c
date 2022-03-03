@@ -5,7 +5,7 @@
 int tests_run = 0;
 
 Block *_make_block() {
-  Block *block, *ret_block;
+  Block *block;
   Transaction *tx;
 
   block = malloc(sizeof(Block));
@@ -150,7 +150,7 @@ static char *all_tests() {
   return NULL;
 }
 
-int main(int argc, char **argv) {
+int main() {
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);
