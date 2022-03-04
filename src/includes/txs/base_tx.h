@@ -2,12 +2,9 @@
 
 #include "constants.h"
 
-#define LOCK_SCRIPT_LEN 48
-#define SIGNATURE_LEN 48
-
 typedef struct Output{
   unsigned long amt;
-  unsigned char public_key_hash[LOCK_SCRIPT_LEN];
+  unsigned char public_key_hash[PUB_KEY_HASH_LEN];
 } Output;
 
 typedef struct Input{
@@ -25,7 +22,7 @@ typedef struct Transaction{
 
 typedef struct UTXO{
   unsigned long amt;
-  unsigned char public_key_hash[LOCK_SCRIPT_LEN];
+  unsigned char public_key_hash[PUB_KEY_HASH_LEN];
   short spent;
 } UTXO;
 
