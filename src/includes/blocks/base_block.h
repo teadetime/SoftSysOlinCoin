@@ -71,6 +71,7 @@ unsigned char *ser_block_alloc(Block *block);
 Prints a Block Header to stdout so data can be visualized
 
 header: header to be printed
+
 */
 void print_block_header(BlockHeader *header, char *prefix);
 
@@ -78,5 +79,6 @@ void print_block_header(BlockHeader *header, char *prefix);
 Prints a block to stdout, (including header) for visualization
 
 block: block to print
+prefix: string to put in front of all print commands used for tabbing structure
 */
 void print_block(Block *block, char *prefix);
