@@ -19,6 +19,7 @@ static char *test_hash_consistency() {
   );
   return NULL;
 }
+
 static char *test_hash_consistency_long() {
   unsigned char *dest = malloc(TX_HASH_LEN);
   unsigned char *dest2 = malloc(TX_HASH_LEN);
@@ -31,9 +32,25 @@ static char *test_hash_consistency_long() {
   );
   return NULL;
 }
+
+static char *test_hash_different() {
+  unsigned char *dest = malloc(TX_HASH_LEN);
+  unsigned char *dest2 = malloc(TX_HASH_LEN);
+  unsigned char hash_buf_a[] = "test1";
+  unsigned char hash_buf_b[] = "test2";
+  hash_sha256(dest, hash_buf_a, sizeof(hash_buf_a));
+  hash_sha256(dest2, hash_buf_b, sizeof(hash_buf_b));
+  mu_assert(
+    "Hash collision",
+    memcmp(dest,dest2 , TX_HASH_LEN) != 0
+  );
+  return NULL;
+}
+
 static char *all_tests() {
   mu_run_test(test_hash_consistency);
   mu_run_test(test_hash_consistency_long);
+  mu_run_test(test_hash_different);
   return NULL;
 }
 
