@@ -108,7 +108,7 @@ void print_output(Output *output, char *prefix){
   strcat(sub_prefix, PRINT_TAB);
   printf("%sOutput Data Sizeof(%li):\n", prefix, sizeof(Output));
   printf("%samt: %li\n", sub_prefix, output->amt);
-  dump_buf(sub_prefix, "public_key_hash:", output->public_key_hash, TX_HASH_LEN);
+  dump_buf(sub_prefix, "public_key_hash:", output->public_key_hash, PUB_KEY_HASH_LEN);
   free(sub_prefix);
 }
 

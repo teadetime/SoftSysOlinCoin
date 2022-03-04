@@ -40,7 +40,6 @@ static char  *test_utxo_pool_add() {
   tx = _make_tx();
   utxo_pool_init();
   ret_utxo = utxo_pool_add(tx, 0);
-
   mu_assert(
     "UTXO amt incorrect",
     ret_utxo->amt == tx->outputs[0].amt
@@ -50,7 +49,7 @@ static char  *test_utxo_pool_add() {
     memcmp(
       ret_utxo->public_key_hash,
       tx->outputs[0].public_key_hash,
-      LOCK_SCRIPT_LEN
+      PUB_KEY_HASH_LEN
     ) == 0
   );
   mu_assert(
