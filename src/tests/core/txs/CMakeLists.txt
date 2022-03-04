@@ -3,11 +3,7 @@ add_executable(test_base_tx
   ${SOURCES_ALL})
 target_compile_options(test_base_tx PRIVATE ${COMPILE_OPTIONS_STD})
 target_include_directories(test_base_tx PUBLIC
-  #${INCLUDE_ALL}
-  # # Same as these
-  ${INCLUDE_BLOCKS}
-  ${INCLUDE_TX}
-  ${INCLUDE_GLOBAL}
+  ${INCLUDE_ALL}
   )
 # Link libraries for the mbed stuff
 target_link_libraries(test_base_tx  
