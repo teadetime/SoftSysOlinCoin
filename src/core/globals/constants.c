@@ -13,8 +13,8 @@ int hash_sha256(unsigned char * output_hash, unsigned char * input_data, size_t 
   return ret;
 }
 
-void dump_buf( const char *title, unsigned char *buf, size_t len ) {
-    printf( "%s", title);
+void dump_buf(char *prefix, const char *title, unsigned char *buf, size_t len) {
+    printf( "%s%s",prefix, title);
     for(size_t i = 0; i < len; i++ )
         printf("%c%c", "0123456789ABCDEF" [buf[i] / 16],
                        "0123456789ABCDEF" [buf[i] % 16] );
