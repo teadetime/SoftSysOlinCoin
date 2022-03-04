@@ -72,11 +72,11 @@ Prints a Block Header to stdout so data can be visualized
 
 header: header to be printed
 */
-void print_block_header(BlockHeader *header);
+void print_block_header(BlockHeader *header, char *prefix);
 
 /*
 Prints a block to stdout, (including header) for visualization
 
 block: block to print
 */
-void print_block(Block *block);
+void print_block(Block *block, char *prefix);

@@ -48,6 +48,6 @@ Transaction* deser_tx(unsigned char *data);
  */
 void hash_tx(unsigned char *dest, Transaction *tx);
 
-void print_input(Input *input);
-void print_output(Output *output);
-void print_tx(Transaction *tx);
+void print_input(Input *input, char *prefix);
+void print_output(Output *output, char *prefix);
+void print_tx(Transaction *tx, char *prefix);
