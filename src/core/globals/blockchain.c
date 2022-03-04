@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "blockchain.h"
 
 void blockchain_init() {
@@ -65,4 +66,23 @@ BlockChain *blockchain_find_node(unsigned char *header_hash) {
   BlockChain *found_entry;
   HASH_FIND(hh, blockchain, header_hash, BLOCK_HASH_LEN, found_entry);
   return found_entry;
+}
+
+void print_blockchain(BlockChain *blockchain_node, char *prefix){
+  dump_buf(prefix, "hashmap_id: ", blockchain_node->id, BLOCK_HASH_LEN);
+  print_block(blockchain_node->block, prefix);
+}
+
+
+void print_blockchain_hashmap(char *prefix){
+  char *sub_prefix = malloc(strlen(prefix)+strlen(PRINT_TAB)+1);
+  strcpy(sub_prefix, prefix);
+  strcat(sub_prefix, PRINT_TAB);
+
+  BlockChain *s;
+  printf("%sBlockchain Hashmap items(%i):\n", prefix, HASH_COUNT(blockchain));
+  for (s = blockchain; s != NULL; s = s->hh.next) {
+    print_blockchain(s, sub_prefix);
+  }
+  free(sub_prefix);
 }
