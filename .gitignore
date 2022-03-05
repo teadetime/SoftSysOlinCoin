@@ -76,3 +76,4 @@ _deps
 build/*
 external/*
 compile_flags.txt
+.cache
