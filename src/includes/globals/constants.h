@@ -1,11 +1,13 @@
 #pragma once
 
 #include <stddef.h>
+#include "mbedtls/ecdsa.h"
+
 
 #define TX_HASH_LEN 32
 #define BLOCK_HASH_LEN 32
 #define PUB_KEY_HASH_LEN 32
-#define SIGNATURE_LEN 48
+#define SIGNATURE_LEN MBEDTLS_ECDSA_MAX_LEN
 #define PRINT_TAB "  "
 
  /*
@@ -25,7 +27,7 @@ title: string title for buffer
 buf: buffer to be printed
 len: size of buffer in bytes
 
-EXample Code:
+Example Code:
 unsigned char *dest = malloc(TX_HASH_LEN);
 unsigned char tx_buf[] = "THIS IS A TEST";
 hash_sha256(dest, tx_buf, sizeof(tx_buf));
