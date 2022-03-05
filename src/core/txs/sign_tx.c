@@ -1,4 +1,4 @@
-#include "build_tx.h"
+#include "sign_tx.h"
 
 #include "mbedtls/ecdsa.h"
 #include "mbedtls/sha256.h"
@@ -30,4 +30,28 @@ void free_entropy() {
     free(ctr_drbg);
   entropy = NULL;
   ctr_drbg = NULL;
+}
+
+mbedtls_ecdsa_context *gen_keys() {
+  init_entropy();
+  mbedtls_ecdsa_context *keys;
+  keys = malloc(sizeof(mbedtls_ecdsa_context));
+  mbedtls_ecdsa_init(keys);
+  mbedtls_ecdsa_genkey(keys, CURVE, mbedtls_ctr_drbg_random, ctr_drbg);
+  return keys;
+}
+
+size_t write_sig(
+    unsigned char *dest, size_t dest_len,
+    unsigned char *hash, size_t hash_len,
+    mbedtls_ecdsa_context *keys
+) {
+    size_t ret_len;
+    mbedtls_ecdsa_write_signature(
+        keys,
+        MBEDTLS_MD_SHA256, hash, hash_len,
+        dest, dest_len, &ret_len,
+        mbedtls_ctr_drbg_random, ctr_drbg
+    );
+    return ret_len;
 }
