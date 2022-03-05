@@ -59,3 +59,30 @@ unsigned char *ser_block_alloc(Block *block){
   ser_block(data, block);
   return data;
 }
+
+void print_block_header(BlockHeader *header, char *prefix){ 
+  char *sub_prefix = malloc(strlen(prefix)+strlen(PRINT_TAB)+1);
+  strcpy(sub_prefix, prefix);
+  strcat(sub_prefix, PRINT_TAB);
+  printf("%sBlockHeader\n", prefix);
+  dump_buf(sub_prefix ,"prev_header_hash:", header->prev_header_hash, BLOCK_HASH_LEN);
+  printf("%stimestamp: %li\n", sub_prefix, header->timestamp);
+  printf("%snonce: %i\n", sub_prefix, header->nonce);
+  dump_buf( sub_prefix, "all_tx_hash:", header->all_tx, TX_HASH_LEN);
+  free(sub_prefix);
+}
+
+void print_block(Block *block, char *prefix){
+  char *sub_prefix = malloc(strlen(prefix)+strlen(PRINT_TAB)+1);
+  strcpy(sub_prefix, prefix);
+  strcat(sub_prefix, PRINT_TAB);
+  printf("%sBlock\n", prefix);
+  print_block_header(&(block->header), sub_prefix);
+
+  printf("%sNum Txs: %i\n", sub_prefix, block->num_txs);
+  printf("%sTransactions\n", sub_prefix);
+  for(unsigned int i=0; i<block->num_txs; i++){
+    print_tx(&(block->txs[i]), sub_prefix);
+  }
+  free(sub_prefix);
+}

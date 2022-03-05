@@ -4,7 +4,9 @@
 
 #define TX_HASH_LEN 32
 #define BLOCK_HASH_LEN 32
-
+#define PUB_KEY_HASH_LEN 32
+#define SIGNATURE_LEN 48
+#define PRINT_TAB "  "
 
  /*
  returns 1 if successful hash of input data
@@ -29,4 +31,4 @@ unsigned char tx_buf[] = "THIS IS A TEST";
 hash_sha256(dest, tx_buf, sizeof(tx_buf));
 dump_buf("Hash: ",dest, TX_HASH_LEN);
 */
-void dump_buf( const char *title, unsigned char *buf, size_t len );
+void dump_buf(char *prefix, const char *title, unsigned char *buf, size_t len);

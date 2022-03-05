@@ -77,3 +77,26 @@ UTXOPool *utxo_pool_find_node(unsigned char *tx_hash, unsigned int vout);
  * key: UTXOPoolKey struct containing tx_hash and vout to query for
  */
 UTXOPool *utxo_pool_find_node_key(UTXOPoolKey *key);
+
+/*
+Prints a utxo to stdout, for visualization
+
+utxo: utxo to print
+prefix: string to put in front of all print commands used for tabbing structure
+*/
+void print_utxo(UTXO *utxo, char *prefix);
+
+/*
+Prints all of the utxo_pool hashmap to stdout with keys for visualizatoin
+
+prefix: string to put in front of all print commands used for tabbing structure
+*/
+void print_utxo_hashmap(char *prefix);
+
+/*
+Prints a member the utxo_pool hashmap to stdout with keys for visualizatoin 
+as well as utxo data
+
+prefix: string to put in front of all print commands used for tabbing structure
+*/
+void print_UTXOPOOL(UTXOPool *utxo_pool_node, char *prefix);

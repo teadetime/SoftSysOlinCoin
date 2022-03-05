@@ -51,3 +51,21 @@ MemPool *mempool_find_node(unsigned char *tx_hash) {
   HASH_FIND(hh, mempool, tx_hash, TX_HASH_LEN, found_entry);
   return found_entry;
 }
+
+void print_mempool(MemPool *mempool, char *prefix){
+  dump_buf(prefix, "hashmap_id: ", mempool->id, TX_HASH_LEN);
+  print_tx(mempool->tx, prefix);
+}
+
+void print_mempool_hashmap(char *prefix){
+  char *sub_prefix = malloc(strlen(prefix)+strlen(PRINT_TAB)+1);
+  strcpy(sub_prefix, prefix);
+  strcat(sub_prefix, PRINT_TAB);
+
+  MemPool *s;
+  printf("%sMempool Hashmap items(%i):\n", prefix, HASH_COUNT(mempool));
+  for (s = mempool; s != NULL; s = s->hh.next) {
+    print_mempool(s, sub_prefix);
+  }
+  free(sub_prefix);
+}

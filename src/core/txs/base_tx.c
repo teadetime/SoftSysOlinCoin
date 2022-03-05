@@ -90,33 +90,42 @@ void hash_tx(unsigned char *dest, Transaction *tx) {
   free(tx_buf);
 }
 
-void print_input(Input *input){
-  printf("\nInput Data:\n");
-  printf("sig: %s\n", input->signature);
-  printf("prev_tx_id: %s\n", input->prev_tx_id);
-  printf("prev_output_num: %i\n", input->prev_utxo_output);
-  printf("Size of Input(Bytes): %li\n", sizeof(Input));
+void print_input(Input *input, char *prefix){
+  char *sub_prefix = malloc(strlen(prefix)+strlen(PRINT_TAB)+1);
+  strcpy(sub_prefix, prefix);
+  strcat(sub_prefix, PRINT_TAB);
+  printf("%sInput Data  Sizeof(%li):\n", prefix, sizeof(Input));
+  //printf("%sSignature: %s\n", sub_prefix, input->signature);
+  dump_buf(sub_prefix, "signature:", input->signature, SIGNATURE_LEN);
+  printf("%sprev_tx_id: %s\n", sub_prefix, input->prev_tx_id);
+  printf("%sprev_output_num: %i\n", sub_prefix, input->prev_utxo_output);
+  free(sub_prefix);
 }
 
-void print_output(Output *output){
-  printf("\nOutput Data:\n");
-  printf("amt: %li\n", output->amt);
-  printf("private Key: %s\n", output->public_key_hash);
-  printf("Size Output(Bytes): %li\n", sizeof(Output));
-
+void print_output(Output *output, char *prefix){
+  char *sub_prefix = malloc(strlen(prefix)+strlen(PRINT_TAB)+1);
+  strcpy(sub_prefix, prefix);
+  strcat(sub_prefix, PRINT_TAB);
+  printf("%sOutput Data Sizeof(%li):\n", prefix, sizeof(Output));
+  printf("%samt: %li\n", sub_prefix, output->amt);
+  dump_buf(sub_prefix, "public_key_hash:", output->public_key_hash, PUB_KEY_HASH_LEN);
+  free(sub_prefix);
 }
 
-void print_tx(Transaction *tx){
-  printf("\nTransaction Data:\n");
-  printf("num_inputs: %i\n", tx->num_inputs);
-  printf("num_outputs: %i\n", tx->num_outputs);
-
+void print_tx(Transaction *tx, char *prefix){
+  char *sub_prefix = malloc(strlen(prefix)+strlen(PRINT_TAB)+1);
+  strcpy(sub_prefix, prefix);
+  strcat(sub_prefix, PRINT_TAB);
+  printf("%sTransaction Sizeof(%li), full_size(%i):\n", prefix, sizeof(*tx), size_tx(tx));
+  printf("%snum_inputs: %i\n", sub_prefix, tx->num_inputs);
+  printf("%snum_outputs: %i\n", sub_prefix, tx->num_outputs);
+  printf("%sInputs\n", sub_prefix);
   for(unsigned int i = 0; i < tx->num_inputs; i++){
-    print_input(&(tx->inputs[i]));
+    print_input(&(tx->inputs[i]), sub_prefix);
   }
-
+  printf("%sOutputs\n", sub_prefix);
   for(unsigned int i = 0; i < tx->num_outputs; i++){
-    print_output(&(tx->outputs[i]));
+    print_output(&(tx->outputs[i]), sub_prefix);
   }
-  printf("Tx(Bytes): %li\n", sizeof(*tx)); // Check i
+  free(sub_prefix);
 }

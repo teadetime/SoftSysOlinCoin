@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdio.h>
 #include "constants.h"
 #include "uthash.h"
 #include "base_tx.h"
@@ -47,3 +48,17 @@ Transaction *mempool_find(unsigned char *tx_hash);
  * tx_hash: Buffer of length TX_HASH_LEN, hash of transaction
  */
 MemPool *mempool_find_node(unsigned char *tx_hash);
+
+/*
+Prints a mempool item with the associated id/hash from the hasmap
+
+prefix: string to put in front of all print commands used for tabbing structure
+*/
+void print_mempool(MemPool *mempool, char *prefix);
+
+/*
+Prints all transactions in mempool hashmap to stdout
+
+prefix: string to put in front of all print commands used for tabbing structure
+*/
+void print_mempool_hashmap(char *prefix);
