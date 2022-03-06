@@ -7,7 +7,8 @@
 #define TX_HASH_LEN 32
 #define BLOCK_HASH_LEN 32
 #define PUB_KEY_HASH_LEN 32
-#define SIGNATURE_LEN MBEDTLS_ECDSA_MAX_LEN
+#define PUB_KEY_SER_LEN 33
+#define SIGNATURE_LEN 64
 #define PRINT_TAB "  "
 
  /*

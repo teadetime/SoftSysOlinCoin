@@ -2,12 +2,15 @@
 
 #include "constants.h"
 
+#include "mbedtls/ecdsa.h"
+
 typedef struct Output{
   unsigned long amt;
   unsigned char public_key_hash[PUB_KEY_HASH_LEN];
 } Output;
 
 typedef struct Input{
+  mbedtls_ecp_point *pub_key;
   unsigned char signature[SIGNATURE_LEN];
   unsigned char prev_tx_id[TX_HASH_LEN];
   unsigned int prev_utxo_output;
