@@ -10,12 +10,18 @@ unsigned char get_prev_header_hash();
 /*
 What is the return type, are we just using an array of pointers?
 */
-unsigned int get_txs_from_mempool(Transaction **tx_pts, unsigned int num_tx){
+//Transaction **ret_txs;
+//func(&ret_txs);
+// ret_txs[0]->TXSTUFF
+unsigned int get_txs_from_mempool(Transaction ***tx_pts, unsigned int num_tx){
+
+  *tx_pts = malloc(  HASH_COUNT(mempool));
+
   unsigned int num_included = 0;
   MemPool *s;
   for(s = mempool; s != NULL; s = s->hh.next) {
     num_included++;
-    *tx_pts = s->tx;
+    (*tx_pts)[num_included] = s->tx;
     if(num_included == num_tx){
       break;
     }
@@ -23,7 +29,7 @@ unsigned int get_txs_from_mempool(Transaction **tx_pts, unsigned int num_tx){
   return num_included;
 }
 
-unsigned int calc_coinbase_reward(Transaction **tx_pts, unsigned int num_txs);
+unsigned int calc_coinbase_reward(Transaction ***tx_pts, unsigned int num_txs);
 
 unsigned int calc_tx_fees();
 
