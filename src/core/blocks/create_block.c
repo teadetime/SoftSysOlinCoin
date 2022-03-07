@@ -29,7 +29,7 @@ unsigned int get_txs_from_mempool(Transaction ***tx_pts, unsigned int num_tx){
   return num_included;
 }
 
-unsigned int calc_coinbase_reward(Transaction **tx_pts, unsigned int num_txs);
+unsigned int calc_coinbase_reward(Transaction ***tx_pts, unsigned int num_txs);
 
 unsigned int calc_tx_fees();
 
