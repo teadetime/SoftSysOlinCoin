@@ -72,7 +72,6 @@ CTestTestfile.cmake
 _deps
 
 
-# ginore bin
-build/*
+# iginore bin
 external/*
 compile_flags.txt
