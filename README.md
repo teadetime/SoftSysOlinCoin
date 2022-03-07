@@ -8,30 +8,31 @@ This project seeks to recreate a blockchain to track transactions in the form of
 Take a look at ```/planning``` if you would like to see some of our design process
 
 # Download instructions
+Clone the repo in whatever fashion you would like! Or take a look @ our releases page to grab the binaries to run our an OlinCoin node
 
-# Design Notes
-
-
-# Building
-
-- to build run
-  ```console
-  cmake --build . 
-  ```
-  in ```$ OlinCoin/src ```
-- to clean build files run 
+# Building from source
+- Ensure build dependencies are met: gcc, cmake, make etc, (if on ubuntu ```sudo apt install build-essential```)
+- Ensure other dependencies are met, uthash, on ubunutu```sudo apt install uthash-dev```
+- After cloning the project locally navigate into the build directory ie.```cd ~/Downloads/SoftSysOlinCoin/build```
+- To build the software(run from build directory)
+    ```console
+    cmake --build .. 
+    ```
+- to clean build files but not external libraries ([mbedtls](https://github.com/ARMmbed/mbedtls)) (run from build directory)
   ```console 
-  cmake --build . --target clean 
+  cmake --build .. --target really-clean 
   ```
-Old Hardcoded example for cmake
-```# # add the executable
-    add_executable(OlinCoin
-      ${CMAKE_SOURCE_DIR}/src/tests/core/txs/test_base_tx.c 
-      ${CMAKE_SOURCE_DIR}/src/core/txs/base_tx.c)
-
-    target_include_directories(OlinCoin PUBLIC
-      "${CMAKE_SOURCE_DIR}/src/includes/blocks"
-      "${CMAKE_SOURCE_DIR}/src/includes/txs"
-      "${CMAKE_SOURCE_DIR}/src/includes/globals"
-      )
-````
+- to clean all build files (run from build directory)
+  ```console 
+  cmake --build .. --target clean 
+  ```
+ 
+- Note that a couple commands can change what is built:
+    - BUILD_TESTS indicates if tests are built. To build with tests run:
+      ```console
+      cmake -DBUILD_TESTS=ON --build .. 
+      ```
+    - BUILD_RUNTIME indicates if runtime code is built. To build runtime run:
+      ```console
+      cmake -DBUILD_RUNTIME=ON --build .. 
+      ```
