@@ -69,3 +69,8 @@ We found enough resources to start our project.
   - Test
 - Handle new transaction (?)
   - (Not assigned yet)
+
+## Links
+
+[Todoist List](https://todoist.com/app/project/2285406394)
+[Github Repo](https://github.com/olincollege/SoftSysOlinCoin)
