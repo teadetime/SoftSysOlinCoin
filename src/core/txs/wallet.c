@@ -6,7 +6,7 @@
 
 /* POOL FUNCTIONS */
 
-void init_wallet_pool() {
+void wallet_pool_init() {
   verified_wallet_pool.data = malloc(sizeof(WalletEntry*));
   verified_wallet_pool.len = 0;
   verified_wallet_pool.total_len = 1;

@@ -6,6 +6,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+char *seed = "42";
+mbedtls_entropy_context *entropy = NULL;
+mbedtls_ctr_drbg_context *ctr_drbg = NULL;
+
 void init_entropy() {
   // Immediatly return if already built
   if (entropy != NULL || ctr_drbg != NULL)

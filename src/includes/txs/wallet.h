@@ -25,7 +25,7 @@ typedef struct {
   mbedtls_ecdsa_context **keys;
 } TxBuilder;
 
-void init_wallet_pool();
+void wallet_pool_init();
 void wallet_pool_append(WalletEntry *entry);
 void wallet_pool_update(TxBuilder *builder);
 WalletEntry *wallet_pool_pop();

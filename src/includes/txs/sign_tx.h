@@ -18,6 +18,6 @@ size_t write_sig(
     mbedtls_ecdsa_context *keys
 );
 
-char *seed = "42";
-mbedtls_entropy_context *entropy = NULL;
-mbedtls_ctr_drbg_context *ctr_drbg = NULL;
+extern char *seed;
+extern mbedtls_entropy_context *entropy;
+extern mbedtls_ctr_drbg_context *ctr_drbg;
