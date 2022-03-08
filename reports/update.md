@@ -73,4 +73,5 @@ We found enough resources to start our project.
 ## Links
 
 [Todoist List](https://todoist.com/app/project/2285406394)
+
 [Github Repo](https://github.com/olincollege/SoftSysOlinCoin)
