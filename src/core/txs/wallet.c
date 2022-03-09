@@ -41,6 +41,8 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
     if (map_value->entry->spent)
       continue;
 
+    tx->inputs[i].pub_key = malloc(sizeof(mbedtls_ecp_point));
+    mbedtls_ecp_point_init(tx->inputs[i].pub_key);
     mbedtls_ecp_copy(
       tx->inputs[i].pub_key,
       &(map_value->entry->key_pair->MBEDTLS_PRIVATE(Q))

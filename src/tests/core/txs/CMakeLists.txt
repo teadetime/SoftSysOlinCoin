@@ -23,6 +23,19 @@ target_link_libraries(test_wallet_pool
   mbedtls
   mbedcrypto
   mbedx509)
+
+add_executable(test_wallet
+  test_wallet.c 
+  ${SOURCES_ALL})
+target_compile_options(test_wallet PRIVATE ${COMPILE_OPTIONS_STD})
+target_include_directories(test_wallet PUBLIC
+  ${INCLUDE_ALL}
+  )
+# Link libraries for the mbed stuff
+target_link_libraries(test_wallet  
+  mbedtls
+  mbedcrypto
+  mbedx509)
   # # Link libraries for the mbed stuff if needed
 # target_link_libraries(test_base_tx 
 #   mbedtls
