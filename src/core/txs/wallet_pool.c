@@ -41,7 +41,7 @@ WalletEntry *wallet_pool_add(
   }
 }
 
-WalletEntry *wallet_pool_remove(unsigned char *tx_hash, unsigned int vout) {
+void wallet_pool_remove(unsigned char *tx_hash, unsigned int vout) {
   WalletPool *entry;
 
   entry = wallet_pool_find_node(tx_hash, vout);
@@ -50,8 +50,6 @@ WalletEntry *wallet_pool_remove(unsigned char *tx_hash, unsigned int vout) {
     free(entry->entry);
     free(entry);
   }
-
-  return NULL;
 }
 
 WalletEntry *wallet_pool_find(unsigned char *tx_hash, unsigned int vout) {

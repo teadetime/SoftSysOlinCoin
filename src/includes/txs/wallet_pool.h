@@ -48,8 +48,7 @@ KeyPool *key_pool;
 void wallet_init();
 
 WalletEntry *wallet_pool_add(Transaction *tx, unsigned int vout, mbedtls_ecdsa_context *key_pair);
-WalletEntry *wallet_pool_remove(unsigned char *tx_hash, unsigned int vout);
-WalletEntry *wallet_pool_remove_key(UTXOPoolKey *key);
+void wallet_pool_remove(unsigned char *tx_hash, unsigned int vout);
 WalletEntry *wallet_pool_find(unsigned char *tx_hash, unsigned int vout);
 WalletPool *wallet_pool_find_node(unsigned char *tx_hash, unsigned int vout);
 WalletPool *wallet_pool_find_node_key(UTXOPoolKey *key);
