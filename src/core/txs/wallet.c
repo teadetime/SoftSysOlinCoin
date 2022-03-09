@@ -36,7 +36,7 @@ WalletEntry *wallet_pool_pop() {
   return verified_wallet_pool.data[--(verified_wallet_pool.len)];
 }
 
-void build_wallet_entry(
+WalletEntry *build_wallet_entry(
     Transaction *tx, unsigned int vout, mbedtls_ecdsa_context *key_pair
 ) {
   WalletEntry *new_entry;
@@ -45,7 +45,7 @@ void build_wallet_entry(
   hash_tx(new_entry->id.tx_hash, tx);
   new_entry->id.vout = vout;
   new_entry->amt = tx->outputs[vout].amt;
-  new_entry->key_pair = key_pair;  // Struct not copied!
+  new_entry->key_pair = key_pair;  // Key not copied!
 
   return new_entry;
 }
@@ -60,21 +60,20 @@ void free_wallet_entry(WalletEntry *entry) {
 /* BUILD FUNCTIONS */
 
 mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
-  unsigned long total_amt, collected_amt;
   size_t i, num_entries;
   WalletEntry *curr_entry;
   mbedtls_ecdsa_context **keys;
 
-  total_amt = 0;
+  options->out_total = options->tx_fee;
   for (i = 0; i < options->num_dests; i++)
-    total_amt += options->dests[i].amt;
+    options->out_total += options->dests[i].amt;
 
   // Ensure we have enough in wallet before pops
   i = verified_wallet_pool.len;
-  collected_amt = 0;
-  while (--i >= 0 && collected_amt < total_amt)
-    collected_amt += verified_wallet_pool.data[i]->amt;
-  if (collected_amt < total_amt) {
+  options->in_total = 0;
+  while (--i >= 0 && options->in_total < options->out_total)
+    options->in_total += verified_wallet_pool.data[i]->amt;
+  if (options->in_total < options->out_total) {
     printf("Not enough in wallet to build transaction!");
     exit(EXIT_FAILURE);
   }
@@ -101,58 +100,75 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
   return keys;
 }
 
-void build_outputs(TxBuilder *builder) {
-  Output *curr_output;
-  mbedtls_ecdsa_context *curr_key_pair;
-  unsigned char ser_key[PUB_KEY_SER_LEN];
-  size_t num_bytes;
+WalletEntry *build_outputs(Transaction *tx, TxOptions *options) {
+  unsigned int num_outputs, self_output, self_amt;
+  mbedtls_ecp_keypair *key_pair;
+  WalletEntry *new_entry;
 
-  builder->tx->num_outputs = builder->num_outputs;
-  builder->tx->outputs = malloc(sizeof(Output) * builder->num_outputs);
-  builder->keys = malloc(sizeof(mbedtls_ecdsa_context*) * builder->num_outputs);
+  self_output = 0;
+  if (options->in_total != options->out_total)
+    self_output = 1;
+  num_outputs = options->num_dests + self_output;
 
-  for (size_t i = 0; i < builder->num_outputs; i++) {
-    curr_key_pair = gen_keys();
-    builder->keys[i] = curr_key_pair;
+  tx->num_outputs = num_outputs;
+  tx->outputs = malloc(sizeof(Output) * num_outputs);
 
-    curr_output = builder->tx->outputs + i;
-    curr_output->amt = builder->amts[i];
-
-    // Serialize then hash pubkey
-    mbedtls_ecp_point_write_binary(
-      &curr_key_pair->MBEDTLS_PRIVATE(grp), &curr_key_pair->MBEDTLS_PRIVATE(Q),
-      MBEDTLS_ECP_PF_COMPRESSED, &num_bytes, ser_key, PUB_KEY_SER_LEN
+  for (size_t i = 0; i < options->num_dests; i++) {
+    tx->outputs[i].amt = options->dests[i].amt;
+    memcpy(
+      tx->outputs[i].public_key_hash,
+      options->dests[i].public_key_hash,
+      PUB_KEY_HASH_LEN
     );
-    hash_sha256(curr_output->public_key_hash, ser_key, num_bytes);
   }
+
+  new_entry = NULL;
+  if (self_output) {
+    self_amt = options->in_total - options->out_total;
+    key_pair = gen_keys();
+    new_entry = malloc(sizeof(WalletEntry));
+
+    tx->outputs[options->num_dests].amt = self_amt;
+    hash_pub_key(
+      tx->outputs[options->num_dests].public_key_hash,
+      key_pair
+    );
+
+    // Note: new_entry->id.tx_hash IS NOT SET
+    // It needs to be calculated with the whole Transaction
+    new_entry->amt = self_amt;
+    new_entry->key_pair = key_pair;
+    new_entry->id.vout = options->num_dests;
+  }
+  return new_entry;
 }
 
-void sign_tx(TxBuilder *builder) {
-  Input *curr_input;
-  Transaction *curr_tx;
-  mbedtls_ecdsa_context *key_pair;
+void sign_tx(Transaction *tx, mbedtls_ecdsa_context **keys) {
   unsigned char tx_hash[TX_HASH_LEN];
-  size_t num_bytes;
-
-  curr_tx = builder->tx;
-  hash_tx(tx_hash, curr_tx);
-
-  for (size_t i = 0; i < curr_tx->num_inputs; i++) {
-    curr_input = curr_tx->inputs + i;
-    key_pair = builder->keys[i];
-
-    mbedtls_ecdsa_write_signature(
-      key_pair, MBEDTLS_MD_SHA256,
+  hash_tx(tx_hash, tx);
+  for (size_t i = 0; i < tx->num_inputs; i++) {
+    write_sig(
+      tx->inputs[i].signature, SIGNATURE_LEN,
       tx_hash, TX_HASH_LEN,
-      curr_input->signature, SIGNATURE_LEN, &num_bytes,
-      mbedtls_ctr_drbg_random, ctr_drbg
+      keys[i]
     );
   }
 }
 
-void build_tx(TxBuilder *builder) {
-  builder->tx = malloc(sizeof(Transaction));
-  build_inputs(builder);
-  build_outputs(builder);
-  sign_tx(builder);
+Transaction *build_tx(TxOptions *options) {
+  Transaction *tx;
+  mbedtls_ecp_keypair **input_keys;
+  WalletEntry *new_entry;
+
+  tx = malloc(sizeof(Transaction));
+  input_keys = build_inputs(tx, options);
+  new_entry = build_outputs(tx, options);
+  sign_tx(tx, input_keys);
+
+  if (new_entry != NULL) {
+    hash_tx(new_entry->id.tx_hash, tx);
+    wallet_pool_append(new_entry);
+  }
+
+  return tx;
 }

@@ -17,6 +17,7 @@ size_t write_sig(
     unsigned char *hash, size_t hash_len,
     mbedtls_ecdsa_context *keys
 );
+void hash_pub_key(unsigned char *dest, mbedtls_ecdsa_context *key_pair);
 
 extern char *seed;
 extern mbedtls_entropy_context *entropy;

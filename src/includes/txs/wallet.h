@@ -18,22 +18,20 @@ typedef struct {
   size_t total_len;
 } WalletPool;
 
-typedef struct {
-  unsigned long amt;
-  mbedtls_ecp_point *pub_key;
-} Dest;
 
 typedef struct {
   size_t num_dests;
-  Dest *dests;
+  Output *dests;
   unsigned long tx_fee;
+  unsigned long in_total;
+  unsigned long out_total;
 } TxOptions;
 
 void wallet_pool_init();
 void wallet_pool_append(WalletEntry *entry);
 WalletEntry *wallet_pool_pop();
 
-void build_wallet_entry(Transaction *tx, unsigned int vout, mbedtls_ecdsa_context *key_pair);
+WalletEntry *build_wallet_entry(Transaction *tx, unsigned int vout, mbedtls_ecdsa_context *key_pair);
 void free_wallet_entry(WalletEntry *entry);
 
 mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options);

@@ -59,3 +59,14 @@ size_t write_sig(
     );
     return ret_len;
 }
+
+
+void hash_pub_key(unsigned char *dest, mbedtls_ecdsa_context *key_pair) {
+  unsigned char ser_key[PUB_KEY_SER_LEN];
+  size_t num_bytes;
+  mbedtls_ecp_point_write_binary(
+    &(key_pair->MBEDTLS_PRIVATE(grp)), &(key_pair->MBEDTLS_PRIVATE(Q)),
+    MBEDTLS_ECP_PF_COMPRESSED, &num_bytes, ser_key, PUB_KEY_SER_LEN
+  );
+  hash_sha256(dest, ser_key, num_bytes);
+}
