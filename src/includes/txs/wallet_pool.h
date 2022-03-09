@@ -7,7 +7,7 @@
 typedef struct {
   mbedtls_ecdsa_context *key_pair;
   unsigned long amt;
-  int spent;
+  int spent;  // True when included in a tx but not validated in a block
 } WalletEntry;
 
 typedef struct {
@@ -22,7 +22,27 @@ typedef struct {
   UT_hash_handle hh;
 } KeyPool;
 
+/* The wallet pool tracks all outputs the wallet controls
+ *
+ * Entries should be added whenever the wallet receives a new block and finds an
+ * output with with a public key hash that corresponds to a keypair in the key
+ * pool.
+ *
+ * Entires should be removed whenever the wallet receives a new block and finds
+ * an input with an UTXOPoolKey (tx hash + vout) that corresponds to an existing
+ * entry.
+ */
 WalletPool *wallet_pool;
+
+/* The key pool tracks all keys the wallet controls
+ *
+ * Entries should be added whenever a new key is generated - whether for use in
+ * a transaction with an output back to the wallet, or for use as an address to
+ * give to another member of the network.
+ *
+ * Entries in the key pool should almost NEVER be removed. Old keys can always
+ * be reused, and outputs to a key pair that we no longer control are un-usable
+ */
 KeyPool *key_pool;
 
 void wallet_init();

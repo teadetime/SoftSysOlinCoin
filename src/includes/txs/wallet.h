@@ -10,8 +10,8 @@ typedef struct {
   size_t num_dests;
   Output *dests;
   unsigned long tx_fee;
-  unsigned long in_total;
-  unsigned long out_total;
+  unsigned long in_total;  // Used internally
+  unsigned long out_total;  // Used internally
 } TxOptions;
 
 mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options);
