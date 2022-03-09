@@ -48,6 +48,19 @@ target_link_libraries(test_constants
   mbedtls
   mbedcrypto
   mbedx509)
+
+add_executable(test_list
+  test_list.c
+  ${SOURCES_ALL})
+target_compile_options(test_list PRIVATE ${COMPILE_OPTIONS_STD})
+target_include_directories(test_list PUBLIC
+  ${INCLUDE_ALL}
+  )
+target_link_libraries(test_list 
+  mbedtls
+  mbedcrypto
+  mbedx509)
+
 # # Link libraries for the mbed stuff if needed
 # target_link_libraries(test_global  
 #   mbedtls
