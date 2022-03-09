@@ -61,7 +61,8 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
 }
 
 mbedtls_ecdsa_context *build_outputs(Transaction *tx, TxOptions *options) {
-  unsigned int num_outputs, self_output, self_amt;
+  unsigned int num_outputs, self_output;
+  unsigned long self_amt;
   mbedtls_ecdsa_context *key_pair;
 
   self_output = 0;
@@ -120,6 +121,7 @@ Transaction *build_tx(TxOptions *options) {
   if (new_key != NULL)
     key_pool_add(new_key);
 
+  free(input_keys);
   //TODO: Free options
 
   return tx;

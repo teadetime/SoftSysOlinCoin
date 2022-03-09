@@ -25,8 +25,7 @@ typedef struct {
 /* The wallet pool tracks all outputs the wallet controls
  *
  * Entries should be added whenever the wallet receives a new block and finds an
- * output with with a public key hash that corresponds to a keypair in the key
- * pool.
+ * output with a public key hash that corresponds to a keypair in the key pool.
  *
  * Entires should be removed whenever the wallet receives a new block and finds
  * an input with an UTXOPoolKey (tx hash + vout) that corresponds to an existing

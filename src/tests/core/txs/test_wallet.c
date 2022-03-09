@@ -144,8 +144,54 @@ static char *test_build_inputs() {
   return NULL;
 }
 
-/* static char *test_build_outputs() { */
-/* } */
+static char *test_build_outputs() {
+  TxOptions *options;
+  Transaction *tx;
+  mbedtls_ecdsa_context *key_pair;
+  unsigned char key_hash[PUB_KEY_HASH_LEN];
+
+  options = _make_options();
+  options->in_total = 17;
+  options->out_total = 15;
+  tx = malloc(sizeof(Transaction));
+
+  key_pair = build_outputs(tx, options);
+  hash_pub_key(key_hash, key_pair);
+
+  for (size_t i = 0; i < options->num_dests; i++) {
+    mu_assert(
+        "Output has wrong amt",
+        options->dests[i].amt == tx->outputs[i].amt
+    );
+    mu_assert(
+        "Output has wrong pub key hash",
+        memcmp(
+          options->dests[i].public_key_hash,
+          tx->outputs[i].public_key_hash,
+          PUB_KEY_HASH_LEN
+        ) == 0
+    );
+  }
+
+  mu_assert(
+      "Self output has wrong amt",
+      tx->outputs[options->num_dests].amt == 2
+  );
+  mu_assert(
+      "Self output has wrong pub key hash",
+      memcmp(
+        tx->outputs[options->num_dests].public_key_hash,
+        key_hash,
+        PUB_KEY_HASH_LEN
+      ) == 0
+  );
+
+  _free_options(options);
+  _free_tx(tx);
+  mbedtls_ecp_keypair_free(key_pair);
+
+  return NULL;
+}
 
 /* static char *test_sign_tx() { */
 /* } */
@@ -155,6 +201,7 @@ static char *test_build_inputs() {
 
 static char *all_tests() {
   mu_run_test(test_build_inputs);
+  mu_run_test(test_build_outputs);
   return NULL;
 }
 
