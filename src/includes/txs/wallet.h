@@ -19,20 +19,26 @@ typedef struct {
 } WalletPool;
 
 typedef struct {
-  size_t num_outputs;
-  unsigned long *amts;
-  Transaction *tx;
-  mbedtls_ecdsa_context **keys;
-} TxBuilder;
+  unsigned long amt;
+  mbedtls_ecp_point *pub_key;
+} Dest;
+
+typedef struct {
+  size_t num_dests;
+  Dest *dests;
+  unsigned long tx_fee;
+} TxOptions;
 
 void wallet_pool_init();
 void wallet_pool_append(WalletEntry *entry);
-void wallet_pool_update(TxBuilder *builder);
 WalletEntry *wallet_pool_pop();
 
-void build_inputs(TxBuilder *builder);
-void build_outputs(TxBuilder *builder);
-void sign_tx(TxBuilder *builder);
-void build_tx(TxBuilder *builder);
+void build_wallet_entry(Transaction *tx, unsigned int vout, mbedtls_ecdsa_context *key_pair);
+void free_wallet_entry(WalletEntry *entry);
+
+mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options);
+WalletEntry *build_outputs(Transaction *tx, TxOptions *options);
+void sign_tx(Transaction *tx, mbedtls_ecdsa_context **keys);
+Transaction *build_tx(TxOptions *options);
 
 WalletPool verified_wallet_pool;

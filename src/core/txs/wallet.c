@@ -30,33 +30,27 @@ void wallet_pool_append(WalletEntry *entry) {
   verified_wallet_pool.data[verified_wallet_pool.len++] = entry;
 }
 
-void wallet_pool_update(TxBuilder *builder) {
-  WalletEntry *new_entry;
-  Transaction *curr_tx;
-  unsigned char tx_hash[TX_HASH_LEN];
-
-  curr_tx = builder->tx;
-  hash_tx(tx_hash, curr_tx);
-
-  for (size_t i = 0; i < curr_tx->num_outputs; i++) {
-    new_entry = malloc(sizeof(WalletEntry));
-
-    new_entry->id.vout = i;
-    new_entry->key_pair = builder->keys[i];
-    new_entry->amt = curr_tx->outputs[i].amt;
-    memcpy(new_entry->id.tx_hash, tx_hash, TX_HASH_LEN);
-
-    wallet_pool_append(new_entry);
-  }
-}
-
 WalletEntry *wallet_pool_pop() {
   if (verified_wallet_pool.len == 0)
     return NULL;
   return verified_wallet_pool.data[--(verified_wallet_pool.len)];
 }
 
-void wallet_entry_free(WalletEntry *entry) {
+void build_wallet_entry(
+    Transaction *tx, unsigned int vout, mbedtls_ecdsa_context *key_pair
+) {
+  WalletEntry *new_entry;
+
+  new_entry = malloc(sizeof(WalletEntry));
+  hash_tx(new_entry->id.tx_hash, tx);
+  new_entry->id.vout = vout;
+  new_entry->amt = tx->outputs[vout].amt;
+  new_entry->key_pair = key_pair;  // Struct not copied!
+
+  return new_entry;
+}
+
+void free_wallet_entry(WalletEntry *entry) {
   if (entry == NULL)
     return;
   mbedtls_ecdsa_free(entry->key_pair);
@@ -65,15 +59,15 @@ void wallet_entry_free(WalletEntry *entry) {
 
 /* BUILD FUNCTIONS */
 
-void build_inputs(TxBuilder *builder) {
+mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
   unsigned long total_amt, collected_amt;
   size_t i, num_entries;
   WalletEntry *curr_entry;
-  Input *curr_input;
+  mbedtls_ecdsa_context **keys;
 
   total_amt = 0;
-  for (i = 0; i < builder->num_outputs; i++)
-    total_amt += builder->amts[i];
+  for (i = 0; i < options->num_dests; i++)
+    total_amt += options->dests[i].amt;
 
   // Ensure we have enough in wallet before pops
   i = verified_wallet_pool.len;
@@ -86,22 +80,25 @@ void build_inputs(TxBuilder *builder) {
   }
 
   // Build the inputs
+  // TODO: This will not work for a finished codebase. By popping and
+  // immediatly removing the entry from the pool, we assume the transaction
+  // being built is guarenteed to be validated and mined.
   num_entries = verified_wallet_pool.len - (i + 1);
-  builder->tx->num_inputs = num_entries;
-  builder->tx->inputs = malloc(sizeof(Input) * num_entries);
+  tx->num_inputs = num_entries;
+  tx->inputs = malloc(sizeof(Input) * num_entries);
+  keys = malloc(sizeof(mbedtls_ecdsa_context*) * num_entries);
   for (i = 0; i < num_entries; i++) {
     curr_entry = wallet_pool_pop();
-    curr_input = builder->tx->inputs + i;
 
-    mbedtls_ecp_copy(curr_input->pub_key, &(curr_entry->key_pair->MBEDTLS_PRIVATE(Q)));
-    memset(curr_input->signature, 0, SIGNATURE_LEN);
-    memcpy(curr_input->prev_tx_id, curr_entry->id.tx_hash, TX_HASH_LEN);
-    curr_input->prev_utxo_output = curr_entry->id.vout;
+    mbedtls_ecp_copy(tx->inputs[i].pub_key, &(curr_entry->key_pair->MBEDTLS_PRIVATE(Q)));
+    memset(tx->inputs[i].signature, 0, SIGNATURE_LEN);
+    memcpy(tx->inputs[i].prev_tx_id, curr_entry->id.tx_hash, TX_HASH_LEN);
+    tx->inputs[i].prev_utxo_output = curr_entry->id.vout;
 
-    // NOTE: This will not work for a finished codebase. This assumes the
-    // transaction being built is guarenteed to be validated and instantly mined
-    wallet_entry_free(curr_entry);
+    keys[i] = curr_entry->key_pair;
+    free(curr_entry);
   }
+  return keys;
 }
 
 void build_outputs(TxBuilder *builder) {
