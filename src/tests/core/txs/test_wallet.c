@@ -140,6 +140,7 @@ static char *test_build_inputs() {
   _free_options(options);
   _free_wallet_pool();
   _free_tx(tx);
+  free(ret_keys);
 
   return NULL;
 }
@@ -193,8 +194,41 @@ static char *test_build_outputs() {
   return NULL;
 }
 
-/* static char *test_sign_tx() { */
-/* } */
+static char *test_sign_tx() {
+  TxOptions *options;
+  Transaction *tx;
+  mbedtls_ecdsa_context **ret_keys;
+  unsigned char tx_hash[TX_HASH_LEN];
+
+  wallet_init();
+
+  _populate_wallet_pool();
+  options = _make_options();
+  tx = malloc(sizeof(Transaction));
+  tx->num_outputs = 0;
+  tx->outputs = NULL;
+  ret_keys = build_inputs(tx, options);
+  hash_tx(tx_hash, tx);
+
+  sign_tx(tx, ret_keys);
+  for (size_t i = 0; i < tx->num_inputs; i++) {
+    mu_assert(
+        "Input signature invalid",
+        mbedtls_ecdsa_read_signature(
+          ret_keys[i],
+          tx_hash, TX_HASH_LEN,
+          tx->inputs[i].signature, tx->inputs[i].sig_len
+        ) == 0
+    );
+  }
+
+  _free_options(options);
+  _free_wallet_pool();
+  _free_tx(tx);
+  free(*ret_keys);
+
+  return NULL;
+}
 
 /* static char *test_build_tx() { */
 /* } */
@@ -202,6 +236,7 @@ static char *test_build_outputs() {
 static char *all_tests() {
   mu_run_test(test_build_inputs);
   mu_run_test(test_build_outputs);
+  mu_run_test(test_sign_tx);
   return NULL;
 }
 

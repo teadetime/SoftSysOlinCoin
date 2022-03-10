@@ -8,8 +8,9 @@
 #define BLOCK_HASH_LEN 32
 #define PUB_KEY_HASH_LEN 32
 #define PUB_KEY_SER_LEN 33
-#define SIGNATURE_LEN 64
+#define SIGNATURE_LEN 72
 #define PRINT_TAB "  "
+#define ERR_BUF 1024
 
  /*
  returns 1 if successful hash of input data

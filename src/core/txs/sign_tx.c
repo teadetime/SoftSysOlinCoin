@@ -2,9 +2,12 @@
 
 #include "mbedtls/ecdsa.h"
 #include "mbedtls/sha256.h"
+#include "mbedtls/error.h"
 
 #include <string.h>
 #include <stdlib.h>
+
+#define ERR_BUF 1024
 
 char *seed = "42";
 mbedtls_entropy_context *entropy = NULL;
@@ -37,11 +40,20 @@ void free_entropy() {
 }
 
 mbedtls_ecdsa_context *gen_keys() {
+  char buf[ERR_BUF];
+  int err;
+
   init_entropy();
   mbedtls_ecdsa_context *keys;
   keys = malloc(sizeof(mbedtls_ecdsa_context));
   mbedtls_ecdsa_init(keys);
-  mbedtls_ecdsa_genkey(keys, CURVE, mbedtls_ctr_drbg_random, ctr_drbg);
+  err = mbedtls_ecdsa_genkey(keys, CURVE, mbedtls_ctr_drbg_random, ctr_drbg);
+  if (err != 0) {
+    mbedtls_strerror(err, buf, ERR_BUF);
+    printf("Error! %s\n", buf);
+    exit(1);
+  }
+
   return keys;
 }
 
@@ -51,12 +63,21 @@ size_t write_sig(
     mbedtls_ecdsa_context *keys
 ) {
     size_t ret_len;
-    mbedtls_ecdsa_write_signature(
+    int err;
+    char buf[ERR_BUF];
+
+    err = mbedtls_ecdsa_write_signature(
         keys,
         MBEDTLS_MD_SHA256, hash, hash_len,
         dest, dest_len, &ret_len,
         mbedtls_ctr_drbg_random, ctr_drbg
     );
+    if (err != 0) {
+      mbedtls_strerror(err, buf, ERR_BUF);
+      printf("Error! %s\n", buf);
+      exit(1);
+    }
+
     return ret_len;
 }
 
@@ -64,9 +85,18 @@ size_t write_sig(
 void hash_pub_key(unsigned char *dest, mbedtls_ecdsa_context *key_pair) {
   unsigned char ser_key[PUB_KEY_SER_LEN];
   size_t num_bytes;
-  mbedtls_ecp_point_write_binary(
+  char buf[ERR_BUF];
+  int err;
+
+  err = mbedtls_ecp_point_write_binary(
     &(key_pair->MBEDTLS_PRIVATE(grp)), &(key_pair->MBEDTLS_PRIVATE(Q)),
     MBEDTLS_ECP_PF_COMPRESSED, &num_bytes, ser_key, PUB_KEY_SER_LEN
   );
+  if (err != 0) {
+    mbedtls_strerror(err, buf, ERR_BUF);
+    printf("Error! %s\n", buf);
+    exit(1);
+  }
+
   hash_sha256(dest, ser_key, num_bytes);
 }

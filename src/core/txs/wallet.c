@@ -98,9 +98,10 @@ mbedtls_ecdsa_context *build_outputs(Transaction *tx, TxOptions *options) {
 
 void sign_tx(Transaction *tx, mbedtls_ecdsa_context **keys) {
   unsigned char tx_hash[TX_HASH_LEN];
+
   hash_tx(tx_hash, tx);
   for (size_t i = 0; i < tx->num_inputs; i++) {
-    write_sig(
+    tx->inputs[i].sig_len = write_sig(
       tx->inputs[i].signature, SIGNATURE_LEN,
       tx_hash, TX_HASH_LEN,
       keys[i]

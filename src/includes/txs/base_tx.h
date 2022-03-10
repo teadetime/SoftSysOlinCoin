@@ -11,6 +11,7 @@ typedef struct Output{
 
 typedef struct Input{
   mbedtls_ecp_point *pub_key;
+  size_t sig_len;
   unsigned char signature[SIGNATURE_LEN];
   unsigned char prev_tx_id[TX_HASH_LEN];
   unsigned int prev_utxo_output;
