@@ -230,13 +230,44 @@ static char *test_sign_tx() {
   return NULL;
 }
 
-/* static char *test_build_tx() { */
-/* } */
+static char *test_build_tx() {
+  TxOptions *options;
+  Transaction *tx;
+
+  wallet_init();
+
+  _populate_wallet_pool();
+  options = _make_options();
+  tx = build_tx(options);
+
+  mu_assert(
+      "Key not added to pool",
+      wallet_pool != NULL
+  );
+
+  // Only light tests here, as more detailed value-checking is performed in the
+  // build_inputs and build_outputs tests.
+  mu_assert(
+      "Wrong number of inputs",
+      tx->num_inputs = 2
+  );
+  mu_assert(
+      "Wrong number of outputs",
+      tx->num_inputs = 4
+  );
+
+  _free_options(options);
+  _free_wallet_pool();
+  _free_tx(tx);
+
+  return NULL;
+}
 
 static char *all_tests() {
   mu_run_test(test_build_inputs);
   mu_run_test(test_build_outputs);
   mu_run_test(test_sign_tx);
+  mu_run_test(test_build_tx);
   return NULL;
 }
 
