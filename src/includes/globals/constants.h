@@ -7,7 +7,7 @@
 #define TX_HASH_LEN 32
 #define BLOCK_HASH_LEN 32
 #define PUB_KEY_HASH_LEN 32
-#define PUB_KEY_SER_LEN 33
+#define PUB_KEY_SER_LEN 65
 #define SIGNATURE_LEN 72
 #define PRINT_TAB "  "
 #define ERR_BUF 1024

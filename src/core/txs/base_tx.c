@@ -50,10 +50,10 @@ unsigned char *ser_input(unsigned char *dest, Input *input) {
   unsigned char *sig = sig_len + sizeof(size_t);
   memcpy(sig, input->signature, SIGNATURE_LEN);
 
-  unsigned char *prev_tx = sig_len + SIGNATURE_LEN;
+  unsigned char *prev_tx = sig + SIGNATURE_LEN;
   memcpy(prev_tx, input->prev_tx_id, TX_HASH_LEN);
 
-  unsigned char *vout = sig_len + TX_HASH_LEN;
+  unsigned char *vout = prev_tx + TX_HASH_LEN;
   memcpy(vout, &(input->prev_utxo_output), sizeof(unsigned int));
 
   return vout + sizeof(unsigned int);
@@ -77,7 +77,7 @@ unsigned char *deser_input(Input *dest, unsigned char *src) {
   unsigned char *prev_tx = sig + SIGNATURE_LEN;
   memcpy(dest->prev_tx_id, prev_tx, TX_HASH_LEN);
 
-  unsigned char *vout = sig + TX_HASH_LEN;
+  unsigned char *vout = prev_tx + TX_HASH_LEN;
   memcpy(&(dest->prev_utxo_output), vout, sizeof(unsigned int));
 
   return vout + sizeof(unsigned int);
@@ -124,9 +124,8 @@ Transaction *deser_tx(unsigned char *data){
   unsigned char *inputs = nm_outputs + sizeof(unsigned int);
   unsigned int input_sz = new_tx->num_inputs * sizeof(Input);
   new_tx->inputs = malloc(input_sz);
-  for (size_t i = 0; i < new_tx->num_inputs; i++) {
+  for (size_t i = 0; i < new_tx->num_inputs; i++)
     inputs = deser_input(new_tx->inputs + i, inputs);
-  }
 
   unsigned char *outputs = inputs;
   unsigned int output_sz = new_tx->num_outputs * sizeof(Output);

@@ -91,11 +91,12 @@ size_t ser_pub_key(
 
   err = mbedtls_ecp_point_write_binary(
     grp, point,
-    MBEDTLS_ECP_PF_COMPRESSED, &num_bytes, dest, PUB_KEY_SER_LEN
+    MBEDTLS_ECP_PF_UNCOMPRESSED,
+    &num_bytes, dest, PUB_KEY_SER_LEN
   );
   if (err != 0) {
     mbedtls_strerror(err, buf, ERR_BUF);
-    printf("Error! %s\n", buf);
+    printf("Serialize pub key error! %s\n", buf);
     exit(1);
   }
 
@@ -109,7 +110,7 @@ void deser_pub_key(mbedtls_ecp_point *dest, mbedtls_ecp_group *grp, unsigned cha
   err = mbedtls_ecp_point_read_binary(grp, dest, data, PUB_KEY_SER_LEN);
   if (err != 0) {
     mbedtls_strerror(err, buf, ERR_BUF);
-    printf("Error! %s\n", buf);
+    printf("Deserialize pub key error! %s\n", buf);
     exit(1);
   }
 }
