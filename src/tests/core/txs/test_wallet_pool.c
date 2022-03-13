@@ -9,12 +9,16 @@ Transaction *_make_tx() {
   Transaction *tx;
   Input *in;
   Output *out;
+  mbedtls_ecdsa_context *key_pair;
 
   tx = malloc(sizeof(Transaction));
   in = malloc(sizeof(Input));
   out = malloc(sizeof(Output));
 
   memset(in, 0x25, sizeof(Input));
+  key_pair = gen_keys();
+  in->pub_key = &(key_pair->private_Q);
+
   memset(out, 0x50, sizeof(Output));
 
   tx->num_inputs = 1;
