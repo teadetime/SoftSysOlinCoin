@@ -17,6 +17,8 @@ size_t write_sig(
     unsigned char *hash, size_t hash_len,
     mbedtls_ecdsa_context *keys
 );
+size_t ser_pub_key(unsigned char *dest, mbedtls_ecp_point *point, mbedtls_ecp_group *grp);
+void deser_pub_key(mbedtls_ecp_point *dest, mbedtls_ecp_group *grp, unsigned char *data);
 void hash_pub_key(unsigned char *dest, mbedtls_ecdsa_context *key_pair);
 
 extern char *seed;

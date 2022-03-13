@@ -33,6 +33,9 @@ typedef struct UTXO{
 unsigned char *ser_utxo(UTXO *utxo);
 UTXO *dser_utxo(unsigned char *data);
 
+unsigned char *ser_input(unsigned char *dest, Input *input);
+unsigned char *deser_input(Input *dest, unsigned char *src);
+
 /*
 Return Size of a transaction, used for serialization and memory allocation
 */

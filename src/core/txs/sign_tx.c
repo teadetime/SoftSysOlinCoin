@@ -82,15 +82,16 @@ size_t write_sig(
 }
 
 
-void hash_pub_key(unsigned char *dest, mbedtls_ecdsa_context *key_pair) {
-  unsigned char ser_key[PUB_KEY_SER_LEN];
+size_t ser_pub_key(
+    unsigned char *dest, mbedtls_ecp_point *point, mbedtls_ecp_group *grp
+) {
   size_t num_bytes;
   char buf[ERR_BUF];
   int err;
 
   err = mbedtls_ecp_point_write_binary(
-    &(key_pair->MBEDTLS_PRIVATE(grp)), &(key_pair->MBEDTLS_PRIVATE(Q)),
-    MBEDTLS_ECP_PF_COMPRESSED, &num_bytes, ser_key, PUB_KEY_SER_LEN
+    grp, point,
+    MBEDTLS_ECP_PF_COMPRESSED, &num_bytes, dest, PUB_KEY_SER_LEN
   );
   if (err != 0) {
     mbedtls_strerror(err, buf, ERR_BUF);
@@ -98,5 +99,29 @@ void hash_pub_key(unsigned char *dest, mbedtls_ecdsa_context *key_pair) {
     exit(1);
   }
 
+  return num_bytes;
+}
+
+void deser_pub_key(mbedtls_ecp_point *dest, mbedtls_ecp_group *grp, unsigned char *data) {
+  char buf[ERR_BUF];
+  int err;
+
+  err = mbedtls_ecp_point_read_binary(grp, dest, data, PUB_KEY_SER_LEN);
+  if (err != 0) {
+    mbedtls_strerror(err, buf, ERR_BUF);
+    printf("Error! %s\n", buf);
+    exit(1);
+  }
+}
+
+void hash_pub_key(unsigned char *dest, mbedtls_ecdsa_context *key_pair) {
+  unsigned char ser_key[PUB_KEY_SER_LEN];
+  size_t num_bytes;
+
+  num_bytes = ser_pub_key(
+    ser_key,
+    &(key_pair->MBEDTLS_PRIVATE(Q)),
+    &(key_pair->MBEDTLS_PRIVATE(grp))
+  );
   hash_sha256(dest, ser_key, num_bytes);
 }
