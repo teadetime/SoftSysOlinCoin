@@ -8,6 +8,7 @@
 #define SIGNATURE_LEN 48
 #define PRINT_TAB "  "
 
+const unsigned int desired_num_tx = 10;
  /*
  returns 1 if successful hash of input data
 

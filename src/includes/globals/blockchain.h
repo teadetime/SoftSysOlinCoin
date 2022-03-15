@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "uthash.h"
 #include "base_block.h"
+#include "constants.h"
 
 typedef struct BlockChain {
   unsigned char id[BLOCK_HASH_LEN];
@@ -11,6 +12,8 @@ typedef struct BlockChain {
 } BlockChain;
 
 BlockChain *blockchain;
+unsigned char* top_block_header_hash[BLOCK_HASH_LEN];
+unsigned long chain_height; //TODO these should be modified in the init function
 
 /* Initializes the global blockchain variable */
 void blockchain_init();
