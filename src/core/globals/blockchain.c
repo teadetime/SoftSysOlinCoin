@@ -30,6 +30,8 @@ Block *blockchain_add(Block *block) {
   found_entry = blockchain_find_node(new_entry->id);
   if (found_entry == NULL) {
     HASH_ADD(hh, blockchain, id, BLOCK_HASH_LEN, new_entry);
+    chain_height += 1;
+    memcpy(top_block_header_hash, &(block->header), BLOCK_HASH_LEN);
     return block;
   }
   free(new_entry);

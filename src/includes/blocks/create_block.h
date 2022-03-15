@@ -12,7 +12,7 @@ unsigned char get_prev_header_hash();
 /*
 What is the return type, are we just using an array of pointers?
 */
-unsigned int get_txs_from_mempool(Transaction ***tx_pts, unsigned int num_tx);
+unsigned int get_txs_from_mempool(Transaction ***tx_pts);
 
 unsigned int calc_coinbase_reward(Transaction ***tx_pts, unsigned int num_txs);
 
