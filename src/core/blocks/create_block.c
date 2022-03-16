@@ -1,33 +1,68 @@
+#include <stdlib.h>
+#include <time.h>
 #include "create_block.h"
 #include "mempool.h"
 #include "blockchain.h"
 #include "utxo_pool.h"
-#include <stdlib.h>
 /*
 Get Number of transactions to try and include in block
 */
 unsigned int calc_num_tx_target(){
-  return desired_num_tx;
+  return DESIRED_NUM_TX;
 }
 
-unsigned char get_prev_header_hash(){
+unsigned char* get_prev_header_hash(){
   // Stored in globabls or a runtime Variable
   return top_block_header_hash;
 }
 
+unsigned long calc_block_reward(unsigned long blockchain_height){
+  if(blockchain_height){}
+  return BLOCK_REWARD;
+}
+
+
+Transaction*  create_coinbase_tx(unsigned long tx_fees){
+    // Create the Coinbase TX
+  Transaction* coinbase_tx = malloc(sizeof(Transaction));
+  Output* miner_output = malloc(sizeof(Output));
+  miner_output->amt = tx_fees + calc_block_reward(chain_height);
+  //TODO UPDATE BSED ON EAMONS PR TO GRAB A KEY AND PUT IT INTO THE KEYPOOL (ASSUMING MINER IS THE OWNER OF THIS WALLET)
+  memset(miner_output->public_key_hash, 0, PUB_KEY_HASH_LEN);
+  //memcpy(miner_output->public_key_hash, , PUB_KEY_HASH_LEN)
+  coinbase_tx->inputs = NULL;
+  coinbase_tx->num_inputs = 0;
+  coinbase_tx->num_outputs = 1;
+  coinbase_tx->outputs = miner_output;
+
+  return coinbase_tx;
+}
+
 /*
-What is the return type, are we just using an array of pointers?
+Calculate tX fees for 1 tx
 */
-//Transaction **ret_txs;
-//func(&ret_txs);
-// ret_txs[0]->TXSTUFF
+unsigned int calc_tx_fees(Transaction* tx){
+  unsigned long total_in = 0;
+  unsigned long total_out = 0;
+  
+  for(unsigned int i = 0; i < tx->num_inputs; i++){
+    UTXO* input_utxo = utxo_pool_find(tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
+    total_in += input_utxo->amt;
+  }
+  for(unsigned int i = 0; i < tx->num_outputs; i++){
+    total_out += tx->outputs->amt;
+  }
+  return total_in - total_out;
+}
+
+
 unsigned int get_txs_from_mempool(Transaction ***tx_pts){
   unsigned long tx_fees = 0;
   unsigned int num_included = 0;
   MemPool *s;
   unsigned int tx_to_get = 1; // Start at one to include room for the coinbase the Coinbase TX
 
-  unsigned int tx_desired = calc_num_tx_target;
+  unsigned int tx_desired = calc_num_tx_target();
   unsigned int tx_in_mempool = HASH_COUNT(mempool);
 
   //Take minimum value of the mempool or the desired size
@@ -47,55 +82,63 @@ unsigned int get_txs_from_mempool(Transaction ***tx_pts){
   // Create the Coinbase TX
   (*tx_pts)[0] = create_coinbase_tx(tx_fees);
   
+  // Resize the Transaction memory if the wrong size was created
+  if(num_included < tx_to_get){
+    void* tmp = realloc(*tx_pts, num_included*sizeof(Transaction**));
+    if (tmp == NULL) {
+        //realloc didn't work  still points to the og location
+    }
+    else{
+      *tx_pts = tmp;
+    }
+  }
   return num_included;
 }
 
-unsigned long calc_block_reward(unsigned long blockchain_height){
-  return block_reward;
-}
-
-Transaction*  create_coinbase_tx(unsigned long tx_fees){
-    // Create the Coinbase TX
-  Transaction* coinbase_tx = malloc(sizeof(Transaction));
-  Output* miner_output = malloc(sizeof(Output));
-  miner_output->amt = tx_fees + calc_block_reward(chain_height);
-  memset(miner_output->public_key_hash, 0, PUB_KEY_HASH_LEN);
-  //memcpy(miner_output->public_key_hash, , PUB_KEY_HASH_LEN)
-  coinbase_tx->inputs = NULL;
-  coinbase_tx->num_inputs = 0;
-  coinbase_tx->num_outputs = 1;
-  coinbase_tx->outputs = miner_output;
-
-  return coinbase_tx;
-}
-
-/*
-Calculate tX fees for 1 tx
-
-*/
-unsigned int calc_tx_fees(Transaction* tx){
-  unsigned long total_in;
-  unsigned long total_out;
+unsigned char* hash_all_tx(Transaction** txs, unsigned int num_txs){
+  unsigned char* total_hash = malloc(ALL_TX_HASH_LEN);
+  unsigned char* temp_all = malloc(TX_HASH_LEN*num_txs);
   
-  for(unsigned int i = 0; i < tx->num_inputs; i++){
-    UTXO* input_utxo = utxo_pool_find(tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
-    total_in += input_utxo->amt;
+  for(unsigned int i = 0; i<num_txs ;i++){
+    hash_tx(temp_all+i*TX_HASH_LEN, (txs)[i]);
   }
-  for(unsigned int i = 0; i < tx->num_outputs; i++){
-    total_out += tx->outputs->amt;
-  }
-  return total_in - total_out;
+
+  hash_sha256(total_hash, temp_all, TX_HASH_LEN*num_txs);
+  free(temp_all);
+  return total_hash;
 }
 
-Transaction *create_coinbase_tx();
+BlockHeader* create_block_header(Transaction** txs, unsigned int num_txs){
+  BlockHeader* b_header = malloc(sizeof(BlockHeader));
+  unsigned char* prev_header_hash = get_prev_header_hash();
+  unsigned char* all_tx_hash = hash_all_tx(txs, num_txs);
 
-unsigned int get_difficulty();
+  memcpy(b_header->prev_header_hash, prev_header_hash, ALL_TX_HASH_LEN); 
+  memcpy(b_header->all_tx, all_tx_hash, ALL_TX_HASH_LEN); 
+  b_header->nonce = 0;
+  b_header->timestamp = time(NULL);
+  
+  return b_header;
+}
 
-unsigned int get_new_nonce(unsigned int old_nonce);
 
-BlockHeader *compile_header(unsigned int nonce);
+void create_block(Block* block){
+  //First get the txs for the block
+  Transaction** tx_ptr = malloc(sizeof(Transaction**));
+  block->num_txs = get_txs_from_mempool(&tx_ptr);
+  block->header = *create_block_header(tx_ptr, block->num_txs);
+  block->txs = tx_ptr; // This is broken because things aren't aligned in memory
+}
 
-Block *compile_block(BlockHeader *block_header, Transaction * txs);
+Block* create_block_alloc(){
+  Block* block = malloc(sizeof(Block));
+  create_block(block);
+  return block;
+}
+
+void change_nonce(Block* block){
+  block->header.nonce += 1;
+}
 
 int validate_header_hash(BlockHeader *block_header, unsigned int difficulty);
 
