@@ -13,6 +13,7 @@
 #define ERR_BUF 1024
 
 const unsigned int desired_num_tx = 10;
+const unsigned long block_reward = 100;
  /*
  returns 1 if successful hash of input data
 
