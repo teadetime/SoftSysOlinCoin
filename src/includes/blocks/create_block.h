@@ -14,11 +14,11 @@ What is the return type, are we just using an array of pointers?
 */
 unsigned int get_txs_from_mempool(Transaction ***tx_pts);
 
-unsigned int calc_coinbase_reward(Transaction ***tx_pts, unsigned int num_txs);
+unsigned long calc_block_reward(unsigned long blockchain_height);
 
 unsigned int calc_tx_fees();
 
-Transaction *create_coinbase_tx();
+Transaction *create_coinbase_tx(unsigned long tx_fees);
 
 unsigned int get_difficulty();
 
