@@ -1,15 +1,15 @@
 #pragma once
-
 #include <stddef.h>
 
 #define TX_HASH_LEN 32
+#define ALL_TX_HASH_LEN 32
 #define BLOCK_HASH_LEN 32
 #define PUB_KEY_HASH_LEN 32
 #define SIGNATURE_LEN 48
 #define PRINT_TAB "  "
+#define BLOCK_REWARD 100
+#define DESIRED_NUM_TX 10
 
-const unsigned int desired_num_tx = 10;
-const unsigned long block_reward = 100;
  /*
  returns 1 if successful hash of input data
 
