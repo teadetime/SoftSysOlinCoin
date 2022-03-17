@@ -11,6 +11,10 @@ unsigned int calc_num_tx_target(){
   return DESIRED_NUM_TX;
 }
 
+unsigned int get_difficulty(){
+  return HASH_DIFFICULTY;
+}
+
 unsigned char* get_prev_header_hash(){
   // Stored in globabls or a runtime Variable
   return top_block_header_hash;
@@ -140,6 +144,25 @@ void change_nonce(Block* block){
   block->header.nonce += 1;
 }
 
-int validate_header_hash(BlockHeader *block_header, unsigned int difficulty);
+unsigned char* hash_header(BlockHeader *block_header){
+  unsigned char* serialized_header = ser_blockheader_alloc(block_header);
+  unsigned char* header_hash = malloc(BLOCK_HASH_LEN);
+  hash_sha256(header_hash, serialized_header, sizeof(BlockHeader));
+  free(serialized_header);
+  return header_hash;
+}
 
-unsigned int get_difficulty();
+int validate_header_hash(BlockHeader *block_header){
+  // Hash the header
+  unsigned char* header_hash = hash_header(block_header);
+  unsigned char validator[HASH_DIFFICULTY];
+  memset(validator, 0, HASH_DIFFICULTY);
+  int ret = memcmp(validator, header_hash, HASH_DIFFICULTY);
+  free(header_hash);
+  if(ret != 0){
+    return 1; // Failure, bad hash
+  }
+  else{
+    return 0; // Difficulty Proof of work met
+  }
+}

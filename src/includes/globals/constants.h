@@ -9,6 +9,7 @@
 #define PRINT_TAB "  "
 #define BLOCK_REWARD 100
 #define DESIRED_NUM_TX 10
+#define HASH_DIFFICULTY 2
 
  /*
  returns 1 if successful hash of input data
