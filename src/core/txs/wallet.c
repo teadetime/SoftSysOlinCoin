@@ -61,17 +61,16 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
 }
 
 mbedtls_ecdsa_context *build_outputs(Transaction *tx, TxOptions *options) {
-  unsigned int num_outputs, self_output;
+  unsigned int self_output;
   unsigned long self_amt;
   mbedtls_ecdsa_context *key_pair;
 
   self_output = 0;
   if (options->in_total != options->out_total)
     self_output = 1;
-  num_outputs = options->num_dests + self_output;
 
-  tx->num_outputs = num_outputs;
-  tx->outputs = malloc(sizeof(Output) * num_outputs);
+  tx->num_outputs = options->num_dests + self_output;
+  tx->outputs = malloc(sizeof(Output) * tx->num_outputs);
 
   for (size_t i = 0; i < options->num_dests; i++) {
     tx->outputs[i].amt = options->dests[i].amt;

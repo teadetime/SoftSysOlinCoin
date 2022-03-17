@@ -32,6 +32,14 @@ typedef struct UTXO{
 unsigned char *ser_utxo(UTXO *utxo);
 UTXO *dser_utxo(unsigned char *data);
 
+/**
+ * @brief Get size required to serialize an input
+ *  removes the pointer and adds the length of data pointed to
+ * 
+ * @return int 
+ */
+int size_input();
+
 unsigned char *ser_input(unsigned char *dest, Input *input);
 unsigned char *deser_input(Input *dest, unsigned char *src);
 
