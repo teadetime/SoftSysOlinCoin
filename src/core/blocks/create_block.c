@@ -125,13 +125,11 @@ BlockHeader *create_block_header(Transaction **txs, unsigned int num_txs){
   return b_header;
 }
 
-
 void create_block(Block *block){
-  //First get the txs for the block
   Transaction **tx_ptr = malloc(sizeof(Transaction**));
   block->num_txs = get_txs_from_mempool(&tx_ptr);
   block->header = *create_block_header(tx_ptr, block->num_txs);
-  block->txs = tx_ptr; // This is broken because things aren't aligned in memory
+  block->txs = tx_ptr; 
 }
 
 Block *create_block_alloc(){
@@ -152,7 +150,7 @@ unsigned char *hash_header(BlockHeader *block_header){
   return header_hash;
 }
 
-int validate_header_hash(BlockHeader *block_header){
+int try_header_hash(BlockHeader *block_header){
   // Hash the header
   unsigned char *header_hash = hash_header(block_header);
   unsigned char validator[HASH_DIFFICULTY];
@@ -165,4 +163,11 @@ int validate_header_hash(BlockHeader *block_header){
   else{
     return 0; // Difficulty Proof of work met
   }
+}
+
+int mine_block(Block *block){
+  if(try_header_hash(&(block->header)) == 0){
+    return 0;
+  }
+  return 1;
 }
