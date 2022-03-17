@@ -15,7 +15,7 @@ unsigned int get_difficulty(){
   return HASH_DIFFICULTY;
 }
 
-unsigned char* get_prev_header_hash(){
+unsigned char *get_prev_header_hash(){
   // Stored in globabls or a runtime Variable
   return top_block_header_hash;
 }
@@ -26,10 +26,10 @@ unsigned long calc_block_reward(unsigned long blockchain_height){
 }
 
 
-Transaction*  create_coinbase_tx(unsigned long tx_fees){
+Transaction *create_coinbase_tx(unsigned long tx_fees){
     // Create the Coinbase TX
-  Transaction* coinbase_tx = malloc(sizeof(Transaction));
-  Output* miner_output = malloc(sizeof(Output));
+  Transaction *coinbase_tx = malloc(sizeof(Transaction));
+  Output *miner_output = malloc(sizeof(Output));
   miner_output->amt = tx_fees + calc_block_reward(chain_height);
   //TODO UPDATE BSED ON EAMONS PR TO GRAB A KEY AND PUT IT INTO THE KEYPOOL (ASSUMING MINER IS THE OWNER OF THIS WALLET)
   memset(miner_output->public_key_hash, 0, PUB_KEY_HASH_LEN);
@@ -45,7 +45,7 @@ Transaction*  create_coinbase_tx(unsigned long tx_fees){
 /*
 Calculate tX fees for 1 tx
 */
-unsigned int calc_tx_fees(Transaction* tx){
+unsigned int calc_tx_fees(Transaction *tx){
   unsigned long total_in = 0;
   unsigned long total_out = 0;
   
@@ -88,7 +88,7 @@ unsigned int get_txs_from_mempool(Transaction ***tx_pts){
   
   // Resize the Transaction memory if the wrong size was created
   if(num_included < tx_to_get){
-    void* tmp = realloc(*tx_pts, num_included*sizeof(Transaction**));
+    void *tmp = realloc(*tx_pts, num_included*sizeof(Transaction**));
     if (tmp == NULL) {
         //realloc didn't work  still points to the og location
     }
@@ -99,11 +99,11 @@ unsigned int get_txs_from_mempool(Transaction ***tx_pts){
   return num_included;
 }
 
-unsigned char* hash_all_tx(Transaction** txs, unsigned int num_txs){
-  unsigned char* total_hash = malloc(ALL_TX_HASH_LEN);
-  unsigned char* temp_all = malloc(TX_HASH_LEN*num_txs);
+unsigned char *hash_all_tx(Transaction **txs, unsigned int num_txs){
+  unsigned char *total_hash = malloc(ALL_TX_HASH_LEN);
+  unsigned char *temp_all = malloc(TX_HASH_LEN*num_txs);
   
-  for(unsigned int i = 0; i<num_txs ;i++){
+  for(unsigned int i = 0; i < num_txs; i++){
     hash_tx(temp_all+i*TX_HASH_LEN, (txs)[i]);
   }
 
@@ -112,10 +112,10 @@ unsigned char* hash_all_tx(Transaction** txs, unsigned int num_txs){
   return total_hash;
 }
 
-BlockHeader* create_block_header(Transaction** txs, unsigned int num_txs){
-  BlockHeader* b_header = malloc(sizeof(BlockHeader));
-  unsigned char* prev_header_hash = get_prev_header_hash();
-  unsigned char* all_tx_hash = hash_all_tx(txs, num_txs);
+BlockHeader *create_block_header(Transaction **txs, unsigned int num_txs){
+  BlockHeader *b_header = malloc(sizeof(BlockHeader));
+  unsigned char *prev_header_hash = get_prev_header_hash();
+  unsigned char *all_tx_hash = hash_all_tx(txs, num_txs);
 
   memcpy(b_header->prev_header_hash, prev_header_hash, ALL_TX_HASH_LEN); 
   memcpy(b_header->all_tx, all_tx_hash, ALL_TX_HASH_LEN); 
@@ -126,27 +126,27 @@ BlockHeader* create_block_header(Transaction** txs, unsigned int num_txs){
 }
 
 
-void create_block(Block* block){
+void create_block(Block *block){
   //First get the txs for the block
-  Transaction** tx_ptr = malloc(sizeof(Transaction**));
+  Transaction **tx_ptr = malloc(sizeof(Transaction**));
   block->num_txs = get_txs_from_mempool(&tx_ptr);
   block->header = *create_block_header(tx_ptr, block->num_txs);
   block->txs = tx_ptr; // This is broken because things aren't aligned in memory
 }
 
-Block* create_block_alloc(){
-  Block* block = malloc(sizeof(Block));
+Block *create_block_alloc(){
+  Block *block = malloc(sizeof(Block));
   create_block(block);
   return block;
 }
 
-void change_nonce(Block* block){
+void change_nonce(Block *block){
   block->header.nonce += 1;
 }
 
-unsigned char* hash_header(BlockHeader *block_header){
-  unsigned char* serialized_header = ser_blockheader_alloc(block_header);
-  unsigned char* header_hash = malloc(BLOCK_HASH_LEN);
+unsigned char *hash_header(BlockHeader *block_header){
+  unsigned char *serialized_header = ser_blockheader_alloc(block_header);
+  unsigned char *header_hash = malloc(BLOCK_HASH_LEN);
   hash_sha256(header_hash, serialized_header, sizeof(BlockHeader));
   free(serialized_header);
   return header_hash;
@@ -154,7 +154,7 @@ unsigned char* hash_header(BlockHeader *block_header){
 
 int validate_header_hash(BlockHeader *block_header){
   // Hash the header
-  unsigned char* header_hash = hash_header(block_header);
+  unsigned char *header_hash = hash_header(block_header);
   unsigned char validator[HASH_DIFFICULTY];
   memset(validator, 0, HASH_DIFFICULTY);
   int ret = memcmp(validator, header_hash, HASH_DIFFICULTY);
