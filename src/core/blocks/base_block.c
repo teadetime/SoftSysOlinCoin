@@ -67,7 +67,7 @@ void print_block_header(BlockHeader *header, char *prefix){
   printf("%sBlockHeader\n", prefix);
   dump_buf(sub_prefix ,"prev_header_hash:", header->prev_header_hash, BLOCK_HASH_LEN);
   printf("%stimestamp: %li\n", sub_prefix, header->timestamp);
-  printf("%snonce: %i\n", sub_prefix, header->nonce);
+  printf("%snonce: %li\n", sub_prefix, header->nonce);
   dump_buf( sub_prefix, "all_tx_hash:", header->all_tx, TX_HASH_LEN);
   free(sub_prefix);
 }
