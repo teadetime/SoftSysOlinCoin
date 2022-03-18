@@ -6,7 +6,7 @@ typedef struct BlockHeader{
   unsigned long timestamp;
   unsigned char all_tx[TX_HASH_LEN];
   unsigned char prev_header_hash[BLOCK_HASH_LEN];
-  int nonce;
+  unsigned long nonce;
 } BlockHeader;
 
 typedef struct Block{
