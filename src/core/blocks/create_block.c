@@ -16,7 +16,6 @@ unsigned int get_difficulty(){
 }
 
 unsigned char *get_prev_header_hash(){
-  // Stored in globabls or a runtime Variable
   return top_block_header_hash;
 }
 
@@ -27,7 +26,7 @@ unsigned long calc_block_reward(unsigned long blockchain_height){
 
 
 Transaction *create_coinbase_tx(unsigned long tx_fees){
-    // Create the Coinbase TX
+    // Create the Coinbase TX should this be calloc?
   Transaction *coinbase_tx = malloc(sizeof(Transaction));
   Output *miner_output = malloc(sizeof(Output));
   miner_output->amt = tx_fees + calc_block_reward(chain_height);
@@ -64,15 +63,15 @@ unsigned int get_txs_from_mempool(Transaction ***tx_pts){
   unsigned long tx_fees = 0;
   unsigned int num_included = 0;
   MemPool *s;
-  unsigned int tx_to_get = 1; // Start at one to include room for the coinbase the Coinbase TX
+  unsigned int coinbase = 1;
 
   unsigned int tx_desired = calc_num_tx_target();
   unsigned int tx_in_mempool = HASH_COUNT(mempool);
 
   //Take minimum value of the mempool or the desired size
-  tx_to_get += ((tx_desired) < (tx_in_mempool)) ? (tx_desired) : (tx_in_mempool);
+  unsigned int tx_to_get = ((tx_desired) < (tx_in_mempool)) ? (tx_desired) : (tx_in_mempool);
 
-  *tx_pts = malloc(tx_to_get*sizeof(Transaction**)); // Shouldn't this be multiplied by 4 because eeach pointer takes up 4 bytes?
+  *tx_pts = malloc((tx_to_get+coinbase)*sizeof(Transaction**)); // Shouldn't this be multiplied by 4 because eeach pointer takes up 4 bytes?
 
   for(s = mempool; s != NULL; s = s->hh.next) {
     (*tx_pts)[num_included+1] = s->tx; // Leave the first tx for coinbase tx
@@ -86,9 +85,10 @@ unsigned int get_txs_from_mempool(Transaction ***tx_pts){
   // Create the Coinbase TX
   (*tx_pts)[0] = create_coinbase_tx(tx_fees);
   
+  unsigned int total_num_txs = num_included+coinbase;
   // Resize the Transaction memory if the wrong size was created
   if(num_included < tx_to_get){
-    void *tmp = realloc(*tx_pts, num_included*sizeof(Transaction**));
+    void *tmp = realloc(*tx_pts, (total_num_txs)*sizeof(Transaction**));
     if (tmp == NULL) {
         //realloc didn't work  still points to the og location
     }
@@ -96,7 +96,7 @@ unsigned int get_txs_from_mempool(Transaction ***tx_pts){
       *tx_pts = tmp;
     }
   }
-  return num_included;
+  return total_num_txs;
 }
 
 unsigned char *hash_all_tx(Transaction **txs, unsigned int num_txs){
