@@ -1,6 +1,7 @@
 #pragma once
 
 #include "constants.h"
+#include "mbedtls/ecdsa.h"
 
 typedef struct Output{
   unsigned long amt;
@@ -8,6 +9,8 @@ typedef struct Output{
 } Output;
 
 typedef struct Input{
+  mbedtls_ecp_point *pub_key;
+  size_t sig_len;
   unsigned char signature[SIGNATURE_LEN];
   unsigned char prev_tx_id[TX_HASH_LEN];
   unsigned int prev_utxo_output;
@@ -28,6 +31,17 @@ typedef struct UTXO{
 
 unsigned char *ser_utxo(UTXO *utxo);
 UTXO *dser_utxo(unsigned char *data);
+
+/**
+ * @brief Get size required to serialize an input
+ *  removes the pointer and adds the length of data pointed to
+ * 
+ * @return int 
+ */
+int size_input();
+
+unsigned char *ser_input(unsigned char *dest, Input *input);
+unsigned char *deser_input(Input *dest, unsigned char *src);
 
 /*
 Return Size of a transaction, used for serialization and memory allocation

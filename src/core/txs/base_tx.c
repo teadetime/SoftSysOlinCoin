@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "base_tx.h"
+#include "sign_tx.h"
 
 unsigned char *ser_utxo(UTXO *utxo){
   unsigned char *data = malloc(sizeof(UTXO));
@@ -32,9 +33,59 @@ UTXO *dser_utxo(unsigned char *data){
   return new_UTXO;
 }
 
+int size_input() {
+  return sizeof(Input) - sizeof(mbedtls_ecp_point*) + PUB_KEY_SER_LEN;
+}
+
+unsigned char *ser_input(unsigned char *dest, Input *input) {
+  mbedtls_ecp_group group;
+
+  mbedtls_ecp_group_init(&group);
+  mbedtls_ecp_group_load(&group, CURVE);
+  ser_pub_key(dest, input->pub_key, &group);
+
+  unsigned char *sig_len = dest + PUB_KEY_SER_LEN;
+  memcpy(sig_len, &(input->sig_len), sizeof(size_t));
+
+  unsigned char *sig = sig_len + sizeof(size_t);
+  memcpy(sig, input->signature, SIGNATURE_LEN);
+
+  unsigned char *prev_tx = sig + SIGNATURE_LEN;
+  memcpy(prev_tx, input->prev_tx_id, TX_HASH_LEN);
+
+  unsigned char *vout = prev_tx + TX_HASH_LEN;
+  memcpy(vout, &(input->prev_utxo_output), sizeof(unsigned int));
+
+  return vout + sizeof(unsigned int);
+}
+
+unsigned char *deser_input(Input *dest, unsigned char *src) {
+  mbedtls_ecp_group group;
+
+  mbedtls_ecp_group_init(&group);
+  mbedtls_ecp_group_load(&group, CURVE);
+  dest->pub_key = malloc(sizeof(mbedtls_ecp_point));
+  mbedtls_ecp_point_init(dest->pub_key);
+  deser_pub_key(dest->pub_key, &group, src);
+
+  unsigned char *sig_len = src + PUB_KEY_SER_LEN;
+  memcpy(&(dest->sig_len), sig_len, sizeof(size_t));
+
+  unsigned char *sig = sig_len + sizeof(size_t);
+  memcpy(dest->signature, sig, SIGNATURE_LEN);
+
+  unsigned char *prev_tx = sig + SIGNATURE_LEN;
+  memcpy(dest->prev_tx_id, prev_tx, TX_HASH_LEN);
+
+  unsigned char *vout = prev_tx + TX_HASH_LEN;
+  memcpy(&(dest->prev_utxo_output), vout, sizeof(unsigned int));
+
+  return vout + sizeof(unsigned int);
+}
+
 int size_tx(Transaction *tx){
   return (sizeof(tx->num_inputs) + sizeof(tx->num_outputs) +
-    tx->num_inputs * sizeof(Input) + tx->num_outputs * sizeof(Output));
+    tx->num_inputs * size_input() + tx->num_outputs * sizeof(Output));
 }
 
 unsigned char *ser_tx(unsigned char *dest, Transaction *tx){
@@ -44,12 +95,15 @@ unsigned char *ser_tx(unsigned char *dest, Transaction *tx){
   memcpy(num_outputs, &(tx->num_outputs), sizeof(tx->num_outputs));
 
   unsigned char *inputs = num_outputs + sizeof(tx->num_outputs);
-  memcpy(inputs, tx->inputs, tx->num_inputs * sizeof(Input));
+  for (size_t i = 0; i < tx->num_inputs; i++) {
+    inputs = ser_input(inputs, &(tx->inputs[i]));
+  }
 
-  unsigned char *outputs = inputs + tx->num_inputs * sizeof(Input);
+  unsigned char *outputs = inputs;
+  memset(outputs, 0, tx->num_outputs * sizeof(Output));
   memcpy(outputs, tx->outputs, tx->num_outputs * sizeof(Output));
 
-  unsigned char * end = outputs + tx->num_outputs * sizeof(Output);
+  unsigned char *end = outputs + tx->num_outputs * sizeof(Output);
   return end;
 }
 
@@ -62,17 +116,18 @@ unsigned char *ser_tx_alloc(Transaction *tx){
 Transaction *deser_tx(unsigned char *data){
   Transaction *new_tx = malloc(sizeof(Transaction));
 
-  memcpy(&(new_tx->num_inputs), data, sizeof(int));
+  memcpy(&(new_tx->num_inputs), data, sizeof(unsigned int));
 
-  unsigned char *nm_outputs = data + sizeof(int);
-  memcpy(&(new_tx->num_outputs), nm_outputs, sizeof(int));
+  unsigned char *nm_outputs = data + sizeof(unsigned int);
+  memcpy(&(new_tx->num_outputs), nm_outputs, sizeof(unsigned int));
 
-  unsigned char *inputs = nm_outputs + sizeof(int);
+  unsigned char *inputs = nm_outputs + sizeof(unsigned int);
   unsigned int input_sz = new_tx->num_inputs * sizeof(Input);
   new_tx->inputs = malloc(input_sz);
-  memcpy(new_tx->inputs, inputs, input_sz);
+  for (size_t i = 0; i < new_tx->num_inputs; i++)
+    inputs = deser_input(new_tx->inputs + i, inputs);
 
-  unsigned char *outputs = inputs + input_sz;
+  unsigned char *outputs = inputs;
   unsigned int output_sz = new_tx->num_outputs * sizeof(Output);
   new_tx->outputs = malloc(output_sz);
   memcpy(new_tx->outputs, outputs, output_sz);
