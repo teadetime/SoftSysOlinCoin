@@ -4,6 +4,7 @@
 #include "utxo_pool.h"
 #include "create_block.h"
 #include "time.h"
+#include "sign_tx.h"
 
 int tests_run = 0;
 
@@ -11,12 +12,16 @@ Transaction *_make_tx() {
   Transaction *tx;
   Input *in;
   Output *out;
+  mbedtls_ecdsa_context *key_pair;
 
   tx = malloc(sizeof(Transaction));
   in = malloc(sizeof(Input));
   out = malloc(sizeof(Output));
 
   memset(in, 0, sizeof(Input));
+  key_pair = gen_keys();
+  in->pub_key = &(key_pair->private_Q);
+
   memset(out, 0, sizeof(Output));
 
   tx->num_inputs = 1;
@@ -66,6 +71,7 @@ static char *test_create_coinbase_tx(){
 
 static char *test_get_txs_from_mempool(){
   _fill_mempool();
+  
   Transaction **test_ptr = NULL;
   unsigned int num_tx = get_txs_from_mempool(&test_ptr);
   mu_assert(
