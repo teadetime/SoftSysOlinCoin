@@ -3,7 +3,7 @@
 
 void blockchain_init() {
   Block* genesis_block;
-
+  chain_height = 0;
   blockchain = NULL;  // Must always start at NULL
 
   genesis_block = malloc(sizeof(Block));
@@ -47,6 +47,7 @@ Block *blockchain_remove(unsigned char *header_hash) {
     block = entry->block;
     HASH_DEL(blockchain, entry);
     free(entry);
+    chain_height -= 1;
     return block;
   }
 
