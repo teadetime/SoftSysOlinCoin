@@ -10,6 +10,9 @@
 #define BLOCK_REWARD 10
 #define DESIRED_NUM_TX 10
 #define HASH_DIFFICULTY 3
+#define MINING_NODE 1
+#define WALLET_NODE 1
+
 
  /*
  returns 1 if successful hash of input data
