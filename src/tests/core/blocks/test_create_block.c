@@ -3,6 +3,7 @@
 #include "mempool.h"
 #include "utxo_pool.h"
 #include "create_block.h"
+#include "time.h"
 
 int tests_run = 0;
 
@@ -65,7 +66,7 @@ static char *test_create_coinbase_tx(){
 
 static char *test_get_txs_from_mempool(){
   _fill_mempool();
-  Transaction **test_ptr = malloc(sizeof(Transaction**));
+  Transaction **test_ptr = NULL;
   unsigned int num_tx = get_txs_from_mempool(&test_ptr);
   mu_assert(
     "Wrong number of transactions",
@@ -95,14 +96,33 @@ static char *test_get_txs_from_mempool(){
     "TX output amt doesn't match",
     test_ptr[1]->outputs[0].amt == 90
   );
-  unsigned char *total_hash = hash_all_tx(test_ptr,2);
-  unsigned char *total_hash2 = hash_all_tx(test_ptr,2);
+  return NULL;
+}
+
+static char *test_hash_all(){
+  _fill_mempool();
+  Transaction **test_ptr = NULL;
+  unsigned int num_tx = get_txs_from_mempool(&test_ptr);
+
+  // Hash the txs and check for consistency
+  unsigned char total_hash[ALL_TX_HASH_LEN];
+  hash_all_tx(total_hash, test_ptr, num_tx);
+  unsigned char total_hash2[ALL_TX_HASH_LEN]; 
+  hash_all_tx(total_hash2, test_ptr,num_tx);
   mu_assert(
     "Total hash is inconsistent",
     memcmp(total_hash, total_hash2, ALL_TX_HASH_LEN) == 0
   );
+  return NULL;
+}
 
+static char *test_create_header(){
+  _fill_mempool();
+  Transaction **test_ptr = NULL;
+  unsigned int num_tx = get_txs_from_mempool(&test_ptr);
   BlockHeader *test_header = create_block_header(test_ptr, 2);
+  unsigned char total_hash[ALL_TX_HASH_LEN];
+  hash_all_tx(total_hash, test_ptr, num_tx);
   mu_assert(
     "Total hash is not consistent in header creation",
     memcmp(total_hash, test_header->all_tx, ALL_TX_HASH_LEN) == 0
@@ -115,8 +135,11 @@ static char *test_get_txs_from_mempool(){
     "Header timestamp invalid",
     test_header->timestamp > 1647573975
   );
+  return NULL;
+}
 
-
+static char *test_create_block(){
+  _fill_mempool();
   Block *test_block = create_block_alloc();
   mu_assert(
     "Block txs coinbase is bad",
@@ -140,25 +163,28 @@ static char *test_get_txs_from_mempool(){
     memcmp(header_hash, header_hash2, BLOCK_HASH_LEN) == 0
   );
   mu_assert(
-    "Header hash failed",
+    "try_header_hash failed",
     try_header_hash(&(test_block->header)) == 1
   );
-  mu_assert(
-    "Block hash failed",
-    mine_block(test_block) == 1
-  );
 
-  while(mine_block(test_block) != 0){
-    change_nonce(test_block);
-  }
-  print_block_header(&(test_block->header), "");
-  hash_blockheader(header_hash, &(test_block->header));
-  dump_buf("", "MINED TX: ", header_hash, BLOCK_HASH_LEN);
-  free(test_block);
-  free(test_header);
-  free(total_hash);
-  free(total_hash2);
-  free(test_ptr);
+  return NULL;
+}
+
+static char *test_mine_block(){
+  unsigned long start = time(NULL);
+  Block *mined_block = mine_block();
+  unsigned long end = time(NULL);
+
+  mu_assert(
+    "Unable to mind block with difficulty within 60 seconds",
+    end-start < 60
+  );
+  unsigned char header_hash[BLOCK_HASH_LEN];
+  hash_blockheader(header_hash, &(mined_block->header));
+  dump_buf("", "MINED Block: ", header_hash, BLOCK_HASH_LEN);
+
+  free(mined_block);
+  // Really need to free all the internal structures...
   return NULL;
 }
 
@@ -169,6 +195,7 @@ static char  *test_calc_block_reward() {
   );
   return NULL;
 }
+
 static char  *test_calc_num_tx_target() {
   mu_assert(
     "calc_num_tx_target not returning correct target",
@@ -176,6 +203,7 @@ static char  *test_calc_num_tx_target() {
   );
   return NULL;
 }
+
 static char  *test_get_difficulty() {
   mu_assert(
     "difficulty doesn't match constant",
@@ -188,10 +216,14 @@ static char  *test_get_difficulty() {
 
 static char *all_tests() {
   mu_run_test(test_calc_block_reward);
-  mu_run_test(test_get_txs_from_mempool);
   mu_run_test(test_calc_num_tx_target);
   mu_run_test(test_get_difficulty);
   mu_run_test(test_create_coinbase_tx);
+  mu_run_test(test_get_txs_from_mempool);
+  mu_run_test(test_hash_all);
+  mu_run_test(test_create_header);
+  mu_run_test(test_create_block);
+  mu_run_test(test_mine_block);
   return NULL;
 }
 
