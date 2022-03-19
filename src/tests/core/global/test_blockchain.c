@@ -46,6 +46,10 @@ static char *test_blockchain_init_correct() {
 
   blockchain_init();
   mu_assert(
+    "Chain Height Incorrect",
+    chain_height == 1
+  );
+  mu_assert(
     "Genesis num_txs incorrect",
     blockchain->block->num_txs == 0
   );
@@ -123,12 +127,18 @@ static char  *test_blockchain_remove() {
 
   blockchain_init();
   blockchain_add(block);
+  unsigned long prev_chain_height = chain_height;
   ret_block = blockchain_remove(hash);
+
   mu_assert(
     "Remove did not return correct block",
     ret_block == block
   );
-
+  mu_assert(
+    "Chain Height not decremented",
+    chain_height = prev_chain_height-1
+  );
+  
   ret_block = blockchain_find(hash);
   mu_assert(
     "Block was not removed",
