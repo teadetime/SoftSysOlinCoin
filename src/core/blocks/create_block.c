@@ -15,10 +15,6 @@ unsigned int get_difficulty(){
   return HASH_DIFFICULTY;
 }
 
-unsigned char *get_prev_header_hash(){
-  return top_block_header_hash;
-}
-
 unsigned long calc_block_reward(unsigned long blockchain_height){
   if(blockchain_height){}
   return BLOCK_REWARD;
@@ -61,8 +57,7 @@ unsigned int calc_tx_fees(Transaction *tx){
 
 unsigned int get_txs_from_mempool(Transaction ***tx_pts){
   unsigned long tx_fees = 0;
-  unsigned int num_included = 0;
-  MemPool *s;
+  MemPool *s = mempool;
   unsigned int coinbase = 1;
 
   unsigned int tx_desired = calc_num_tx_target();
@@ -71,13 +66,13 @@ unsigned int get_txs_from_mempool(Transaction ***tx_pts){
   //Take minimum value of the mempool or the desired size
   unsigned int tx_to_get = ((tx_desired) < (tx_in_mempool)) ? (tx_desired) : (tx_in_mempool);
 
-  *tx_pts = malloc((tx_to_get+coinbase)*sizeof(Transaction**)); // Shouldn't this be multiplied by 4 because eeach pointer takes up 4 bytes?
+  *tx_pts = malloc((tx_to_get+coinbase)*sizeof(Transaction*)); // Shouldn't this be multiplied by 4 because eeach pointer takes up 4 bytes?
 
-  for(s = mempool; s != NULL; s = s->hh.next) {
-    (*tx_pts)[num_included+1] = s->tx; // Leave the first tx for coinbase tx
+  for(unsigned int i = 0; i < tx_to_get; i++) {
+    (*tx_pts)[i+coinbase] = s->tx; // Leave the first tx for coinbase tx
     tx_fees += calc_tx_fees(s->tx);
-    num_included++;
-    if(num_included == tx_to_get){
+    s = s->hh.next;
+    if(s == NULL){
       break;
     }
   }
@@ -85,40 +80,24 @@ unsigned int get_txs_from_mempool(Transaction ***tx_pts){
   // Create the Coinbase TX
   (*tx_pts)[0] = create_coinbase_tx(tx_fees);
   
-  unsigned int total_num_txs = num_included+coinbase;
-  // Resize the Transaction memory if the wrong size was created
-  if(num_included < tx_to_get){
-    void *tmp = realloc(*tx_pts, (total_num_txs)*sizeof(Transaction**));
-    if (tmp == NULL) {
-        //realloc didn't work  still points to the og location
-    }
-    else{
-      *tx_pts = tmp;
-    }
-  }
+  unsigned int total_num_txs = tx_to_get+coinbase;
   return total_num_txs;
 }
 
-unsigned char *hash_all_tx(Transaction **txs, unsigned int num_txs){
-  unsigned char *total_hash = malloc(ALL_TX_HASH_LEN);
+void hash_all_tx(unsigned char *dest, Transaction **txs, unsigned int num_txs){
   unsigned char *temp_all = malloc(TX_HASH_LEN*num_txs);
-  
   for(unsigned int i = 0; i < num_txs; i++){
     hash_tx(temp_all+i*TX_HASH_LEN, (txs)[i]);
   }
-
-  hash_sha256(total_hash, temp_all, TX_HASH_LEN*num_txs);
+  hash_sha256(dest, temp_all, TX_HASH_LEN*num_txs);
   free(temp_all);
-  return total_hash;
 }
 
 BlockHeader *create_block_header(Transaction **txs, unsigned int num_txs){
   BlockHeader *b_header = malloc(sizeof(BlockHeader));
-  unsigned char *prev_header_hash = get_prev_header_hash();
-  unsigned char *all_tx_hash = hash_all_tx(txs, num_txs);
+  hash_all_tx(b_header->all_tx, txs, num_txs);
 
-  memcpy(b_header->prev_header_hash, prev_header_hash, ALL_TX_HASH_LEN); 
-  memcpy(b_header->all_tx, all_tx_hash, ALL_TX_HASH_LEN); 
+  memcpy(b_header->prev_header_hash, top_block_header_hash, ALL_TX_HASH_LEN);
   b_header->nonce = 0;
   b_header->timestamp = time(NULL);
   
@@ -126,10 +105,9 @@ BlockHeader *create_block_header(Transaction **txs, unsigned int num_txs){
 }
 
 void create_block(Block *block){
-  Transaction **tx_ptr = malloc(sizeof(Transaction**));
-  block->num_txs = get_txs_from_mempool(&tx_ptr);
-  block->header = *create_block_header(tx_ptr, block->num_txs);
-  block->txs = tx_ptr; 
+  block->txs = NULL;
+  block->num_txs = get_txs_from_mempool(&(block->txs));
+  block->header = *create_block_header(block->txs, block->num_txs);
 }
 
 Block *create_block_alloc(){
@@ -157,9 +135,16 @@ int try_header_hash(BlockHeader *block_header){
   }
 }
 
-int mine_block(Block *block){
-  if(try_header_hash(&(block->header)) == 0){
-    return 0;
+Block *mine_block(){
+  // let's do the full thing!
+  Block *new_block = create_block_alloc();
+
+  //This can block the entire process!
+  while(try_header_hash(&(new_block->header)) != 0){
+    change_nonce(new_block);
   }
-  return 1;
+
+  return new_block;
+  //Accept block!
+  //handle_block(new_block)
 }

@@ -26,13 +26,6 @@ unsigned int calc_num_tx_target();
 unsigned int get_difficulty();
 
 /**
- * @brief Get the top block's header hash
- * 
- * @return unsigned char* block header hash
- */
-unsigned char *get_prev_header_hash();
-
-/**
  * @brief Calculate the reward for mining this block
  * 
  * @param blockchain_height not used(static block reward)
@@ -70,7 +63,7 @@ unsigned int get_txs_from_mempool(Transaction ***tx_pts);
  * @param num_txs number in set of transactions
  * @return unsigned char* cumulative hash of 32 bytes (from mbed)
  */
-unsigned char *hash_all_tx(Transaction **txs, unsigned int num_txs);
+void hash_all_tx(unsigned char *dest, Transaction **txs, unsigned int num_txs);
 
 /**
  * @brief Create block header from a set of transactions
@@ -118,4 +111,4 @@ int try_header_hash(BlockHeader *block_header);
  * @param block block to mine
  * @return int 0 if proof-of-work met, 1 if not
  */
-int mine_block(Block *block);
+Block *mine_block();
