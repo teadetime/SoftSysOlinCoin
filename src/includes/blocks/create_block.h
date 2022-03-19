@@ -104,15 +104,6 @@ Block *create_block_alloc();
 void change_nonce(Block *block);
 
 /**
- * @brief Hash the block header using SHA-256
- * 
- * @param block_header header to hash
- * @return unsigned char* new hash 32 bytes long (from mbed), 
- * freeing is the responsibility of the caller
- */
-unsigned char *hash_header(BlockHeader *block_header);
-
-/**
  * @brief Hash header and compare against difficulty, 
  * determine if Proof-of-Work is met
  * 

@@ -13,7 +13,7 @@ typedef struct BlockChain {
 
 BlockChain *blockchain;
 unsigned char top_block_header_hash[BLOCK_HASH_LEN];
-unsigned long chain_height; //TODO these should be modified in the init function
+unsigned long chain_height;
 
 /* Initializes the global blockchain variable */
 void blockchain_init();

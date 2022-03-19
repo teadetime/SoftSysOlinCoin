@@ -131,8 +131,10 @@ static char *test_get_txs_from_mempool(){
     "Nonce increment failed",
     test_block->header.nonce == 1
   );
-  unsigned char *header_hash = hash_header(&(test_block->header));
-  unsigned char *header_hash2 = hash_header(&(test_block->header));
+  unsigned char header_hash[BLOCK_HASH_LEN];
+  hash_blockheader(header_hash, &(test_block->header));
+  unsigned char header_hash2[BLOCK_HASH_LEN];
+  hash_blockheader(header_hash2, &(test_block->header));
   mu_assert(
     "Header hash is inconsistent",
     memcmp(header_hash, header_hash2, BLOCK_HASH_LEN) == 0
@@ -150,13 +152,12 @@ static char *test_get_txs_from_mempool(){
     change_nonce(test_block);
   }
   print_block_header(&(test_block->header), "");
-  dump_buf("", "MINED TX: ", hash_header(&(test_block->header)), BLOCK_HASH_LEN);
+  hash_blockheader(header_hash, &(test_block->header));
+  dump_buf("", "MINED TX: ", header_hash, BLOCK_HASH_LEN);
   free(test_block);
   free(test_header);
   free(total_hash);
   free(total_hash2);
-  free(header_hash);
-  free(header_hash2);
   free(test_ptr);
   return NULL;
 }
