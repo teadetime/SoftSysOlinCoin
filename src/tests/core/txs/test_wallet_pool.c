@@ -170,6 +170,28 @@ static char  *test_key_pool_find() {
   return NULL;
 }
 
+static char  *test_output_unlockable() {
+  Transaction *tx;
+  mbedtls_ecdsa_context *key_pair, *ret_pair;
+  tx = _make_tx();
+  
+  key_pair = gen_keys();
+  hash_pub_key(tx->outputs[0].public_key_hash, key_pair);
+
+  wallet_init();
+
+  key_pool_add(key_pair);
+  ret_pair = check_if_output_unlockable(tx, 0);
+  mu_assert(
+    "Found key pair is incorrect",
+    key_pair == ret_pair
+  );
+
+  mbedtls_ecp_keypair_free(key_pair);
+
+  return NULL;
+}
+
 static char  *test_key_pool_remove() {
   mbedtls_ecdsa_context *key_pair, *ret_pair;
   unsigned char hash[PUB_KEY_HASH_LEN];
@@ -203,6 +225,7 @@ static char *all_tests() {
   mu_run_test(test_wallet_pool_remove);
   mu_run_test(test_key_pool_add);
   mu_run_test(test_key_pool_find);
+  mu_run_test(test_output_unlockable);
   mu_run_test(test_key_pool_remove);
   return NULL;
 }
