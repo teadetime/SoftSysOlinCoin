@@ -61,6 +61,18 @@ UTXO *utxo_pool_find(unsigned char *tx_hash, unsigned int vout) {
   return NULL;
 }
 
+UTXO *utxo_pool_spend(unsigned char *tx_hash, unsigned int vout) {
+  UTXO *found_entry = utxo_pool_find(tx_hash, vout);
+  if (found_entry != NULL) {
+    if(found_entry->spent == 1){
+      return NULL;  // Probably should return somethign else here
+    }
+    found_entry->spent = 1;
+    return found_entry;
+  }
+  return NULL;
+}
+
 UTXOPool *utxo_pool_find_node(unsigned char *tx_hash, unsigned int vout) {
   UTXOPoolKey key;
 

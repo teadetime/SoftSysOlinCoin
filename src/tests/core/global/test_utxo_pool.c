@@ -94,6 +94,36 @@ static char  *test_utxo_pool_find() {
   return NULL;
 }
 
+static char  *test_utxo_pool_spend() {
+  Transaction *tx;
+  UTXO *new_utxo, *ret_utxo;
+  unsigned char hash[TX_HASH_LEN];
+
+  tx = _make_tx();
+  hash_tx(hash, tx);
+
+  utxo_pool_init();
+  new_utxo = utxo_pool_add(tx, 0);
+  short spent = new_utxo->spent;
+  ret_utxo = utxo_pool_spend(hash, 0);
+  mu_assert(
+    "Spending UTXO didn't change anything",
+    spent != ret_utxo->spent
+  );
+  ret_utxo = utxo_pool_spend(hash, 0);
+  mu_assert(
+    "Double spending not returning NULL",
+    ret_utxo == NULL
+  );
+
+  free(tx->inputs);
+  free(tx->outputs);
+  free(tx);
+  free(ret_utxo);
+
+  return NULL;
+}
+
 static char  *test_utxo_pool_remove() {
   Transaction *tx;
   UTXO *new_utxo, *ret_utxo;
@@ -128,6 +158,7 @@ static char *all_tests() {
   mu_run_test(test_utxo_pool_init);
   mu_run_test(test_utxo_pool_add);
   mu_run_test(test_utxo_pool_find);
+  mu_run_test(test_utxo_pool_spend);
   mu_run_test(test_utxo_pool_remove);
   return NULL;
 }

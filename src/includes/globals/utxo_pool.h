@@ -78,6 +78,15 @@ UTXOPool *utxo_pool_find_node(unsigned char *tx_hash, unsigned int vout);
  */
 UTXOPool *utxo_pool_find_node_key(UTXOPoolKey *key);
 
+/**
+ * @brief Marka  UTXO as spent
+ * 
+ * @param tx_hash transaction that the utxo is of
+ * @param vout output number corresponding to the utxo
+ * @return UTXO* utxo that was just modified, NULL if not found
+ */
+UTXO *utxo_pool_spend(unsigned char *tx_hash, unsigned int vout);
+
 /*
 Prints a utxo to stdout, for visualization
 
