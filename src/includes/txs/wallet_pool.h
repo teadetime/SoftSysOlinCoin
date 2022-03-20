@@ -44,17 +44,106 @@ WalletPool *wallet_pool;
  */
 KeyPool *key_pool;
 
+/**
+ * @brief Initializes wallet
+ *
+ * Initializes the wallet pool and key pool
+ */
 void wallet_init();
 
+/* WALLET POOL FUNCTIONS */
+
+/**
+ * @brief Adds an entry to the wallet pool
+ *
+ * Creates a new WalletEntry using passed data, then adds new entry to the
+ * wallet pool. NOTE: Does not copy the passed key - only stores the pointer. We
+ * expect keys to be never freed.
+ *
+ * @param tx Transaction the new entry is a part of
+ * @param vout Output index of the new entry within the source transaction
+ * @param key_pair Key pair associated with the new entry
+ * @return New entry if succesfull, otherwise NULL
+ */
 WalletEntry *wallet_pool_add(Transaction *tx, unsigned int vout, mbedtls_ecdsa_context *key_pair);
+
+/**
+ * @brief Removes an entry from the wallet pool
+ *
+ * @param tx_hash Transaction hash corresponding to entry to find
+ * @param vout Output index corresponding to entry to find
+ */
 void wallet_pool_remove(unsigned char *tx_hash, unsigned int vout);
+
+/**
+ * @brief Finds an entry in the wallet pool
+ *
+ * @param tx_hash Transaction hash corresponding to entry to remove
+ * @param vout  Output index corresponding to entry to find
+ * @return Entry if found, otherwise NULL
+ */
 WalletEntry *wallet_pool_find(unsigned char *tx_hash, unsigned int vout);
+
+/**
+ * @brief Finds a node in the wallet pool
+ *
+ * Internal function that returns the WalletPool wrapper type instead of the
+ * WalletEntry type.
+ *
+ * @param tx_hash Transaction hash corresponding to entry to remove
+ * @param vout  Output index corresponding to entry to find
+ * @return Node if found, otherweise NULL
+ */
 WalletPool *wallet_pool_find_node(unsigned char *tx_hash, unsigned int vout);
+
+/**
+ * @brief Finds a node in the wallet pool
+ *
+ * Internal function that takes in a UTXOPoolKey and returns the WalletPool
+ * wrapper type instead of the WalletEntry type.
+ *
+ * @param key UTXOPoolKey containing tx_hash and vout
+ * @return Node if found, otherweise NULL
+ */
 WalletPool *wallet_pool_find_node_key(UTXOPoolKey *key);
 
+/* KEY POOL FUNCTIONS */
+
+/**
+ * @brief Adds a key pair to the key pool
+ *
+ * Stores the key pair in the key pool with the hash of the public key as the
+ * dictionary key
+ *
+ * @param key_pair Key pair to store
+ * @return Passed key pool if succesfull, NULL otherwise
+ */
 mbedtls_ecp_keypair *key_pool_add(mbedtls_ecp_keypair *key_pair);
+
+/**
+ * @brief Removes a key pair from the key pool
+ *
+ * @param public_key_hash Public key hash corresponding to key pair to remove
+ * @return Key pair if removed, otherwise NULL
+ */
 mbedtls_ecp_keypair *key_pool_remove(unsigned char *public_key_hash);
+
+/**
+ * @brief Finds a key pair in the key pool
+ *
+ * @param public_key_hash Public key hash corresponding to key pair to remove
+ * @return Key pair if found, otherwise NULL
+ */
 mbedtls_ecp_keypair *key_pool_find(unsigned char *public_key_hash);
+
+/**
+ * @brief Finds a node in the key pool
+ *
+ * Internal function that returns the KeyPool wrapper type instead of a key pair
+ *
+ * @param public_key_hash Public key hash corresponding to key pair to remove
+ * @return Node if found, otherwise NULL
+ */
 KeyPool *key_pool_find_node(unsigned char *public_key_hash);
 
 /**
