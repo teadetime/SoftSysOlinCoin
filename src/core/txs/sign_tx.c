@@ -50,7 +50,7 @@ mbedtls_ecdsa_context *gen_keys() {
   err = mbedtls_ecdsa_genkey(keys, CURVE, mbedtls_ctr_drbg_random, ctr_drbg);
   if (err != 0) {
     mbedtls_strerror(err, buf, ERR_BUF);
-    printf("Error! %s\n", buf);
+    printf("Gen key error! %s\n", buf);
     exit(1);
   }
 
@@ -60,25 +60,50 @@ mbedtls_ecdsa_context *gen_keys() {
 size_t write_sig(
     unsigned char *dest, size_t dest_len,
     unsigned char *hash, size_t hash_len,
-    mbedtls_ecdsa_context *keys
+    mbedtls_ecdsa_context *key_pair
 ) {
     size_t ret_len;
     int err;
     char buf[ERR_BUF];
 
     err = mbedtls_ecdsa_write_signature(
-        keys,
+        key_pair,
         MBEDTLS_MD_SHA256, hash, hash_len,
         dest, dest_len, &ret_len,
         mbedtls_ctr_drbg_random, ctr_drbg
     );
     if (err != 0) {
       mbedtls_strerror(err, buf, ERR_BUF);
-      printf("Error! %s\n", buf);
+      printf("Write signature error! %s\n", buf);
       exit(1);
     }
 
     return ret_len;
+}
+
+int validate_sig(
+    unsigned char *sig, size_t sig_len,
+    unsigned char *hash, size_t hash_len,
+    mbedtls_ecdsa_context *key_pair
+) {
+  int err;
+  char buf[ERR_BUF];
+
+  err = mbedtls_ecdsa_read_signature(
+    key_pair,
+    hash, hash_len,
+    sig, sig_len
+  );
+
+  if (err == 0)
+    return 0;
+  else if (err == MBEDTLS_ERR_ECP_BAD_INPUT_DATA)
+    return 1;
+  else {
+    mbedtls_strerror(err, buf, ERR_BUF);
+    printf("Validate signature error! %s\n", buf);
+    exit(1);
+  }
 }
 
 

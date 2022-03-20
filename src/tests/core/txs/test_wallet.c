@@ -214,10 +214,10 @@ static char *test_sign_tx() {
   for (size_t i = 0; i < tx->num_inputs; i++) {
     mu_assert(
         "Input signature invalid",
-        mbedtls_ecdsa_read_signature(
-          ret_keys[i],
+        validate_sig(
+          tx->inputs[i].signature, tx->inputs[i].sig_len,
           tx_hash, TX_HASH_LEN,
-          tx->inputs[i].signature, tx->inputs[i].sig_len
+          ret_keys[i]
         ) == 0
     );
   }
