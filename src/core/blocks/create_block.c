@@ -4,6 +4,8 @@
 #include "mempool.h"
 #include "blockchain.h"
 #include "utxo_pool.h"
+#include "sign_tx.h"
+#include "wallet_pool.h"
 /*
 Get Number of transactions to try and include in block
 */
@@ -22,13 +24,14 @@ unsigned long calc_block_reward(unsigned long blockchain_height){
 
 
 Transaction *create_coinbase_tx(unsigned long tx_fees){
-    // Create the Coinbase TX should this be calloc?
   Transaction *coinbase_tx = malloc(sizeof(Transaction));
   Output *miner_output = malloc(sizeof(Output));
   miner_output->amt = tx_fees + calc_block_reward(chain_height);
-  //TODO UPDATE BSED ON EAMONS PR TO GRAB A KEY AND PUT IT INTO THE KEYPOOL (ASSUMING MINER IS THE OWNER OF THIS WALLET)
+  
   memset(miner_output->public_key_hash, 0, PUB_KEY_HASH_LEN);
-  //memcpy(miner_output->public_key_hash, , PUB_KEY_HASH_LEN)
+  mbedtls_ecdsa_context *key_pair = gen_keys();
+  key_pool_add(key_pair);
+  hash_pub_key(miner_output->public_key_hash, key_pair);
   coinbase_tx->inputs = NULL;
   coinbase_tx->num_inputs = 0;
   coinbase_tx->num_outputs = 1;
