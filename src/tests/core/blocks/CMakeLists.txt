@@ -14,6 +14,21 @@ target_link_libraries(test_mbed_sign
   mbedtls
   mbedcrypto
   mbedx509)
+
+add_executable(test_create_block
+  test_create_block.c
+  ${SOURCES_ALL})
+target_compile_options(test_create_block PRIVATE ${COMPILE_OPTIONS_STD})
+target_include_directories(test_create_block PUBLIC
+  ${INCLUDE_ALL}
+  )
+# Link libraries for the mbed stuff
+target_link_libraries(test_create_block  
+  mbedtls
+  mbedcrypto
+  mbedx509)
+
+
 # Look at the source variables and whatnot
 message(STATUS "Blocks Test: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "Sources @ executable: ${TX_SOURCES}")

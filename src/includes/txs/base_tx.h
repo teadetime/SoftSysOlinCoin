@@ -1,5 +1,4 @@
 #pragma once
-
 #include "constants.h"
 #include "mbedtls/ecdsa.h"
 

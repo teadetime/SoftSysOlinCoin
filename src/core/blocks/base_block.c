@@ -36,7 +36,7 @@ void hash_blockheader(unsigned char *dest, BlockHeader *header) {
 int size_block(Block *block){
   int size = (sizeof(block->num_txs) + sizeof(block->header));
   for(unsigned int i = 0; i < block->num_txs; i++){
-      size += size_tx(&(block->txs[i]));
+      size += size_tx(block->txs[i]);
   }
   return size;
 }
@@ -48,7 +48,7 @@ unsigned char *ser_block(unsigned char *dest, Block *block){
   unsigned char *txs = ser_blockheader(block_header, &(block->header));
 
   for(unsigned int i = 0; i < block->num_txs; i++){
-      txs = ser_tx(txs, &(block->txs[i]));
+      txs = ser_tx(txs, block->txs[i]);
   }
   unsigned char *end = txs;
   return end;
@@ -67,7 +67,7 @@ void print_block_header(BlockHeader *header, char *prefix){
   printf("%sBlockHeader\n", prefix);
   dump_buf(sub_prefix ,"prev_header_hash:", header->prev_header_hash, BLOCK_HASH_LEN);
   printf("%stimestamp: %li\n", sub_prefix, header->timestamp);
-  printf("%snonce: %i\n", sub_prefix, header->nonce);
+  printf("%snonce: %li\n", sub_prefix, header->nonce);
   dump_buf( sub_prefix, "all_tx_hash:", header->all_tx, TX_HASH_LEN);
   free(sub_prefix);
 }
@@ -82,7 +82,7 @@ void print_block(Block *block, char *prefix){
   printf("%sNum Txs: %i\n", sub_prefix, block->num_txs);
   printf("%sTransactions\n", sub_prefix);
   for(unsigned int i=0; i<block->num_txs; i++){
-    print_tx(&(block->txs[i]), sub_prefix);
+    print_tx(block->txs[i], sub_prefix);
   }
   free(sub_prefix);
 }

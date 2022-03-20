@@ -3,7 +3,7 @@
 
 void blockchain_init() {
   Block* genesis_block;
-
+  chain_height = 0;
   blockchain = NULL;  // Must always start at NULL
 
   genesis_block = malloc(sizeof(Block));
@@ -30,6 +30,8 @@ Block *blockchain_add(Block *block) {
   found_entry = blockchain_find_node(new_entry->id);
   if (found_entry == NULL) {
     HASH_ADD(hh, blockchain, id, BLOCK_HASH_LEN, new_entry);
+    chain_height += 1;
+    hash_blockheader(top_block_header_hash, &(block->header));
     return block;
   }
   free(new_entry);
@@ -45,6 +47,7 @@ Block *blockchain_remove(unsigned char *header_hash) {
     block = entry->block;
     HASH_DEL(blockchain, entry);
     free(entry);
+    chain_height -= 1;
     return block;
   }
 

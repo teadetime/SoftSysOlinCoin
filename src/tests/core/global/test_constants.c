@@ -8,8 +8,8 @@
 int tests_run = 0;
 
 static char *test_hash_consistency() {
-  unsigned char *dest = malloc(TX_HASH_LEN);
-  unsigned char *dest2 = malloc(TX_HASH_LEN);
+  unsigned char dest[TX_HASH_LEN];
+  unsigned char dest2[TX_HASH_LEN];
   unsigned char hash_buf[] = "THIS IS A TEST";
   hash_sha256(dest, hash_buf, sizeof(hash_buf));
   hash_sha256(dest2, hash_buf, sizeof(hash_buf));
@@ -21,8 +21,8 @@ static char *test_hash_consistency() {
 }
 
 static char *test_hash_consistency_long() {
-  unsigned char *dest = malloc(TX_HASH_LEN);
-  unsigned char *dest2 = malloc(TX_HASH_LEN);
+  unsigned char dest[TX_HASH_LEN];
+  unsigned char dest2[TX_HASH_LEN];
   unsigned char hash_buf_long[] = "THdsaflkjkljjklsadflkasdfkjlasdfasdf32145234 b5234 3455432 3245";
   hash_sha256(dest, hash_buf_long, sizeof(hash_buf_long));
   hash_sha256(dest2, hash_buf_long, sizeof(hash_buf_long));
@@ -34,8 +34,8 @@ static char *test_hash_consistency_long() {
 }
 
 static char *test_hash_different() {
-  unsigned char *dest = malloc(TX_HASH_LEN);
-  unsigned char *dest2 = malloc(TX_HASH_LEN);
+  unsigned char dest[TX_HASH_LEN];
+  unsigned char dest2[TX_HASH_LEN];
   unsigned char hash_buf_a[] = "test1";
   unsigned char hash_buf_b[] = "test2";
   hash_sha256(dest, hash_buf_a, sizeof(hash_buf_a));

@@ -1,6 +1,4 @@
-#ifndef BASE_BLOCK_H
-#define BASE_BLOCK_H
-
+#pragma once
 #include "constants.h"
 #include "base_tx.h"
 
@@ -8,16 +6,14 @@ typedef struct BlockHeader{
   unsigned long timestamp;
   unsigned char all_tx[TX_HASH_LEN];
   unsigned char prev_header_hash[BLOCK_HASH_LEN];
-  int nonce;
+  unsigned long nonce;
 } BlockHeader;
 
 typedef struct Block{
   unsigned int num_txs;
   BlockHeader header;
-  Transaction *txs;
+  Transaction** txs;
 } Block;
-
-#endif
 
 /*
 returns a pointer to end of memory of a serialized blockheader buffer(dest) used

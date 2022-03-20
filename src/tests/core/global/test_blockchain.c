@@ -17,7 +17,7 @@ Block *_make_block() {
   tx->outputs = NULL;
 
   block->num_txs = 1;
-  block->txs = tx;
+  block->txs = &tx;
 
   block->header.timestamp = 1;
   memset(block->header.all_tx, 1, TX_HASH_LEN);
@@ -45,6 +45,10 @@ static char *test_blockchain_init_correct() {
   memset(empty_block_hash, 0, BLOCK_HASH_LEN);
 
   blockchain_init();
+  mu_assert(
+    "Chain Height Incorrect",
+    chain_height == 1
+  );
   mu_assert(
     "Genesis num_txs incorrect",
     blockchain->block->num_txs == 0
@@ -87,7 +91,7 @@ static char  *test_blockchain_add() {
     ret_block == block
   );
 
-  free(block->txs);
+  free(block->txs[0]);
   free(block);
 
   return NULL;
@@ -108,7 +112,7 @@ static char  *test_blockchain_find() {
     ret_block == block
   );
 
-  free(block->txs);
+  free(block->txs[0]);
   free(block);
 
   return NULL;
@@ -123,19 +127,25 @@ static char  *test_blockchain_remove() {
 
   blockchain_init();
   blockchain_add(block);
+  unsigned long prev_chain_height = chain_height;
   ret_block = blockchain_remove(hash);
+
   mu_assert(
     "Remove did not return correct block",
     ret_block == block
   );
-
+  mu_assert(
+    "Chain Height not decremented",
+    chain_height = prev_chain_height-1
+  );
+  
   ret_block = blockchain_find(hash);
   mu_assert(
     "Block was not removed",
     ret_block == NULL
   );
 
-  free(block->txs);
+  free(block->txs[0]);
   free(block);
 
   return NULL;
