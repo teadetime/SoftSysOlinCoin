@@ -39,7 +39,7 @@ mbedtls_ecdsa_context *gen_keys();
 /**
  * @brief Writes a signature
  *
- * Signs passed hash using passed key to passed destination.
+ * Signs passed hash using passed key to passed destination
  *
  * @param dest Destination buffer to write to
  * @param dest_len Length of the destination buffer
@@ -52,6 +52,24 @@ size_t write_sig(
     unsigned char *dest, size_t dest_len,
     unsigned char *hash, size_t hash_len,
     mbedtls_ecdsa_context *keys
+);
+
+/**
+ * @brief Validates a signature
+ *
+ * Validates a signature given a message hash and key pair
+ *
+ * @param sig Signature buffer to validate
+ * @param sig_len Length of the signature buffer
+ * @param hash Hash buffer to validate signture with
+ * @param hash_len Length of the hash buffer
+ * @param key_pair Key pair to validate signture with
+ * @return 0 if valid signature, 1 otherwise
+ */
+int validate_sig(
+    unsigned char *sig, size_t sig_len,
+    unsigned char *hash, size_t hash_len,
+    mbedtls_ecdsa_context *key_pair
 );
 
 /* PUB KEY HANDLING */
