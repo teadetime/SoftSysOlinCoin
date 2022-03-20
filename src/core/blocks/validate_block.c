@@ -129,9 +129,9 @@ void update_UTXO_pool_and_wallet_pool(Block *block){
       }
     }
     for(unsigned int k = 0; k < block->txs[i]->num_inputs; k++){
-      utxo_pool_spend(block->txs[i]->inputs[k].prev_tx_id,
+      UTXO * spent_utxo = utxo_pool_remove(block->txs[i]->inputs[k].prev_tx_id,
         block->txs[i]->inputs[k].prev_utxo_output);
-
+      free(spent_utxo);
       wallet_pool_remove(block->txs[i]->inputs[k].prev_tx_id, 
         block->txs[i]->inputs[k].prev_utxo_output);
     }

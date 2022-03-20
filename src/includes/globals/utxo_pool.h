@@ -79,20 +79,11 @@ UTXOPool *utxo_pool_find_node(unsigned char *tx_hash, unsigned int vout);
 UTXOPool *utxo_pool_find_node_key(UTXOPoolKey *key);
 
 /**
- * @brief Marka  UTXO as spent
+ * @brief Prints a utxo to stdout, for visualization
  * 
- * @param tx_hash transaction that the utxo is of
- * @param vout output number corresponding to the utxo
- * @return UTXO* utxo that was just modified, NULL if not found
+ * @param utxo utxo to print
+ * @param prefix tring to put in front of all print commands used for tabbing structure
  */
-UTXO *utxo_pool_spend(unsigned char *tx_hash, unsigned int vout);
-
-/*
-Prints a utxo to stdout, for visualization
-
-utxo: utxo to print
-prefix: string to put in front of all print commands used for tabbing structure
-*/
 void print_utxo(UTXO *utxo, char *prefix);
 
 /*
