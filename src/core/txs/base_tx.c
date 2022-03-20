@@ -184,3 +184,9 @@ void print_tx(Transaction *tx, char *prefix){
   }
   free(sub_prefix);
 }
+
+void free_tx(Transaction *tx){
+  free(tx->inputs);
+  free(tx->outputs);
+  free(tx);
+}

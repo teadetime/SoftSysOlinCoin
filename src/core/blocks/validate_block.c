@@ -14,12 +14,8 @@
 #include "blockchain.h"
 #include "utxo_pool.h"
 #include "wallet_pool.h"
+#include "validate_tx.h"
 
-// WILL BE WRITTEN IN A SEPARATE PR by EAMON?
-int validate_tx(Transaction *tx){
-  if(tx){}
-  return 0;
-}
 
 int validate_coinbase_tx(Transaction *coinbase_tx, Transaction **txs, unsigned int num_txs){
   unsigned int calculated_total_fees = 0;
