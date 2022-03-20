@@ -56,3 +56,14 @@ mbedtls_ecp_keypair *key_pool_add(mbedtls_ecp_keypair *key_pair);
 mbedtls_ecp_keypair *key_pool_remove(unsigned char *public_key_hash);
 mbedtls_ecp_keypair *key_pool_find(unsigned char *public_key_hash);
 KeyPool *key_pool_find_node(unsigned char *public_key_hash);
+
+/**
+ * @brief Helper to see if an input to a block is unlockable so that we can 
+ * add it to the wallet pool!
+ * 
+ * @param tx transaction to examine
+ * @param vout output number to examine
+ * @return mbedtls_ecdsa_context* valid keypair if this output is controllable, 
+ * otherwise NULL
+ */
+mbedtls_ecdsa_context *check_if_output_unlockable(Transaction *tx, unsigned int vout);
