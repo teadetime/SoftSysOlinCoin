@@ -72,6 +72,13 @@ int validate_sig(
     mbedtls_ecdsa_context *key_pair
 );
 
+/**
+ * @brief Build a mbed keypair with only a public key, for input unlocking
+ * 
+ * @param ctx key pair previously allocated that still needs initialized and set
+ * @param pub_key public key to put into the key pair
+ */
+void build_ctx_from_public(mbedtls_ecdsa_context *ctx, mbedtls_ecp_point *pub_key);
 /* PUB KEY HANDLING */
 
 /**

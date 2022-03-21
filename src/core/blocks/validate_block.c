@@ -40,14 +40,15 @@ int validate_coinbase_tx(Transaction *coinbase_tx, Transaction **txs, unsigned i
 }
 
 int validate_txs(Transaction **txs, unsigned int num_txs){
-  if(validate_coinbase_tx(txs[0], txs, num_txs) != 0){
-    return 1;
-  }
   for(unsigned int i = 1; i < num_txs; i++){
     if(validate_tx(txs[i]) != 0){
-      return 2;
+      return 1;
     }
   }
+  if(validate_coinbase_tx(txs[0], txs, num_txs) != 0){
+    return 2;
+  }
+
   return 0;
 }
 ///OPTIONAL

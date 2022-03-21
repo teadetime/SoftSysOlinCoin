@@ -9,6 +9,6 @@
  * 
  */
 #include "base_tx.h"
-int check_inputs_unlockable(Transaction *tx);
+void create_blank_sig_txhash(unsigned char *blank_hash, Transaction *tx);
 
-int validate_tx(Transaction *tx);
+int check_input_unlockable(Transaction *tx);

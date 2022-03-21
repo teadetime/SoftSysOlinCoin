@@ -106,6 +106,11 @@ int validate_sig(
   }
 }
 
+void build_ctx_from_public(mbedtls_ecdsa_context *ctx, mbedtls_ecp_point *pub_key){
+  mbedtls_ecdsa_init(ctx);
+  mbedtls_ecp_group_load(&ctx->private_grp, CURVE);
+  ctx->private_Q = *pub_key;
+}
 
 size_t ser_pub_key(
     unsigned char *dest, mbedtls_ecp_point *point, mbedtls_ecp_group *grp
