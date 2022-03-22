@@ -100,7 +100,7 @@ static char  *test_validate_whole_block() {
   );
 
   Block *good_block = mine_block();
-    mu_assert(
+  mu_assert(
     "Block mined and hash meets difficulty",
     validate_block(good_block) == 0
   );
@@ -146,6 +146,105 @@ static char  *test_update_utxo_pool() {
   return NULL;
 }
 
+static char  *test_update_mempool() {
+  _fill_mempool();
+  Block *good_block = mine_block();
+  
+  unsigned int prev_mempool_size = HASH_COUNT(mempool);
+  update_mempool(good_block);
+  mu_assert(
+    "Mempool didn't change by expected amount",
+    prev_mempool_size-1 == HASH_COUNT(mempool)
+  );
+  return NULL;
+}
+
+static char  *test_accept_block() {
+  _fill_mempool();
+  unsigned int prev_height = chain_height;
+  Block *good_block = mine_block();
+  unsigned int prev_utxo_size = HASH_COUNT(utxo_pool);
+  unsigned int prev_wallet_size = HASH_COUNT(wallet_pool);
+  unsigned int prev_mempool_size = HASH_COUNT(mempool);
+  unsigned char block_hash[BLOCK_HASH_LEN];
+  hash_blockheader(block_hash, &(good_block->header));
+  accept_block(good_block);
+  mu_assert(
+    "Accept: Top Block Hash not set",
+    memcmp(top_block_header_hash, block_hash, BLOCK_HASH_LEN) == 0
+  );
+  mu_assert(
+    "Accepts: Chain height did not increase by 1",
+    chain_height == prev_height+1
+  );
+  mu_assert(
+    "Accept: Unable to locate block in blockchain",
+    blockchain_find(block_hash) == good_block
+  );
+  //UTXO TESTS
+  mu_assert(
+    "Accept: UTXO pool didn't change by expected amount",
+    prev_utxo_size+1 == HASH_COUNT(utxo_pool)
+  );
+  mu_assert(
+    "Accept: Wallet pool didn't change by expected amount",
+    prev_wallet_size+1 == HASH_COUNT(wallet_pool)
+  ); 
+  mu_assert(
+    "MinedBlock hash does not match difficulty",
+    validate_block(good_block) != 0
+  );
+  mu_assert(
+    "Accept: Mempool didn't change by expected amount",
+    prev_mempool_size-1 == HASH_COUNT(mempool)
+  );
+  return NULL;
+}
+
+
+static char  *test_handle_block() {
+  _fill_mempool();
+  unsigned int prev_height = chain_height;
+  Block *good_block = mine_block();
+  unsigned int prev_utxo_size = HASH_COUNT(utxo_pool);
+  unsigned int prev_wallet_size = HASH_COUNT(wallet_pool);
+  unsigned int prev_mempool_size = HASH_COUNT(mempool);
+  unsigned char block_hash[BLOCK_HASH_LEN];
+  hash_blockheader(block_hash, &(good_block->header));
+  handle_new_block(good_block);
+  // Accept tests because accept only runs if validation pasts
+  mu_assert(
+    "Handle: Top Block Hash not set",
+    memcmp(top_block_header_hash, block_hash, BLOCK_HASH_LEN) == 0
+  );
+  mu_assert(
+    "Handle: Chain height did not increase by 1",
+    chain_height == prev_height+1
+  );
+  mu_assert(
+    "Handle: Unable to locate block in blockchain",
+    blockchain_find(block_hash) == good_block
+  );
+  //UTXO TESTS
+  mu_assert(
+    "Handle: UTXO pool didn't change by expected amount",
+    prev_utxo_size+1 == HASH_COUNT(utxo_pool)
+  );
+  mu_assert(
+    "Handle: Wallet pool didn't change by expected amount",
+    prev_wallet_size+1 == HASH_COUNT(wallet_pool)
+  ); 
+  mu_assert(
+    "HaMinedBlock hash does not match difficulty",
+    validate_block(good_block) != 0
+  );
+  mu_assert(
+    "Accept: Mempool didn't change by expected amount",
+    prev_mempool_size-1 == HASH_COUNT(mempool)
+  );
+  return NULL;
+}
+
 // static char  *test_update_mempool() {
 //   _fill_mempool();
 //   Block *good_block = mine_block();
@@ -172,6 +271,9 @@ static char *all_tests() {
   mu_run_test(test_validate_whole_block);
   mu_run_test(test_update_local_blockchain);
   mu_run_test(test_update_utxo_pool);
+  mu_run_test(test_update_mempool);
+  mu_run_test(test_accept_block);
+  mu_run_test(test_handle_block);
   
   return NULL;
 }
