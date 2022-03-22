@@ -21,22 +21,22 @@ int validate_tx(Transaction *tx){
   return 0;
 }
 
-int validate_coinbase_tx(Transaction *coinbase_tx, Transaction **txs, unsigned int num_txs){
+int validate_coinbase_tx(Transaction **txs, unsigned int num_txs){
   unsigned int calculated_total_fees = 0;
   // Note starting at 1 skips the coinbase tx
   for(unsigned int i = 1; i < num_txs; i++){
     calculated_total_fees += calc_tx_fees(txs[i]);
   }
-  if(coinbase_tx->num_inputs != 0){
+  if(txs[0]->num_inputs != 0){
     return 1;
   }
-  if(coinbase_tx->num_outputs != 1){
+  if(txs[0]->num_outputs != 1){
     return 2;
   }
-  if(coinbase_tx->outputs == NULL){
+  if(txs[0]->outputs == NULL){
     return 3;
   }
-  if(calculated_total_fees + calc_block_reward(chain_height) != coinbase_tx->outputs[0].amt){
+  if(calculated_total_fees + calc_block_reward(chain_height) != txs[0]->outputs[0].amt){
     return 4;
   }
 
@@ -44,7 +44,7 @@ int validate_coinbase_tx(Transaction *coinbase_tx, Transaction **txs, unsigned i
 }
 
 int validate_txs(Transaction **txs, unsigned int num_txs){
-  if(validate_coinbase_tx(txs[0], txs, num_txs) != 0){
+  if(validate_coinbase_tx(txs, num_txs) != 0){
     return 1;
   }
   for(unsigned int i = 1; i < num_txs; i++){
@@ -120,7 +120,7 @@ void update_local_blockchain(Block *block){
 }
 
 void update_UTXO_pool_and_wallet_pool(Block *block){
-  for(unsigned int i = 0 ; i < block->num_txs; i++){
+  for(unsigned int i = 0; i < block->num_txs; i++){
     for(unsigned int j = 0; j < block->txs[i]->num_outputs; j++){
       utxo_pool_add(block->txs[i], j); // Don't need to do anything with return
       mbedtls_ecdsa_context *keypair = check_if_output_unlockable(block->txs[i], j);
@@ -129,7 +129,7 @@ void update_UTXO_pool_and_wallet_pool(Block *block){
       }
     }
     for(unsigned int k = 0; k < block->txs[i]->num_inputs; k++){
-      UTXO * spent_utxo = utxo_pool_remove(block->txs[i]->inputs[k].prev_tx_id,
+      UTXO *spent_utxo = utxo_pool_remove(block->txs[i]->inputs[k].prev_tx_id,
         block->txs[i]->inputs[k].prev_utxo_output);
       free(spent_utxo);
       wallet_pool_remove(block->txs[i]->inputs[k].prev_tx_id, 
