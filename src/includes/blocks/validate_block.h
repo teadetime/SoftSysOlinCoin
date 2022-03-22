@@ -31,6 +31,7 @@ void add_to_pending_blocks(unsigned char *curr_header);
 int validate_prev_block_exists(Block *block);
 
 int validate_all_tx_hash(Block *block);
+
 int validate_block(Block *block);
 
 void update_local_blockchain(Block *block);

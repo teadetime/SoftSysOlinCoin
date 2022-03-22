@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2022
  * 
  */
+#include "validate_block.h"
 #include "create_block.h"
 #include "mempool.h"
 #include "blockchain.h"
