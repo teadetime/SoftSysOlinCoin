@@ -186,7 +186,18 @@ void print_tx(Transaction *tx, char *prefix){
 }
 
 void free_tx(Transaction *tx){
-  free(tx->inputs);
-  free(tx->outputs);
+  if(tx != NULL){
+    if(tx->inputs != NULL){
+      for(unsigned int i = 0; i < tx->num_inputs; i++ ){
+        if(tx->inputs[i].pub_key != NULL){
+          mbedtls_ecp_keypair_free(tx->inputs[i].pub_key);
+        }
+      }
+      free(tx->inputs);
+    }
+    if(tx->outputs != NULL){
+      free(tx->outputs);
+    }
   free(tx);
+  }
 }

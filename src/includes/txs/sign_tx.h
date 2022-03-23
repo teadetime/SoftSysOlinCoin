@@ -74,7 +74,8 @@ int validate_sig(
 
 /**
  * @brief Build a mbed keypair with only a public key, for input unlocking
- * 
+ * Note this should only be used to copy into statically allocated key pairs 
+ * since public keys are prone to being freed often
  * @param ctx key pair previously allocated that still needs initialized and set
  * @param pub_key public key to put into the key pair
  */

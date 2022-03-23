@@ -25,6 +25,16 @@ void create_blank_sig_txhash(unsigned char *blank_hash, Transaction *tx){
   blank_sig_tx->outputs = malloc(tx->num_outputs*sizeof(Output));
 
   memcpy(blank_sig_tx->inputs, tx->inputs, tx->num_inputs*sizeof(Input));
+
+  // Copy the keys so that they aren't freed!
+  for(unsigned int i = 0; i<tx->num_inputs; i++){
+    blank_sig_tx->inputs[i].pub_key = malloc(sizeof(mbedtls_ecp_point));
+    mbedtls_ecp_point_init(blank_sig_tx->inputs[i].pub_key);
+    mbedtls_ecp_copy(
+      blank_sig_tx->inputs[i].pub_key,
+      tx->inputs[i].pub_key
+    );
+  }
   memcpy(blank_sig_tx->outputs, tx->outputs, tx->num_outputs*sizeof(Output));
   
   for(unsigned int i = 0; i < blank_sig_tx->num_inputs; i++){
@@ -37,12 +47,7 @@ void create_blank_sig_txhash(unsigned char *blank_hash, Transaction *tx){
 }
 
 int check_input_unlockable(Input *input, unsigned char *blank_tx_hash){
-  unsigned char test_pub_key_hash[PUB_KEY_HASH_LEN];
   mbedtls_ecdsa_context new_key;
-  UTXO *old_utxo;
-  //unsigned char blank_tx_hash[TX_HASH_LEN];
-  // create_blank_sig_txhash(blank_tx_hash, tx);
-
   build_ctx_from_public(&new_key, input->pub_key);
   if(validate_sig(input->signature, input->sig_len, blank_tx_hash,
                   TX_HASH_LEN, &new_key) != 0){
@@ -74,15 +79,6 @@ int validate_inputs_vs_outputs(Transaction *tx){
   return 0;
 }
 
-
-int validate_input_not_in_mempool(Input *input){
-  Transaction *mempool_tx;
-  mempool_tx = mempool_find(input->prev_tx_id);
-  if(mempool_tx != NULL){
-    return 1;
-  }
-}
-
 int validate_input_matches_utxopool(Input *input){
   mbedtls_ecdsa_context new_key;
   unsigned char test_pub_key_hash[PUB_KEY_HASH_LEN];
@@ -105,18 +101,24 @@ int validate_input(Input *input, unsigned char *blank_tx_hash){
 }
 
 int validate_tx_not_null(Transaction *tx){
-  if(tx->num_inputs != 0){
+  if(tx == NULL){
     return 1;
   }
-  if(tx->inputs != NULL){
+  if(tx->num_inputs == NULL){
     return 2;
   }
-  if(tx->num_outputs != 0){
-    return 3;
+  if(tx->num_inputs != 0){// Note 0 inputs happen for a coinbase tx and we expect inputs = Null
+    if(tx->inputs == NULL){
+      return 3;
+    }
   }
-  if(tx->outputs != NULL){
+  if(tx->num_outputs == 0){
     return 4;
   }
+  if(tx->outputs == NULL){
+    return 5;
+  }
+  return 0;
 }
 
 int validate_tx(Transaction *tx){
