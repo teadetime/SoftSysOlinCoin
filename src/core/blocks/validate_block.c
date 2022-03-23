@@ -19,22 +19,25 @@
 
 
 int validate_coinbase_tx(Transaction **txs, unsigned int num_txs){
+  if(validate_tx_parts_not_null(txs[0]) != 0){
+    return 1;
+  }
   unsigned int calculated_total_fees = 0;
   // Note starting at 1 skips the coinbase tx
   for(unsigned int i = 1; i < num_txs; i++){
     calculated_total_fees += calc_tx_fees(txs[i]);
   }
   if(txs[0]->num_inputs != 0){
-    return 1;
-  }
-  if(txs[0]->num_outputs != 1){
     return 2;
   }
-  if(txs[0]->outputs == NULL){
+  if(txs[0]->num_outputs != 1){
     return 3;
   }
-  if(calculated_total_fees + calc_block_reward(chain_height) != txs[0]->outputs[0].amt){
+  if(txs[0]->outputs == NULL){
     return 4;
+  }
+  if(calculated_total_fees + calc_block_reward(chain_height) != txs[0]->outputs[0].amt){
+    return 5;
   }
 
   return 0;
@@ -46,7 +49,7 @@ int validate_txs(Transaction **txs, unsigned int num_txs){
       return 1;
     }
   }
-  if(validate_coinbase_tx(txs[0], txs, num_txs) != 0){
+  if(validate_coinbase_tx(txs, num_txs) != 0){
     return 2;
   }
 

@@ -100,7 +100,7 @@ int validate_input(Input *input, unsigned char *blank_tx_hash){
   int input_unlockable = check_input_unlockable(input, blank_tx_hash);
 }
 
-int validate_tx_not_null(Transaction *tx){
+int validate_tx_parts_not_null(Transaction *tx){
   if(tx == NULL){
     return 1;
   }
@@ -125,7 +125,7 @@ int validate_tx(Transaction *tx){
   unsigned long total_in = 0;
   unsigned long total_out = 0;
   unsigned char blank_tx_hash[TX_HASH_LEN];
-  if(validate_tx_not_null(tx) != 0){
+  if(validate_tx_parts_not_null(tx) != 0){
     return 1;
   }
   create_blank_sig_txhash(blank_tx_hash, tx);
@@ -140,9 +140,12 @@ int validate_tx(Transaction *tx){
 
   for(unsigned int i = 0; i < tx->num_outputs; i++){
     total_out += tx->outputs->amt;
+    if(tx->outputs->public_key_hash == NULL){
+      return 3;
+    }
   }
   if(total_in < total_out){
-    return 3;
+    return 4;
   }
   return 0;
 }
