@@ -210,7 +210,7 @@ static char  *test_calc_num_tx_target() {
   return NULL;
 }
 
-static char  *test_get_difficulty() {
+static char  *test_coinbase_tx() {
   mu_assert(
     "difficulty doesn't match constant",
     get_difficulty() == HASH_DIFFICULTY
@@ -223,7 +223,7 @@ static char  *test_get_difficulty() {
 static char *all_tests() {
   mu_run_test(test_calc_block_reward);
   mu_run_test(test_calc_num_tx_target);
-  mu_run_test(test_get_difficulty);
+  mu_run_test(test_coinbase_tx);
   mu_run_test(test_create_coinbase_tx);
   mu_run_test(test_get_txs_from_mempool);
   mu_run_test(test_hash_all);
