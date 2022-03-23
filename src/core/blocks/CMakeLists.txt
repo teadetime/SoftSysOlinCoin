@@ -2,6 +2,7 @@ message(STATUS "In Core Blocks: ${CMAKE_CURRENT_SOURCE_DIR}")
 set(BLOCK_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/base_block.c
   ${CMAKE_CURRENT_SOURCE_DIR}/create_block.c 
+  ${CMAKE_CURRENT_SOURCE_DIR}/validate_block.c 
   # ADD TX SOURCES HERE
   CACHE INTERNAL "")
 set(SOURCES_ALL 

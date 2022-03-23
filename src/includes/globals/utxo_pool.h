@@ -78,12 +78,12 @@ UTXOPool *utxo_pool_find_node(unsigned char *tx_hash, unsigned int vout);
  */
 UTXOPool *utxo_pool_find_node_key(UTXOPoolKey *key);
 
-/*
-Prints a utxo to stdout, for visualization
-
-utxo: utxo to print
-prefix: string to put in front of all print commands used for tabbing structure
-*/
+/**
+ * @brief Prints a utxo to stdout, for visualization
+ * 
+ * @param utxo utxo to print
+ * @param prefix tring to put in front of all print commands used for tabbing structure
+ */
 void print_utxo(UTXO *utxo, char *prefix);
 
 /*

@@ -129,3 +129,7 @@ KeyPool *key_pool_find_node(unsigned char *public_key_hash) {
   HASH_FIND(hh, key_pool, public_key_hash, PUB_KEY_HASH_LEN, found_entry);
   return found_entry;
 }
+
+mbedtls_ecdsa_context *check_if_output_unlockable(Transaction *tx, unsigned int vout){
+  return key_pool_find(tx->outputs[vout].public_key_hash);
+}
