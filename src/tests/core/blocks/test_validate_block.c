@@ -51,10 +51,10 @@ void _fill_mempool(){
 
 static char  *test_coinbase_tx() {
   _fill_mempool();
-  Block *test_block = create_block_alloc();
+  Block *test_block = create_block_alloc(); // Note this creates a valid block
   
   mu_assert(
-    "Incorrect Coinbase TX",
+    "Coinbase Validation Broken",
     validate_coinbase_tx(test_block->txs, test_block->num_txs) == 0
   );
   return NULL;
@@ -65,7 +65,7 @@ static char  *test_validate_txs() {
   Block *test_block = create_block_alloc();
   
   mu_assert(
-    "Some transactions invalid",
+    "Transaction validation failing on valid txs",
     validate_txs(test_block->txs, test_block->num_txs) == 0
   );
   return NULL;
@@ -75,7 +75,7 @@ static char  *test_validate_prev_block() {
   _fill_mempool();
   Block *test_block = create_block_alloc();
   mu_assert(
-    "Previous block hash doesn't exist or isn't top block",
+    "Previous block hash compare error",
     validate_prev_block_exists(test_block) == 0
   );
   return NULL;
@@ -85,7 +85,7 @@ static char  *test_validate_all_tx() {
   _fill_mempool();
   Block *test_block = create_block_alloc();
   mu_assert(
-    "Previous block hash doesn't exist or isn't top block",
+    "Failed Validation of good all_tx_hash",
     validate_all_tx_hash(test_block) == 0
   );
   return NULL;

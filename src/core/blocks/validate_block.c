@@ -115,8 +115,7 @@ int validate_block(Block *block){
 }
 
 void update_local_blockchain(Block *block){
-  // NOTE: NOT DEALING WITH BRANCHES HERE
-  hash_blockheader(top_block_header_hash, &(block->header));
+  // NOTE: NOT DEALING WITH BRANCHES HERE This is left for branch resolution code here
   blockchain_add(block);  // T\NOTE this increases chain height and sets new top header hash
 }
 
