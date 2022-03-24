@@ -101,8 +101,9 @@ int validate_sig(
     return 1;
   else {
     mbedtls_strerror(err, buf, ERR_BUF);
-    printf("Validate signature error! %s\n", buf);
-    exit(1);
+    // printf("Validate signature error! %s\n", buf);
+    // exit(1);
+    return 1;
   }
 }
 
