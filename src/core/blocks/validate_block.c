@@ -19,7 +19,7 @@
 
 
 int validate_coinbase_tx(Transaction **txs, unsigned int num_txs){
-  if(validate_tx_parts_not_null(txs[0]) != 0){
+  if(validate_coinbase_tx_parts_not_null(txs[0]) != 0){
     return 1;
   }
   unsigned int calculated_total_fees = 0;
@@ -27,25 +27,17 @@ int validate_coinbase_tx(Transaction **txs, unsigned int num_txs){
   for(unsigned int i = 1; i < num_txs; i++){
     calculated_total_fees += calc_tx_fees(txs[i]);
   }
-  if(txs[0]->num_inputs != 0){
-    return 2;
-  }
-  if(txs[0]->num_outputs != 1){
-    return 3;
-  }
-  if(txs[0]->outputs == NULL){
-    return 4;
-  }
+
   if(calculated_total_fees + calc_block_reward(chain_height) != txs[0]->outputs[0].amt){
-    return 5;
+    return 2;
   }
 
   return 0;
 }
 
-int validate_txs(Transaction **txs, unsigned int num_txs){
+int validate_incoming_block_txs(Transaction **txs, unsigned int num_txs){
   for(unsigned int i = 1; i < num_txs; i++){
-    if(validate_tx(txs[i]) != 0){
+    if(validate_tx_shared(txs[i]) != 0){
       return 1;
     }
   }
@@ -106,7 +98,7 @@ int validate_block(Block *block){
     return 3;
   }
 
-  int valid_txs = validate_txs(block->txs, block->num_txs);
+  int valid_txs = validate_incoming_block_txs(block->txs, block->num_txs);
   if(valid_txs != 0){
     return 4;
   }

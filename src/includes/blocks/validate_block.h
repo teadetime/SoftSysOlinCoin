@@ -18,11 +18,11 @@ seems like a list would be okay but it's really a tree data structure?
 
 
 // WILL BE WRITTEN IN A SEPARATE PR by EAMON?
-int validate_tx(Transaction *tx);
+int validate_tx_shared(Transaction *tx);
 
 int validate_coinbase_tx(Transaction **txs, unsigned int num_txs);
 
-int validate_txs(Transaction **txs, unsigned int num_txs);
+int validate_incoming_block_txs(Transaction **txs, unsigned int num_txs);
 ///OPTIONAL
 void request_prev_block(unsigned char *prev_header);
 

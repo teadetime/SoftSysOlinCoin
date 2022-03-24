@@ -15,9 +15,9 @@
 #include "mbedtls/ecdsa.h"
 #include "sign_tx.h"
 #include "create_block.h"
+#include "validate_tx.h"
 
 void create_blank_sig_txhash(unsigned char *blank_hash, Transaction *tx){
-
   Transaction *blank_sig_tx = malloc(sizeof(Transaction));
   memcpy(blank_sig_tx, tx, sizeof(Transaction));
 
@@ -56,29 +56,6 @@ int check_input_unlockable(Input *input, unsigned char *blank_tx_hash){
   return 0;
 }
 
-int validate_inputs_vs_outputs(Transaction *tx){
-  // This functionality is extremely similar to calc_tx_fees....
-  UTXO *old_utxo;
-  unsigned int total_in = 0;
-  unsigned int total_out = 0;
-  for(unsigned int i = 0; i < tx->num_inputs; i++){
-    // Make sure the referenced utxo exists and the pubilc key matches the hash
-    old_utxo = utxo_pool_find(tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
-    if(old_utxo == NULL){
-      return 1;
-    }
-    total_in += old_utxo->amt;
-  }
-  for(unsigned int i = 0; i < tx->num_outputs; i++){
-    total_out += tx->outputs[i].amt;
-  }
-
-  if(total_in < total_out){
-    return 2;
-  }
-  return 0;
-}
-
 int validate_input_matches_utxopool(Input *input){
   mbedtls_ecdsa_context new_key;
   unsigned char test_pub_key_hash[PUB_KEY_HASH_LEN];
@@ -95,17 +72,20 @@ int validate_input_matches_utxopool(Input *input){
 }
 
 int validate_input(Input *input, unsigned char *blank_tx_hash){
-  int not_in_mempool = validate_input_not_in_mempool(input);
   int input_matches_uxto = validate_input_matches_utxopool(input);
   int input_unlockable = check_input_unlockable(input, blank_tx_hash);
+  if(input_matches_uxto != 0){
+    return 1;
+  }
+  if(input_unlockable != 0){
+    return 2;
+  }
+  return 0;
 }
 
 int validate_tx_parts_not_null(Transaction *tx){
   if(tx == NULL){
     return 1;
-  }
-  if(tx->num_inputs == NULL){
-    return 2;
   }
   if(tx->num_inputs != 0){// Note 0 inputs happen for a coinbase tx and we expect inputs = Null
     if(tx->inputs == NULL){
@@ -120,8 +100,27 @@ int validate_tx_parts_not_null(Transaction *tx){
   }
   return 0;
 }
+int validate_coinbase_tx_parts_not_null(Transaction *coinbase_tx){
+  if(coinbase_tx == NULL){
+    return 1;
+  }
+  if(coinbase_tx->num_inputs != 0){
+    return 2;
+  }
+  if(coinbase_tx->inputs != NULL){
+    return 3;
+  }
+  if(coinbase_tx->num_outputs != 1){
+    return 4;
+  }
+  if(coinbase_tx->outputs == NULL){
+    return 5;
+  }
+  return 0;
+}
+  
 
-int validate_tx(Transaction *tx){
+int validate_tx_shared(Transaction *tx){
   unsigned long total_in = 0;
   unsigned long total_out = 0;
   unsigned char blank_tx_hash[TX_HASH_LEN];

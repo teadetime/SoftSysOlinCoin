@@ -7,15 +7,17 @@
 #include "sign_tx.h"
 #include "blockchain.h"
 #include "wallet_pool.h"
+#include "sign_tx.h"
 
 int tests_run = 0;
 
+mbedtls_ecdsa_context *last_key_pair;
 Transaction *_make_tx() {
   Transaction *tx;
   Input *in;
   Output *out;
   mbedtls_ecdsa_context *key_pair;
-
+  mbedtls_ecdsa_context *output_key_pair;
   tx = malloc(sizeof(Transaction));
   in = malloc(sizeof(Input));
   out = malloc(sizeof(Output));
@@ -23,9 +25,13 @@ Transaction *_make_tx() {
   memset(in, 0, sizeof(Input));
   key_pair = gen_keys();
   in->pub_key = &(key_pair->private_Q);
+  in->sig_len = 0;
 
   memset(out, 0, sizeof(Output));
 
+  output_key_pair = gen_keys();
+  hash_pub_key(out->public_key_hash, output_key_pair);
+  last_key_pair = output_key_pair;
   tx->num_inputs = 1;
   tx->inputs = in;
   tx->num_outputs = 1;
@@ -40,11 +46,17 @@ void _fill_mempool(){
   input_tx->outputs[0].amt = 100;
   utxo_pool_init();
   utxo_pool_add(input_tx, 0);
-
+  mbedtls_ecdsa_context *input_tx_context = malloc(sizeof(mbedtls_ecdsa_context));
+  memcpy(input_tx_context, last_key_pair, sizeof(mbedtls_ecdsa_context));
   tx1 = _make_tx();
   hash_tx(tx1->inputs[0].prev_tx_id, input_tx);
   tx1->inputs[0].prev_utxo_output = 0;
+  tx1->inputs[0].pub_key = &input_tx_context->private_Q;
   tx1->outputs[0].amt = 90; 
+
+  unsigned char temp_hash[TX_HASH_LEN];
+  hash_tx(temp_hash, tx1);
+  tx1->inputs[0].sig_len = write_sig(tx1->inputs[0].signature, SIGNATURE_LEN, temp_hash, TX_HASH_LEN, input_tx_context);
   mempool_init();
   mempool_add(tx1);
 }
@@ -66,7 +78,7 @@ static char  *test_validate_txs() {
   
   mu_assert(
     "Transaction validation failing on valid txs",
-    validate_txs(test_block->txs, test_block->num_txs) == 0
+    validate_incoming_block_txs(test_block->txs, test_block->num_txs) == 0
   );
   return NULL;
 }

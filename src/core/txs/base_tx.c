@@ -152,6 +152,7 @@ void print_input(Input *input, char *prefix){
   printf("%sInput Data  Sizeof(%li):\n", prefix, sizeof(Input));
   //printf("%sSignature: %s\n", sub_prefix, input->signature);
   dump_buf(sub_prefix, "signature:", input->signature, SIGNATURE_LEN);
+  printf("%ssig_len: %li\n", sub_prefix, input->sig_len);
   printf("%sprev_tx_id: %s\n", sub_prefix, input->prev_tx_id);
   printf("%sprev_output_num: %i\n", sub_prefix, input->prev_utxo_output);
   free(sub_prefix);
@@ -190,7 +191,7 @@ void free_tx(Transaction *tx){
     if(tx->inputs != NULL){
       for(unsigned int i = 0; i < tx->num_inputs; i++ ){
         if(tx->inputs[i].pub_key != NULL){
-          mbedtls_ecp_keypair_free(tx->inputs[i].pub_key);
+          mbedtls_ecp_point_free(tx->inputs[i].pub_key);
         }
       }
       free(tx->inputs);

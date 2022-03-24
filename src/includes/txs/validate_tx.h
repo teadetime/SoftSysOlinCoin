@@ -28,14 +28,6 @@ void create_blank_sig_txhash(unsigned char *blank_hash, Transaction *tx);
 int check_input_unlockable(Input *input, unsigned char *blank_tx_hash);
 
 /**
- * @brief Check to make sure the inputs are large enough for the output amounts
- * 
- * @param tx transaction to check
- * @return int 0 if inputs are equal or larger, not zero if they are larger
- */
-int validate_inputs_vs_outputs(Transaction *tx);
-
-/**
  * @brief Check if the inputs to a transaction exists in the utxo pool ignoring 
  * spent flag now. This cna likely be replaced by just checkign to see if the 
  * tx is in the mempool
@@ -65,9 +57,17 @@ int validate_input(Input *input, unsigned char *blank_tx_hash);
 int validate_tx_parts_not_null(Transaction *tx);
 
 /**
- * @brief Overall wrapper to validate an entire transaction
+ * @brief Check if a coinbase TX has a Null value in an improper place
+ * 
+ * @param tx coinbase tx to check 
+ * @return int 0 if a valid transaction, not zero if invalid
+ */
+int validate_coinbase_tx_parts_not_null(Transaction *tx);
+  
+/**
+ * @brief Overall wrapper to validate an entire transaction that is NOT a Coinbase_tx
  * 
  * @param tx transaction to validate
  * @return int 0 if transaction is valid, not zero if invalid
  */
-int validate_tx(Transaction *tx);
+int validate_tx_shared(Transaction *tx);
