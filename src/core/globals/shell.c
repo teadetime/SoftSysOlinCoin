@@ -7,6 +7,7 @@
 #include "create_block.h"
 #include "constants.h"
 #include "wallet.h"
+#include "blockchain.h"
 
 #define DELIMS " \t\n"
 #define ARG_SIZE 32
@@ -15,6 +16,7 @@ char *shell_command_names[] = {
   "mine",
   "create_tx",
   "print_chain",
+  "print_block",
   "exit",
 };
 
@@ -22,6 +24,7 @@ int (*shell_command_funcs[]) (size_t, char **) = {
   &shell_mine,
   &shell_build_tx,
   &shell_print_chain,
+  &shell_print_block,
   &shell_exit,
 };
 
@@ -29,6 +32,7 @@ size_t shell_command_num_args[] = {
   1,
   3,
   1,
+  2,
   1,
 };
 
@@ -46,7 +50,15 @@ size_t arg_len(char **args) {
 int shell_mine(size_t num_args, char **args) {
   (void)args;
   (void)num_args;
-  printf("MINE\n");
+  Block *block;
+  unsigned char header_hash[BLOCK_HASH_LEN];
+
+  printf("Mining...\n");
+  block = mine_block();
+  hash_blockheader(header_hash, &block->header);
+  printf("Block mined!\n\n");
+  dump_buf("", "Hash: ", header_hash, BLOCK_HASH_LEN);
+  pretty_print_block(block, "");
   return 0;
 }
 
@@ -60,7 +72,26 @@ int shell_build_tx(size_t num_args, char **args) {
 int shell_print_chain(size_t num_args, char **args) {
   (void)args;
   (void)num_args;
-  printf("PRINT\n");
+  pretty_print_blockchain_hashmap();
+  return 0;
+}
+
+int shell_print_block(size_t num_args, char **args) {
+  (void)num_args;
+  unsigned char buf[BLOCK_HASH_LEN];
+  char *hex_str;
+  Block *block;
+
+  hex_str = args[1];
+  for (int i = 0; i < BLOCK_HASH_LEN; i++)
+    sscanf(hex_str + 2 * i, "%02x", (unsigned int*)&buf[i]);
+
+  block = blockchain_find(buf);
+  if (!block) {
+    printf("print_block: block not found\n");
+    return 0;
+  }
+  pretty_print_block(block, "");
   return 0;
 }
 

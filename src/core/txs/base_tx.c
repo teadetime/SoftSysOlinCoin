@@ -4,6 +4,7 @@
 
 #include "base_tx.h"
 #include "sign_tx.h"
+#include "utxo_pool.h"
 
 unsigned char *ser_utxo(UTXO *utxo){
   unsigned char *data = malloc(sizeof(UTXO));
@@ -183,4 +184,22 @@ void print_tx(Transaction *tx, char *prefix){
     print_output(&(tx->outputs[i]), sub_prefix);
   }
   free(sub_prefix);
+}
+
+void pretty_print_tx(Transaction *tx, char *prefix){
+  unsigned long total_in;
+  UTXO *input_utxo;
+
+  total_in = 0;
+  for(unsigned int i = 0; i < tx->num_inputs; i++){
+    input_utxo = utxo_pool_find(tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
+    total_in += input_utxo->amt;
+  }
+  printf("%sTotal input amount: %lu\n", prefix, total_in);
+
+  printf("%sOutputs:\n", prefix);
+  for(unsigned int i = 0; i < tx->num_outputs; i++){
+    printf("%s  Amount: %lu\n", prefix, tx->outputs[i].amt);
+    dump_buf(prefix, "  Address: ", tx->outputs[i].public_key_hash, PUB_KEY_HASH_LEN);
+  }
 }

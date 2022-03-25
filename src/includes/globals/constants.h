@@ -17,6 +17,9 @@
 #define MINING_NODE 1
 #define WALLET_NODE 1
 
+#define LINE_BREAK "================================\n"
+#define SOFT_LINE_BREAK "--------------------------------\n"
+
 
  /*
  returns 1 if successful hash of input data

@@ -15,6 +15,7 @@ size_t arg_len(char **args);
 int shell_mine(size_t num_args, char **args);
 int shell_build_tx(size_t num_args, char **args);
 int shell_print_chain(size_t num_args, char **args);
+int shell_print_block(size_t num_args, char **args);
 int shell_exit(size_t num_args, char **args);
 
 char *shell_read_line();
