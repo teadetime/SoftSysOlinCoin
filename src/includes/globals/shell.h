@@ -8,6 +8,7 @@ typedef struct {
   char *name;
   int (*func)(char **);
   size_t num_args;
+  char *help;
 } Command;
 
 typedef struct {
@@ -26,6 +27,7 @@ int shell_build_tx(char **args);
 int shell_print_chain(char **args);
 int shell_print_block(char **args);
 int shell_exit(char **args);
+int shell_help(char **args);
 
 char *shell_read_line();
 char **shell_tokenize(char *line);

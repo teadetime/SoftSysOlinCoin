@@ -14,11 +14,30 @@
 #define ARG_SIZE 32
 
 Command shell_commands[] = {
-  {.name = "mine", .func = &shell_mine, .num_args = 1},
-  {.name = "create_tx", .func = &shell_build_tx, .num_args = 4},
-  {.name = "print_chain", .func = &shell_print_chain, .num_args = 1},
-  {.name = "print_block", .func = &shell_print_block, .num_args = 2},
-  {.name = "exit", .func = &shell_exit, .num_args = 1},
+  {
+    .name = "mine", .func = &shell_mine, .num_args = 1,
+    .help = "Usage: mine\nMine a new block"
+  },
+  {
+    .name = "create_tx", .func = &shell_build_tx, .num_args = 4,
+    .help = "Usage: create_tx ADDRESS AMT FEE\nCreate a new transaction"
+  },
+  {
+    .name = "print_chain", .func = &shell_print_chain, .num_args = 1,
+    .help = "Usage: print_chain\nPrint the blockchain"
+  },
+  {
+    .name = "print_block", .func = &shell_print_block, .num_args = 2,
+    .help = "Usage: print_block BLOCK_HASH\nPrint a block"
+  },
+  {
+    .name = "exit", .func = &shell_exit, .num_args = 1,
+    .help = "Usage: exit\nExit shell"
+  },
+  {
+    .name = "help", .func = &shell_help, .num_args = 1,
+    .help = "Usage: help\nShow help"
+  },
 };
 
 size_t arg_len(char **args) {
@@ -119,7 +138,22 @@ int shell_print_block(char **args) {
 
 int shell_exit(char **args) {
   (void)args;
-  exit(EXIT_SUCCESS);
+  return 1;
+}
+
+int shell_help(char **args) {
+  int len;
+  (void)args;
+
+  len = sizeof(shell_commands) / sizeof(Command);
+  printf("Available shell commands:\n");
+  printf(LINE_BREAK);
+  for (int i = 0; i < len; i++) {
+    printf("%s\n", shell_commands[i].name);
+    printf("%s\n", shell_commands[i].help);
+    printf(SOFT_LINE_BREAK);
+  }
+  return 0;
 }
 
 char *shell_read_line() {
@@ -173,11 +207,17 @@ char **shell_tokenize(char *line) {
 int shell_execute(size_t num_args, char **args) {
   CommandPool *entry;
   Command *cmd;
+  int len, i;
 
   HASH_FIND_STR(shell_command_pool, args[0], entry);
 
   if (!entry) {
     printf("command not found: %s\n", args[0]);
+    printf("available commands: ");
+    len = sizeof(shell_commands) / sizeof(Command);
+    for (i = 0; i < len; i++)
+      printf("%s, ", shell_commands[i].name);
+    printf("\n");
     return 0;
   }
 
