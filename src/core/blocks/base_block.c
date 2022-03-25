@@ -95,12 +95,10 @@ void print_block(Block *block, char *prefix){
 
 void pretty_print_block(Block *block, char *prefix){
   pretty_print_block_header(&block->header, prefix);
+  printf("%s\n%i Transaction%s\n", prefix, block->num_txs, (block->num_txs > 1 ? "s" : ""));
   printf(LINE_BREAK);
-  printf("%s%i Transaction%s\n", prefix, block->num_txs, (block->num_txs > 1 ? "s" : ""));
-  printf(SOFT_LINE_BREAK);
   for(unsigned int i=0; i<block->num_txs; i++){
     pretty_print_tx(block->txs[i], prefix);
-    printf(SOFT_LINE_BREAK);
+    printf(LINE_BREAK);
   }
-  printf(LINE_BREAK);
 }

@@ -8,6 +8,7 @@
 #include "constants.h"
 #include "wallet.h"
 #include "blockchain.h"
+#include "mempool.h"
 
 #define DELIMS " \t\n"
 #define ARG_SIZE 32
@@ -30,7 +31,7 @@ int (*shell_command_funcs[]) (size_t, char **) = {
 
 size_t shell_command_num_args[] = {
   1,
-  3,
+  4,
   1,
   2,
   1,
@@ -47,6 +48,20 @@ size_t arg_len(char **args) {
   return l - 1;
 }
 
+void str_to_buf(
+    unsigned char *dest, char *hex_str,
+    size_t dest_len, size_t src_len
+) {
+  size_t i;
+
+  i = 0;
+  memset(dest, 0, dest_len);
+  while (i < dest_len && i * 2 < src_len) {
+    sscanf(hex_str + 2 * i, "%02x", (unsigned int*)&dest[i]);
+    i++;
+  }
+}
+
 int shell_mine(size_t num_args, char **args) {
   (void)args;
   (void)num_args;
@@ -59,13 +74,40 @@ int shell_mine(size_t num_args, char **args) {
   printf("Block mined!\n\n");
   dump_buf("", "Hash: ", header_hash, BLOCK_HASH_LEN);
   pretty_print_block(block, "");
+
+  unsigned char tx_hash[TX_HASH_LEN];
+  hash_tx(tx_hash, block->txs[0]);
   return 0;
 }
 
 int shell_build_tx(size_t num_args, char **args) {
-  (void)args;
   (void)num_args;
-  printf("BUILD\n");
+  Transaction *tx;
+  TxOptions *options;
+  Output *output;
+  char *end;
+
+  output = malloc(sizeof(Output));
+  str_to_buf(
+      output->public_key_hash, args[1],
+      PUB_KEY_HASH_LEN, strlen(args[1])
+  );
+  output->amt = strtoul(args[2], &end, 10);
+
+  options = malloc(sizeof(TxOptions));
+  options->num_dests = 1;
+  options->dests = output;
+  options->tx_fee = strtoul(args[3], &end, 10);
+
+  tx = build_tx(options);
+  mempool_add(tx);
+
+  printf("Transaction created!\n\n");
+  pretty_print_tx(tx, "");
+
+  free(output);
+  free(options);
+
   return 0;
 }
 
@@ -79,14 +121,14 @@ int shell_print_chain(size_t num_args, char **args) {
 int shell_print_block(size_t num_args, char **args) {
   (void)num_args;
   unsigned char buf[BLOCK_HASH_LEN];
-  char *hex_str;
   Block *block;
 
-  hex_str = args[1];
-  for (int i = 0; i < BLOCK_HASH_LEN; i++)
-    sscanf(hex_str + 2 * i, "%02x", (unsigned int*)&buf[i]);
-
+  str_to_buf(
+      buf, args[1],
+      BLOCK_HASH_LEN, strlen(args[1])
+  );
   block = blockchain_find(buf);
+
   if (!block) {
     printf("print_block: block not found\n");
     return 0;

@@ -12,6 +12,11 @@ typedef struct {
 } Command;
 
 size_t arg_len(char **args);
+void str_to_buf(
+    unsigned char *dest, char *hex_str,
+    size_t dest_len, size_t src_len
+);
+
 int shell_mine(size_t num_args, char **args);
 int shell_build_tx(size_t num_args, char **args);
 int shell_print_chain(size_t num_args, char **args);
