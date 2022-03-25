@@ -42,3 +42,17 @@ hash_sha256(dest, tx_buf, sizeof(tx_buf));
 dump_buf("Hash: ",dest, TX_HASH_LEN);
 */
 void dump_buf(char *prefix, const char *title, unsigned char *buf, size_t len);
+
+/**
+ * @brief Initializes node data structures
+ *
+ * Initializes blockchain and utxo pool
+ */
+void node_init();
+
+/**
+ * @brief Initializes miner data structures
+ *
+ * Initializes mempool
+ */
+void miner_init();
