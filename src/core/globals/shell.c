@@ -13,28 +13,12 @@
 #define DELIMS " \t\n"
 #define ARG_SIZE 32
 
-char *shell_command_names[] = {
-  "mine",
-  "create_tx",
-  "print_chain",
-  "print_block",
-  "exit",
-};
-
-int (*shell_command_funcs[]) (size_t, char **) = {
-  &shell_mine,
-  &shell_build_tx,
-  &shell_print_chain,
-  &shell_print_block,
-  &shell_exit,
-};
-
-size_t shell_command_num_args[] = {
-  1,
-  4,
-  1,
-  2,
-  1,
+Command shell_commands[] = {
+  {.name = "mine", .func = &shell_mine, .num_args = 1},
+  {.name = "create_tx", .func = &shell_build_tx, .num_args = 4},
+  {.name = "print_chain", .func = &shell_print_chain, .num_args = 1},
+  {.name = "print_block", .func = &shell_print_block, .num_args = 2},
+  {.name = "exit", .func = &shell_exit, .num_args = 1},
 };
 
 size_t arg_len(char **args) {
@@ -62,9 +46,8 @@ void str_to_buf(
   }
 }
 
-int shell_mine(size_t num_args, char **args) {
+int shell_mine(char **args) {
   (void)args;
-  (void)num_args;
   Block *block;
   unsigned char header_hash[BLOCK_HASH_LEN];
 
@@ -80,8 +63,7 @@ int shell_mine(size_t num_args, char **args) {
   return 0;
 }
 
-int shell_build_tx(size_t num_args, char **args) {
-  (void)num_args;
+int shell_build_tx(char **args) {
   Transaction *tx;
   TxOptions *options;
   Output *output;
@@ -111,15 +93,13 @@ int shell_build_tx(size_t num_args, char **args) {
   return 0;
 }
 
-int shell_print_chain(size_t num_args, char **args) {
+int shell_print_chain(char **args) {
   (void)args;
-  (void)num_args;
   pretty_print_blockchain_hashmap();
   return 0;
 }
 
-int shell_print_block(size_t num_args, char **args) {
-  (void)num_args;
+int shell_print_block(char **args) {
   unsigned char buf[BLOCK_HASH_LEN];
   Block *block;
 
@@ -130,16 +110,15 @@ int shell_print_block(size_t num_args, char **args) {
   block = blockchain_find(buf);
 
   if (!block) {
-    printf("print_block: block not found\n");
+    printf("%s: block not found\n", args[0]);
     return 0;
   }
   pretty_print_block(block, "");
   return 0;
 }
 
-int shell_exit(size_t num_args, char **args) {
+int shell_exit(char **args) {
   (void)args;
-  (void)num_args;
   exit(EXIT_SUCCESS);
 }
 
@@ -192,15 +171,18 @@ char **shell_tokenize(char *line) {
 }
 
 int shell_execute(size_t num_args, char **args) {
+  CommandPool *entry;
   Command *cmd;
 
-  HASH_FIND_STR(shell_commands, args[0], cmd);
+  HASH_FIND_STR(shell_command_pool, args[0], entry);
 
-  if (!cmd) {
+  if (!entry) {
     printf("command not found: %s\n", args[0]);
     return 0;
   }
-  else if (num_args < cmd->num_args) {
+
+  cmd = entry->cmd;
+  if (num_args < cmd->num_args) {
     printf("%s: missing arguments\n", cmd->name);
     return 0;
   }
@@ -209,7 +191,7 @@ int shell_execute(size_t num_args, char **args) {
     return 0;
   }
 
-  return cmd->func(num_args, args);
+  return cmd->func(args);
 }
 
 void shell_loop() {
@@ -242,16 +224,18 @@ void shell_init_globals() {
 
 void shell_init_commands() {
   int i, len;
-  Command *cmd;
+  CommandPool *entry;
 
-  shell_commands = NULL;
-  len = sizeof(shell_command_names) / sizeof(char*);
+  shell_command_pool = NULL;
+  len = sizeof(shell_commands) / sizeof(Command);
   for (i = 0; i < len; i++) {
-    cmd = malloc(sizeof(Command));
-    cmd->name = shell_command_names[i];
-    cmd->func = shell_command_funcs[i];
-    cmd->num_args = shell_command_num_args[i];
-    HASH_ADD_KEYPTR(hh, shell_commands, cmd->name, strlen(cmd->name), cmd);
+    entry = malloc(sizeof(CommandPool));
+    entry->cmd = &shell_commands[i];
+    HASH_ADD_KEYPTR(
+      hh, shell_command_pool,
+      entry->cmd->name, strlen(entry->cmd->name),
+      entry
+    );
   }
 }
 
