@@ -20,6 +20,19 @@ set(SOURCES_TX "" CACHE INTERNAL "used internally")
 set(SOURCES_BLOCK "" CACHE INTERNAL "used internally")
 set(SOURCES_GLOBAL "" CACHE INTERNAL "used internally")
 
+find_file(UTHASH_LIB NAMES utash.h)
+
+set(UTHASH_IN_PROJ "src/includes/uthash/")
+if(NOT ${UTHASH_LIB})
+  message(STATUS "Using uthash included in src")
+  set(INCLUDE_ALL 
+  ${INCLUDE_ALL}
+  ${CMAKE_CURRENT_SOURCE_DIR}/${UTHASH_IN_PROJ} 
+  CACHE INTERNAL "used internally")
+  message(STATUS ${INCLUDE_ALL})
+endif()
+
+
 set(COMPILE_OPTIONS_STD -Wall -Wextra -pedantic -O2 CACHE INTERNAL "used internally")
 set(BUILD_TESTS ON)
 set(BUILD_RUNTIME ON)  
