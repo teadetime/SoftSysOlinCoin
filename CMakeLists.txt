@@ -9,16 +9,10 @@ set(CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 set(INCLUDE_ALL "" CACHE INTERNAL "used internally")
-set(SOURCES_ALL "" CACHE INTERNAL "used internally")
-
-
 set(INCLUDE_TX "" CACHE INTERNAL "used internally")
 set(INCLUDE_BLOCK "" CACHE INTERNAL "used internally")
 set(INCLUDE_GLOBAL "" CACHE INTERNAL "used internally")
 set(INCLUDE_TEST "" CACHE INTERNAL "used internally")
-set(SOURCES_TX "" CACHE INTERNAL "used internally")
-set(SOURCES_BLOCK "" CACHE INTERNAL "used internally")
-set(SOURCES_GLOBAL "" CACHE INTERNAL "used internally")
 
 find_file(UTHASH_LIB NAMES utash.h)
 
@@ -26,9 +20,9 @@ set(UTHASH_IN_PROJ "src/includes/uthash/")
 if(NOT ${UTHASH_LIB})
   message(STATUS "Using uthash included in src")
   set(INCLUDE_ALL 
-  ${INCLUDE_ALL}
-  ${CMAKE_CURRENT_SOURCE_DIR}/${UTHASH_IN_PROJ} 
-  CACHE INTERNAL "used internally")
+    ${INCLUDE_ALL}
+    ${CMAKE_CURRENT_SOURCE_DIR}/${UTHASH_IN_PROJ} 
+    CACHE INTERNAL "used internally")
   message(STATUS ${INCLUDE_ALL})
 endif()
 

@@ -1,19 +1,4 @@
 message(STATUS "In Core Globals: ${CMAKE_CURRENT_SOURCE_DIR}")
-set(GLOBAL_SOURCES 
-  ${CMAKE_CURRENT_SOURCE_DIR}/blockchain.c 
-  ${CMAKE_CURRENT_SOURCE_DIR}/constants.c 
-  ${CMAKE_CURRENT_SOURCE_DIR}/mempool.c 
-  ${CMAKE_CURRENT_SOURCE_DIR}/utxo_pool.c   
-  ${CMAKE_CURRENT_SOURCE_DIR}/list.c 
-  # ADD TX SOURCES HERE
-  CACHE INTERNAL "")
-set(SOURCES_ALL 
-  ${SOURCES_ALL}
-  ${GLOBAL_SOURCES}
-  # ADD SOURCES HERE
-  CACHE INTERNAL ""
-  )
-
 add_library(constants STATIC constants.c)
 target_include_directories(constants PUBLIC ${INCLUDE_ALL})
 target_link_libraries(constants
