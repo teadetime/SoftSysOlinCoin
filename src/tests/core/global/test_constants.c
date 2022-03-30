@@ -3,7 +3,6 @@
 #include <string.h>
 #include "minunit.h"
 #include "constants.h"
-#include "base_tx.h"
 
 int tests_run = 0;
 

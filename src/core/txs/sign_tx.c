@@ -1,5 +1,5 @@
 #include "sign_tx.h"
-
+#include "base_tx.h"
 #include "mbedtls/ecdsa.h"
 #include "mbedtls/sha256.h"
 #include "mbedtls/error.h"
