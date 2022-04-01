@@ -15,15 +15,15 @@ set(INCLUDE_GLOBAL "" CACHE INTERNAL "used internally")
 set(INCLUDE_TEST "" CACHE INTERNAL "used internally")
 
 set(UTHASH_IN_PROJ "src/includes/uthash/")
+set(INCLUDE_ALL 
+    ${INCLUDE_ALL}
+    ${CMAKE_CURRENT_SOURCE_DIR}/${UTHASH_IN_PROJ} 
+    CACHE INTERNAL "used internally")
 set(UTHASH_DOWNLOAD_LINK "https://raw.githubusercontent.com/troydhanson/uthash/master/src/uthash.h")
 find_file(UTHASH_LIB NAMES uthash.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/${UTHASH_IN_PROJ}/)
 if(NOT UTHASH_LIB)
   file(DOWNLOAD ${UTHASH_DOWNLOAD_LINK} ${CMAKE_CURRENT_SOURCE_DIR}/${UTHASH_IN_PROJ}/uthash.h)
   message(STATUS "Uthash not found")
-  set(INCLUDE_ALL 
-    ${INCLUDE_ALL}
-    ${CMAKE_CURRENT_SOURCE_DIR}/${UTHASH_IN_PROJ} 
-    CACHE INTERNAL "used internally")
 endif()
 
 
