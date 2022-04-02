@@ -17,9 +17,4 @@ IF(BUILD_RUNTIME)
   add_subdirectory(runtime)
 ENDIF()
 
-# add_executable(mbed ${CMAKE_SOURCE_DIR}/src/tests/core/blocks/mbed_test.c)
-# target_link_libraries(mbed PUBLIC mbedtls
-# mbedcrypto
-# mbedx509)
-
 

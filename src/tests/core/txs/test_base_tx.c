@@ -133,7 +133,7 @@ int main() {
   if (result != NULL) {
     printf("%s\n", result);
   } else {
-    printf("constants.c passing!\n");
+    printf("base_tx.c passing!\n");
   }
   printf("Tests run: %d\n", tests_run);
 
