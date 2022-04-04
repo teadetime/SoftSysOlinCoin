@@ -10,55 +10,70 @@ typedef struct {
 
 UTXOToTx *utxo_to_tx;
 
-/* Initializes the global utxo_pool variable */
+/**
+ * @brief Initializes the global utxo_to_tx variable
+ */
 void utxo_to_tx_init();
 
-/* Creates a new UTXO using transaction and output number, then ceates a new
- * entry in the hashmap
- * 
- * Returns pointer to newly created UTXO if entry created, NULL otherwise
+/**
+ * @brief Adds a UTXO ID + transaction key value pair to the hash map
  *
- * transaction: Transaction pointer to transaction the new UTXO is an output of
- * vout: Which output of the passed transaction the new UTXO is
+ * @param utxo_tx_hash Transaction hash for UTXO, has length TX_HASH_LEN
+ * @param vout Vout for UTXO
+ * @param tx_hash Transaction hash of transaction to map to
+ * @return 0 if add successful, 1 if not
  */
 int utxo_to_tx_add(unsigned char *utxo_tx_hash, unsigned int vout, unsigned char *tx_hash);
 
+/**
+ * @brief Adds UTXO / Transaction key value pairs based on a transactions inputs
+ *
+ * NOTE: Throws an error and exits if transaction contains an input which
+ * references a UTXO that is already in the mapping. Ensure transaction is
+ * validated against mempool before calling this function to avoid.
+ * 
+ * @param tx Transaction to update mapping with
+ * @return 0 if updat was successful, 0 otherwise
+ */
 int utxo_to_tx_add_tx(Transaction *tx);
 
-/* Removes the entry corresponding to transaction hash and output number
+/**
+ * @brief Removes entry correspondinig to utxo transaction hash and vout
  *
- * Returns the UTXO pointer stored in removed entry if succesfully removed, NULL
- * otherwise
- *
- * tx_hash: Buffer of length TX_HASH_LEN, hash of transaction the UTXO is from
- * vout: Which output of the transaction the UTXO is from
+ * @param utxo_tx_hash Transaction hash for utxo key
+ * @param vout Vout for utxo key
+ * @return 0 if entry removed, 1 if entry not found
  */
 int utxo_to_tx_remove(unsigned char *utxo_tx_hash, unsigned int vout);
 
-/* Finds UTXO corresponding to transaction hash and output number
+/**
+ * @brief Finds transaction hash corresponding to utxo id
  *
- * Returns UTXO pointer if found, NULL otherwise
- *
- * tx_hash: Buffer of length TX_HASH_LEN, hash of transaction the UTXO is from
- * vout: Which output of the transaction the UTXO is from
+ * @param dest Buffer to write to, has length TX_HASH_LEN
+ * @param utxo_tx_hash Transaction hash for utxo key
+ * @param vout Vout for utxo key
+ * @return 0 if entry found, 1 otherwise
  */
-int utxo_to_tx_find(unsigned char *dest, unsigned char *tx_hash, unsigned int vout);
+int utxo_to_tx_find(unsigned char *dest, unsigned char *utxo_tx_hash, unsigned int vout);
 
-/* Finds entry corresponding to transaction hash and output number
+/**
+ * @brief Finds entry corresponding to utxo id
  *
- * Returns entry if found, NULL otherwise
+ * Primarily used internally when an entry is needed
  *
- * tx_hash: Buffer of length TX_HASH_LEN, hash of transaction the UTXO is from
- * vout: Which output of the transaction the UTXO is from
+ * @param utxo_tx_hash Transaction hash for utxo key
+ * @param vout Vout for utxo key
+ * @return Pointer to entry if found, NULL otherwise
  */
-UTXOToTx *utxo_to_tx_find_node(unsigned char *tx_hash, unsigned int vout);
+UTXOToTx *utxo_to_tx_find_node(unsigned char *utxo_tx_hash, unsigned int vout);
 
-/* Finds entry corresponding to UTXOPoolKey. Same behavior as
- * utxo_to_tx_find_node, but takes UTXOPoolKey instead. Primarily an internal
- * func
+/**
+ * @brief Finds entry corresponding to UTXOPoolKey struct
+ * 
+ * Primarily used internally when an entry is needed and a UTXOPoolKey has
+ * already been constructed
  *
- * Returns entry if found, NULL otherwise
- *
- * key: UTXOPoolKey struct containing tx_hash and vout to query for
+ * @param key UTXO id values
+ * @return Pointer to entry if found, NULL otherwise
  */
 UTXOToTx *utxo_to_tx_find_node_key(UTXOPoolKey *key);
