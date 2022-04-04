@@ -9,16 +9,19 @@ This last project was a very successful learning experience for us, so much so t
 ### Goals
 This project sets out to create an implementation of a blockchain network from scratch in C. We will be modeling this network off of the original bitcoin network. This network will be used to keep track of transactions as this is the simplest blockchain use case for us to understand. 
 Our previous project implemented a non-persistent single-process local blockchain.
+
 It was made up of:
-Wallet functions to create and track transactions
-Miner functions to create new blocks
-Node functions to validate both transactions and blocks
+- Wallet functions to create and track transactions
+- Miner functions to create new blocks
+- Node functions to validate both transactions and blocks
+
 This project seeks to extend this basic functionality to a distributed decentralized network that supports persistence on individual nodes. This involves:
-Refactoring required structures to be persistent using LevelDB or equivalent Key->Value mapping
-Refactoring existing validation / update functions to handle potential disagreements that might arise from having a functioning network. Ex: dealing with blockchain branches.
-Implementing multi-threaded base process to run the node, wallet and miner in parallel
-Implementing multi-processing for miner to improve hashrate
-Implementing TCP/IP networking to other nodes
+- Refactoring required structures to be persistent using LevelDB or equivalent Key->Value mapping
+- Refactoring existing validation / update functions to handle potential disagreements that might arise from having a functioning network. Ex: dealing with blockchain branches.
+- Implementing multi-threaded base process to run the node, wallet and miner in parallel
+- Implementing multi-processing for miner to improve hashrate
+- Implementing TCP/IP networking to other nodes
+
 We are confident we can complete persistence, and are relatively certain we can also implement multi-threading and multi-processing. Implementing networking is a stretch goal, and may not be feasible within the project timeline.
 
 ### Learning Goals
