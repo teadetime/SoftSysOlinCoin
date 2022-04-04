@@ -1,3 +1,5 @@
+## Concurrent OlinCoin, a blockchain in C
+
 ### Reflection
 This last project was a very successful learning experience for us, so much so that we have decided to extend this project! We accomplished most of our goals, felt we had a great teaming experience, and managed to practice good SWE practices with code review and testing. However, we have started to run into shortcomings in our task planning system, our testing system (minunit.h) and our lack of persistent storage. We are taking several steps to address these issue in our next project:
 - We are switching to using [Github Projects](https://docs.github.com/en/issues/trying-out-the-new-projects-experience/about-projects) to track our tasks. This explicitly links our PRs with tasks, and makes tracking progress / closing tasks much easier. 
