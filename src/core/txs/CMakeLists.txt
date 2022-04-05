@@ -1,6 +1,6 @@
 message(STATUS "In Core Txs: ${CMAKE_CURRENT_SOURCE_DIR}")
 
-add_library(core_tx STATIC sign_tx.c base_tx.c)
+add_library(core_tx STATIC sign_tx.c base_tx.c ser_tx.c)
 target_include_directories(core_tx PUBLIC ${INCLUDE_ALL})
 target_link_libraries(core_tx
   constants)

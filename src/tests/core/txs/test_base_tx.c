@@ -4,6 +4,7 @@
 #include "minunit.h"
 #include "base_tx.h"
 #include "sign_tx.h"
+#include "ser_tx.h"
 
 int tests_run = 0;
 
