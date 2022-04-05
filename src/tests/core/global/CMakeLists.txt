@@ -40,3 +40,10 @@ target_include_directories(test_utxo_to_tx PUBLIC ${INCLUDE_ALL})
 target_link_libraries(test_utxo_to_tx
   utxo_to_tx
   core_tx)
+
+add_test(test_list ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_list)
+add_test(test_constants ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_constants)
+add_test(test_utxo_pool ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_utxo_pool)
+add_test(test_mempool ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_mempool)
+add_test(test_blockchain ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_blockchain)
+add_test(test_utxo_to_tx ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_utxo_to_tx)

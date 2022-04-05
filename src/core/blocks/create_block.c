@@ -6,7 +6,7 @@
 #include "utxo_pool.h"
 #include "sign_tx.h"
 #include "wallet_pool.h"
-#include "validate_block.h"
+
 /*
 Get Number of transactions to try and include in block
 */
@@ -148,8 +148,5 @@ Block *mine_block(){
     change_nonce(new_block);
   }
 
-  handle_new_block(new_block);
-
-  // This might not be needed anymore...
   return new_block;
 }

@@ -12,10 +12,5 @@ target_include_directories(test_validate_block PUBLIC ${INCLUDE_ALL})
 target_link_libraries(test_validate_block
   core_mine)
 
-# Look at the source variables and whatnot
-message(STATUS "Blocks Test: ${CMAKE_CURRENT_SOURCE_DIR}")
-message(STATUS "Sources @ executable: ${TX_SOURCES}")
-message(STATUS "INCLUDE_BLOCKS @ executable: ${INCLUDE_BLOCKS}")
-message(STATUS "INCLUDE_TX @ executable: ${INCLUDE_TX}")
-message(STATUS "INCLUDE_GL @ executable: ${INCLUDE_GLOBAL}")
-message(STATUS "INCLUDE_ALL @ executable: ${INCLUDE_ALL}")
+add_test(test_create_block ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_create_block)
+add_test(test_validate_block ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_validate_block)
