@@ -67,8 +67,11 @@ int deser_block(Block *dest_block, unsigned char *block_data){
   unsigned char *incoming_header = block_data + sizeof(((Block*)0)->num_txs);
 
   deser_blockheader(&dest_block->header, incoming_header);
-  unsigned char *incoming_txs = incoming_header + sizeof(BlockHeader);
+  size_t header_sz = sizeof((BlockHeader*)0)->nonce + sizeof((BlockHeader*)0)->all_tx
+   + sizeof((BlockHeader*)0)->prev_header_hash + sizeof((BlockHeader*)0)->timestamp;
+  unsigned char *incoming_txs = incoming_header + header_sz;
 
+  dest_block->txs = malloc(dest_block->num_txs * sizeof(Transaction*));
   for(int tx = 0; tx < dest_block->num_txs; tx++){
     // This should be refactored to return the next address in memory since these are variable sized to avoid calling size tx twice
     dest_block->txs[tx] = deser_tx(incoming_txs);
