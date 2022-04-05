@@ -12,6 +12,5 @@ target_include_directories(test_validate_block PUBLIC ${INCLUDE_ALL})
 target_link_libraries(test_validate_block
   core_mine)
 
-
 add_test(test_create_block ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_create_block)
 add_test(test_validate_block ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_validate_block)

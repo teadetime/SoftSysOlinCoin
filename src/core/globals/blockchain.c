@@ -89,3 +89,18 @@ void print_blockchain_hashmap(char *prefix){
   }
   free(sub_prefix);
 }
+
+void pretty_print_blockchain(BlockChain *blockchain_node, char *prefix){
+  dump_buf(prefix, "Block Hash: ", blockchain_node->id, BLOCK_HASH_LEN);
+  pretty_print_block_header(&blockchain_node->block->header, prefix);
+  printf(LINE_BREAK);
+}
+
+void pretty_print_blockchain_hashmap(){
+  BlockChain *s;
+  printf("%i items...\n", HASH_COUNT(blockchain));
+  printf(LINE_BREAK);
+  for (s = blockchain; s != NULL; s = s->hh.next) {
+    pretty_print_blockchain(s, "");
+  }
+}

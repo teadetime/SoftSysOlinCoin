@@ -70,6 +70,7 @@ header: header to be printed
 
 */
 void print_block_header(BlockHeader *header, char *prefix);
+void pretty_print_block_header(BlockHeader *block, char *prefix);
 
 /*
 Prints a block to stdout, (including header) for visualization
@@ -78,3 +79,5 @@ block: block to print
 prefix: string to put in front of all print commands used for tabbing structure
 */
 void print_block(Block *block, char *prefix);
+void pretty_print_block(Block *block, char *prefix);
+

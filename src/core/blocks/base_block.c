@@ -60,7 +60,7 @@ unsigned char *ser_block_alloc(Block *block){
   return data;
 }
 
-void print_block_header(BlockHeader *header, char *prefix){ 
+void print_block_header(BlockHeader *header, char *prefix){
   char *sub_prefix = malloc(strlen(prefix)+strlen(PRINT_TAB)+1);
   strcpy(sub_prefix, prefix);
   strcat(sub_prefix, PRINT_TAB);
@@ -70,6 +70,12 @@ void print_block_header(BlockHeader *header, char *prefix){
   printf("%snonce: %li\n", sub_prefix, header->nonce);
   dump_buf( sub_prefix, "all_tx_hash:", header->all_tx, TX_HASH_LEN);
   free(sub_prefix);
+}
+
+void pretty_print_block_header(BlockHeader *header, char *prefix) {
+  dump_buf(prefix, "Prev Block: ", header->prev_header_hash, BLOCK_HASH_LEN);
+  printf("%sTimestamp: %lu\n", prefix, header->timestamp);
+  printf("%sNonce: %lu\n", prefix, header->nonce);
 }
 
 void print_block(Block *block, char *prefix){
@@ -85,4 +91,14 @@ void print_block(Block *block, char *prefix){
     print_tx(block->txs[i], sub_prefix);
   }
   free(sub_prefix);
+}
+
+void pretty_print_block(Block *block, char *prefix){
+  pretty_print_block_header(&block->header, prefix);
+  printf("%s\n%i Transaction%s\n", prefix, block->num_txs, (block->num_txs > 1 ? "s" : ""));
+  printf(LINE_BREAK);
+  for(unsigned int i=0; i<block->num_txs; i++){
+    pretty_print_tx(block->txs[i], prefix);
+    printf(LINE_BREAK);
+  }
 }
