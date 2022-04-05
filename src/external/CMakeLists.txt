@@ -4,7 +4,10 @@ set(EXTERN_LIB_NAME "extern_lib")
 
 include(FetchContent)
 
-#option(ENABLE_PROGRAMS "Build mbed TLS programs." OFF)
+set(LEVELDB_BUILD_TESTS OFF CACHE INTERNAL "<some description>")
+set(LEVELDB_BUILD_BENCHMARKS OFF CACHE INTERNAL "<some description>")
+set(LEVELDB_INSTALL OFF CACHE INTERNAL "<some description>")
+
 set(ENABLE_TESTING OFF CACHE INTERNAL "<some description>")
 set(ENABLE_PROGRAMS OFF CACHE INTERNAL "<some description>")
 set(CMAKE_BUILD_TYPE Release CACHE INTERNAL "<some description>")
@@ -20,5 +23,20 @@ FetchContent_Declare(MbedTLS
   # SOURCE_DIR    ${CMAKE_BINARY_DIR}/../external/src
   # BINARY_DIR    ${CMAKE_BINARY_DIR}/../external/bin
 )
-
 FetchContent_MakeAvailable(MbedTLS)
+
+FetchContent_Declare(check
+  GIT_REPOSITORY https://github.com/libcheck/check.git
+  GIT_TAG 0.15.2
+  # SOURCE_DIR    ${CMAKE_BINARY_DIR}/../external/src
+  # BINARY_DIR    ${CMAKE_BINARY_DIR}/../external/bin
+)
+FetchContent_MakeAvailable(check)
+
+FetchContent_Declare(check
+  GIT_REPOSITORY https://github.com/libcheck/check.git
+  GIT_TAG 0.15.2
+  # SOURCE_DIR    ${CMAKE_BINARY_DIR}/../external/src
+  # BINARY_DIR    ${CMAKE_BINARY_DIR}/../external/bin
+)
+FetchContent_MakeAvailable(check)

@@ -1,6 +1,5 @@
 #pragma once
 #include <stddef.h>
-#include "mbedtls/ecdsa.h"
 
 
 #define TX_HASH_LEN 32
