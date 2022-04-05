@@ -46,11 +46,24 @@ size_t arg_len(char **args) {
   if (!args)
     return 0;
 
+  // NOTE: Relies on args being null terminated, as it is in shell_tokenize()
   l = 0;
   while (args[l++]);
   return l - 1;
 }
 
+/**
+ * @brief Converts a string of hex values to a buffer
+ *
+ * Fills the destination with 0s and terminates early if either input is shorter
+ * than the other. This means that a string of hex values less than 64
+ * characters long produces a buffer with a bunch of 0s on the end.
+ *
+ * @param dest buffer to write to
+ * @param hex_str hex string to read from
+ * @param dest_len length of destination buffer
+ * @param src_len length of source string
+ */
 void str_to_buf(
     unsigned char *dest, char *hex_str,
     size_t dest_len, size_t src_len
