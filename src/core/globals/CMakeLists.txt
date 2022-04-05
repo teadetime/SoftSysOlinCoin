@@ -23,5 +23,5 @@ target_include_directories(constants PUBLIC ${INCLUDE_ALL})
 target_link_libraries(constants
   mempool
   blockchain
-  utxo_pool
+  utxopool
   mbedtls)
