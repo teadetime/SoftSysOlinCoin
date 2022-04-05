@@ -1,13 +1,13 @@
 /**
  * @file validate_block.c
  * @author Nathan Faber nfaber@olin.edu
- * @brief implementation of functions used to validate a new block that is 
+ * @brief implementation of functions used to validate a new block that is
  * broadcast on the blockchain and update the various appropriate structures
  * @version 0.1
  * @date 2022-03-20
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 #include "validate_block.h"
 #include "create_block.h"
@@ -132,7 +132,7 @@ void update_UTXO_pool_and_wallet_pool(Block *block){
       UTXO *spent_utxo = utxo_pool_remove(block->txs[i]->inputs[k].prev_tx_id,
         block->txs[i]->inputs[k].prev_utxo_output);
       free(spent_utxo);
-      wallet_pool_remove(block->txs[i]->inputs[k].prev_tx_id, 
+      wallet_pool_remove(block->txs[i]->inputs[k].prev_tx_id,
         block->txs[i]->inputs[k].prev_utxo_output);
     }
   }

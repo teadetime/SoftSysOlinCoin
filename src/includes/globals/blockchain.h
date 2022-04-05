@@ -58,6 +58,7 @@ Prints a single hashmap entry to stdout
 prefix: string to put in front of all print commands used for tabbing structure
 */
 void print_blockchain(BlockChain *blockchain_node, char *prefix);
+void pretty_print_blockchain(BlockChain *blockchain_node, char *prefix);
 
 /*
 Prints the entire blockchain Hashmap to stdout
@@ -65,3 +66,5 @@ Prints the entire blockchain Hashmap to stdout
 prefix: string to put in front of all print commands used for tabbing structure
 */
 void print_blockchain_hashmap(char *prefix);
+void pretty_print_blockchain_hashmap();
+

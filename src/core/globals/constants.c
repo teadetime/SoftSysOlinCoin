@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include "mbedtls/sha256.h"
 
+#include "blockchain.h"
+#include "utxo_pool.h"
+#include "mempool.h"
+
 
 int hash_sha256(unsigned char * output_hash, unsigned char * input_data, size_t input_sz) {
   int ret = 0;
@@ -19,4 +23,13 @@ void dump_buf(char *prefix, const char *title, unsigned char *buf, size_t len) {
         printf("%c%c", "0123456789ABCDEF" [buf[i] / 16],
                        "0123456789ABCDEF" [buf[i] % 16] );
     printf( "\n" );
+}
+
+void node_init() {
+  blockchain_init();
+  utxo_pool_init();
+}
+
+void miner_init() {
+  mempool_init();
 }
