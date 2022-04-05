@@ -4,6 +4,7 @@
 
 #include "base_tx.h"
 #include "sign_tx.h"
+#include "utxo_pool.h"
 
 unsigned char *ser_utxo(UTXO *utxo){
   unsigned char *data = malloc(sizeof(UTXO));
@@ -183,4 +184,28 @@ void print_tx(Transaction *tx, char *prefix){
     print_output(&(tx->outputs[i]), sub_prefix);
   }
   free(sub_prefix);
+}
+
+void pretty_print_tx(Transaction *tx, char *prefix){
+  unsigned char tx_hash[TX_HASH_LEN];
+
+  hash_tx(tx_hash, tx);
+  dump_buf(prefix, "Transaction Hash: ", tx_hash, TX_HASH_LEN);
+  printf(SOFT_LINE_BREAK);
+
+  printf("%s%i Input%s:\n", prefix, tx->num_inputs, (tx->num_inputs == 1 ? "" : "s"));
+  printf(SOFT_LINE_BREAK);
+  for(unsigned int i = 0; i < tx->num_inputs; i++){
+    printf("%s  Output Index: %u\n", prefix, tx->inputs[i].prev_utxo_output);
+    dump_buf(prefix, "  Source Tx: ", tx->inputs[i].prev_tx_id, TX_HASH_LEN);
+    printf(SOFT_LINE_BREAK);
+  }
+
+  printf("%s%i Output%s:\n", prefix, tx->num_outputs, (tx->num_outputs > 1 ? "s" : ""));
+  printf(SOFT_LINE_BREAK);
+  for(unsigned int i = 0; i < tx->num_outputs; i++){
+    printf("%s  Amount: %lu\n", prefix, tx->outputs[i].amt);
+    dump_buf(prefix, "  Address: ", tx->outputs[i].public_key_hash, PUB_KEY_HASH_LEN);
+    printf(SOFT_LINE_BREAK);
+  }
 }
