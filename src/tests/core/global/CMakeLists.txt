@@ -32,3 +32,9 @@ target_compile_options(test_list PRIVATE ${COMPILE_OPTIONS_STD})
 target_include_directories(test_list PUBLIC ${INCLUDE_ALL})
 target_link_libraries(test_list
   lists)
+
+add_test(test_list ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_list)
+add_test(test_constants ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_constants)
+add_test(test_utxo_pool ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_utxo_pool)
+add_test(test_mempool ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_mempool)
+add_test(test_blockchain ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_blockchain)
