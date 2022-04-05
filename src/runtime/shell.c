@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "create_block.h"
+#include "validate_block.h"
 #include "constants.h"
 #include "wallet.h"
 #include "blockchain.h"
@@ -85,6 +86,9 @@ int shell_mine(char **args) {
 
   printf("Mining...\n");
   block = mine_block();
+  handle_new_block(block);
+
+  // This might not be needed anymore...
   hash_blockheader(header_hash, &block->header);
   printf("Block mined!\n\n");
   dump_buf("", "Hash: ", header_hash, BLOCK_HASH_LEN);

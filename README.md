@@ -20,12 +20,14 @@ Clone the repo in whatever fashion you would like! Or take a look @ our releases
     ```
 - to clean build files but not external libraries ([mbedtls](https://github.com/ARMmbed/mbedtls)) (run from build directory)
   ```console 
-  cmake --build .. --target really-clean 
+  cmake --build .. --target _clean 
   ```
 - to clean all build files (run from build directory)
   ```console 
   cmake --build .. --target clean 
   ```
+- To run tests for OlinCoin simply build the project (which builds tests regardless)
+  `ctest` or `make test` (also from build directory)
  
 - Note that a couple commands can change what is built:
     - BUILD_TESTS indicates if tests are built. To build with tests run:
@@ -36,3 +38,5 @@ Clone the repo in whatever fashion you would like! Or take a look @ our releases
       ```console
       cmake -DBUILD_RUNTIME=ON --build .. 
       ```
+
+

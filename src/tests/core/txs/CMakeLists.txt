@@ -16,3 +16,7 @@ target_compile_options(test_wallet PRIVATE ${COMPILE_OPTIONS_STD})
 target_include_directories(test_wallet PUBLIC ${INCLUDE_ALL})
 target_link_libraries(test_wallet  
   wallet)
+
+add_test(test_base_tx ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_base_tx)
+add_test(test_wallet ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_wallet)
+add_test(test_wallet_pool ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_wallet_pool)
