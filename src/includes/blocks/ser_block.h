@@ -31,3 +31,7 @@ that lives, it is of length size_block(block) long
 block: block to serialize
 */
 unsigned char *ser_block_alloc(Block *block);
+
+int deser_blockheader(BlockHeader *dest_header, unsigned char *blockheader_data);
+
+int deser_block(Block *dest_block, unsigned char *block_data);
