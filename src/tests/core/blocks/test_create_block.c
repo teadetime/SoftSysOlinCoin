@@ -142,6 +142,15 @@ static char *test_create_header(){
     "Header timestamp invalid",
     test_header->timestamp > 1647573975
   );
+
+  // Test deserialization
+  BlockHeader deser_header;
+  unsigned char *ser_header = ser_blockheader_alloc(test_header);
+  deser_blockheader(&deser_header, ser_header);
+  mu_assert(
+    "Blockheaders not deserialized correctly",
+    memcmp(&deser_header, test_header, sizeof(BlockHeader)) == 0
+  );
   return NULL;
 }
 
