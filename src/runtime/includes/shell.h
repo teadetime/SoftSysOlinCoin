@@ -1,3 +1,18 @@
+/**
+ * @file shell.h
+ *
+ * @brief Shell for running blockchain functions
+ *
+ * The shell allows users to interact with the local blockchain. Primary use
+ * case if for running a wallet, but currently also allows users to run a miner.
+ *
+ * Commands are defined by a name, function, number of arguments and help
+ * string. A mapping of command name to the function to call when the command is
+ * executed is built on program start. After commands are initialized, the shell
+ * runs in a loop until the program is exited with CTRL+C, CTRL+D or `exit`.
+ * While in the loop, new lines of text are read, tokenized then executed.
+ */
+
 #pragma once
 
 #include <uthash.h>
