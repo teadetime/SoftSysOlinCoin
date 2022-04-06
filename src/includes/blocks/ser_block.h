@@ -32,6 +32,20 @@ block: block to serialize
 */
 unsigned char *ser_block_alloc(Block *block);
 
+/**
+ * @brief Deserialize a blockheader from an unsigned character buffer
+ * 
+ * @param dest_header Allocated BlockHeader to deserialize into
+ * @param blockheader_data Buffer containing serialized data
+ * @return int always returns 1 TODO: Fail if bad deserialization
+ */
 int deser_blockheader(BlockHeader *dest_header, unsigned char *blockheader_data);
 
+/**
+ * @brief Deserialize a block from unsigned char buffer
+ * 
+ * @param dest_block Aloccated destination block to desrialize into
+ * @param block_data Buffer containing a serialized Block
+ * @return int Always returns 1 TODO: Fail if unable to deserialize
+ */
 int deser_block(Block *dest_block, unsigned char *block_data);
