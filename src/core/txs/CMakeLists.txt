@@ -18,4 +18,6 @@ target_link_libraries(wallet
 add_library(validate_tx STATIC validate_tx.c)
 target_include_directories(validate_tx PUBLIC ${INCLUDE_ALL})
 target_link_libraries(validate_tx
-  core_block)
+  core_block
+  utxo_to_tx
+  double_spend)

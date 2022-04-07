@@ -16,6 +16,8 @@
 #include "sign_tx.h"
 #include "create_block.h"
 #include "validate_tx.h"
+#include "utxo_to_tx.h"
+#include "double_spend_set.h"
 
 void create_blank_sig_txhash(unsigned char *blank_hash, Transaction *tx){
   Transaction *blank_sig_tx = malloc(sizeof(Transaction));
@@ -100,6 +102,7 @@ int validate_tx_parts_not_null(Transaction *tx){
   }
   return 0;
 }
+
 int validate_coinbase_tx_parts_not_null(Transaction *coinbase_tx){
   if(coinbase_tx == NULL){
     return 1;
@@ -119,7 +122,6 @@ int validate_coinbase_tx_parts_not_null(Transaction *coinbase_tx){
   return 0;
 }
   
-
 int validate_tx_shared(Transaction *tx){
   unsigned long total_in = 0;
   unsigned long total_out = 0;
@@ -148,3 +150,42 @@ int validate_tx_shared(Transaction *tx){
   }
   return 0;
 }
+
+int check_tx_double_spent(Transaction *tx){
+  UTXOPool *double_spend_set = NULL;
+  for(int i = 0; i < tx->num_inputs; i++){
+    if(double_spend_add(double_spend_set, tx->inputs[i].prev_tx_id,
+                        tx->inputs[i].prev_utxo_output) == 0){
+      // Destroy Hashmap
+      double_spend_delete(double_spend_set);
+      return 1;
+    }
+  }
+  return 0;
+}
+
+int check_inputs_not_in_mempool(Transaction *tx){
+  unsigned char found_tx[TX_HASH_LEN];
+  int found = 1;
+  for(int i = 0; i<tx->num_inputs; i++){
+    if(utxo_to_tx_find(found_tx, tx->inputs[i].prev_tx_id,
+                     tx->inputs[i].prev_utxo_output) == 0){
+      return 1;
+    }
+  }
+  return 0;
+}
+
+int validate_tx_incoming(Transaction *tx){
+  if(validate_tx_shared(tx)){
+    return 1;
+  }
+  if(check_tx_double_spent(tx)){
+    return 2;
+  }
+  if(check_inputs_not_in_mempool(tx)){
+    return 3;
+  }
+  return 0;
+}
+

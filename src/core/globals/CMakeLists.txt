@@ -30,3 +30,8 @@ add_library(utxo_to_tx STATIC utxo_to_tx.c)
 target_include_directories(utxo_to_tx PUBLIC ${INCLUDE_ALL})
 target_link_libraries(utxo_to_tx
   utxopool)
+
+add_library(double_spend STATIC double_spend_set.c)
+target_include_directories(double_spend PUBLIC ${INCLUDE_ALL})
+target_link_libraries(double_spend
+  utxopool)
