@@ -6,6 +6,7 @@
 #include "utxo_pool.h"
 #include "sign_tx.h"
 #include "wallet_pool.h"
+
 /*
 Get Number of transactions to try and include in block
 */
@@ -27,11 +28,11 @@ Transaction *create_coinbase_tx(unsigned long tx_fees){
   Transaction *coinbase_tx = malloc(sizeof(Transaction));
   Output *miner_output = malloc(sizeof(Output));
   miner_output->amt = tx_fees + calc_block_reward(chain_height);
-  
-  memset(miner_output->public_key_hash, 0, PUB_KEY_HASH_LEN);
+
   mbedtls_ecdsa_context *key_pair = gen_keys();
   key_pool_add(key_pair);
   hash_pub_key(miner_output->public_key_hash, key_pair);
+
   coinbase_tx->inputs = NULL;
   coinbase_tx->num_inputs = 0;
   coinbase_tx->num_outputs = 1;
@@ -46,7 +47,7 @@ Calculate tX fees for 1 tx
 unsigned int calc_tx_fees(Transaction *tx){
   unsigned long total_in = 0;
   unsigned long total_out = 0;
-  
+
   for(unsigned int i = 0; i < tx->num_inputs; i++){
     UTXO* input_utxo = utxo_pool_find(tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
     total_in += input_utxo->amt;  // This could be null if no uxto found so make sure to confirm tx has all valid inputs
@@ -82,7 +83,7 @@ unsigned int get_txs_from_mempool(Transaction ***tx_pts){
 
   // Create the Coinbase TX
   (*tx_pts)[0] = create_coinbase_tx(tx_fees);
-  
+
   unsigned int total_num_txs = tx_to_get+coinbase;
   return total_num_txs;
 }
@@ -103,7 +104,7 @@ BlockHeader *create_block_header(Transaction **txs, unsigned int num_txs){
   memcpy(b_header->prev_header_hash, top_block_header_hash, ALL_TX_HASH_LEN);
   b_header->nonce = 0;
   b_header->timestamp = time(NULL);
-  
+
   return b_header;
 }
 
@@ -148,6 +149,4 @@ Block *mine_block(){
   }
 
   return new_block;
-  //Accept block!
-  //handle_block(new_block)
 }

@@ -64,3 +64,4 @@ void print_output(Output *output, char *prefix);
 void print_tx(Transaction *tx, char *prefix);
 
 void free_tx(Transaction *tx);
+void pretty_print_tx(Transaction *tx, char *prefix);
