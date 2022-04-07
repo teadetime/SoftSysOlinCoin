@@ -14,3 +14,8 @@ add_library(wallet STATIC wallet.c)
 target_include_directories(wallet PUBLIC ${INCLUDE_ALL})
 target_link_libraries(wallet
   wallet_pool)
+
+add_library(validate_tx STATIC validate_tx.c)
+target_include_directories(validate_tx PUBLIC ${INCLUDE_ALL})
+target_link_libraries(validate_tx
+  core_block)
