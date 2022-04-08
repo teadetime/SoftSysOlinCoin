@@ -18,14 +18,6 @@ target_include_directories(blockchain PUBLIC ${INCLUDE_ALL})
 target_link_libraries(blockchain
   core_block)
 
-add_library(constants STATIC constants.c)
-target_include_directories(constants PUBLIC ${INCLUDE_ALL})
-target_link_libraries(constants
-  mempool
-  blockchain
-  utxopool
-  mbedtls)
-
 add_library(utxo_to_tx STATIC utxo_to_tx.c)
 target_include_directories(utxo_to_tx PUBLIC ${INCLUDE_ALL})
 target_link_libraries(utxo_to_tx
