@@ -1,6 +1,6 @@
 #include "minunit.h"
 #include "wallet.h"
-#include "sign_tx.h"
+#include "crypto.h"
 
 int tests_run = 0;
 

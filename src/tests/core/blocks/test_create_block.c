@@ -4,8 +4,8 @@
 #include "utxo_pool.h"
 #include "create_block.h"
 #include "time.h"
-#include "sign_tx.h"
 #include "ser_block.h"
+#include "crypto.h"
 
 int tests_run = 0;
 
@@ -43,7 +43,7 @@ void _fill_mempool(){
   tx1 = _make_tx();
   hash_tx(tx1->inputs[0].prev_tx_id, input_tx);
   tx1->inputs[0].prev_utxo_output = 0;
-  tx1->outputs[0].amt = 90; 
+  tx1->outputs[0].amt = 90;
   mempool_init();
   mempool_add(tx1);
 }
@@ -72,7 +72,7 @@ static char *test_create_coinbase_tx(){
 
 static char *test_get_txs_from_mempool(){
   _fill_mempool();
-  
+
   Transaction **test_ptr = NULL;
   unsigned int num_tx = get_txs_from_mempool(&test_ptr);
   mu_assert(
@@ -114,7 +114,7 @@ static char *test_hash_all(){
   // Hash the txs and check for consistency
   unsigned char total_hash[ALL_TX_HASH_LEN];
   hash_all_tx(total_hash, test_ptr, num_tx);
-  unsigned char total_hash2[ALL_TX_HASH_LEN]; 
+  unsigned char total_hash2[ALL_TX_HASH_LEN];
   hash_all_tx(total_hash2, test_ptr,num_tx);
   mu_assert(
     "Total hash is inconsistent",
@@ -220,7 +220,7 @@ static char *test_deser_block(){
   );
 
   unsigned char base_tx_hash[TX_HASH_LEN];
-  
+
   unsigned char deser_tx_hash[TX_HASH_LEN];
 
   for(unsigned int i = 0; i < test_block->num_txs; i++){
