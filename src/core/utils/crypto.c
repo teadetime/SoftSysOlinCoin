@@ -140,6 +140,14 @@ void deser_pub_key(mbedtls_ecp_point *dest, mbedtls_ecp_group *grp, unsigned cha
   }
 }
 
+int hash_sha256(unsigned char * output_hash, unsigned char * input_data, size_t input_sz) {
+  int ret = 0;
+  if ((ret = mbedtls_sha256(input_data, input_sz, output_hash, 0)) != 0) {
+    printf( " failed\n  ! mbedtls_sha256 returned %d\n", ret );
+  }
+  return ret;
+}
+
 void hash_pub_key(unsigned char *dest, mbedtls_ecdsa_context *key_pair) {
   unsigned char ser_key[PUB_KEY_SER_LEN];
   size_t num_bytes;
@@ -150,4 +158,12 @@ void hash_pub_key(unsigned char *dest, mbedtls_ecdsa_context *key_pair) {
     &(key_pair->MBEDTLS_PRIVATE(grp))
   );
   hash_sha256(dest, ser_key, num_bytes);
+}
+
+void dump_buf(char *prefix, const char *title, unsigned char *buf, size_t len) {
+    printf( "%s%s",prefix, title);
+    for(size_t i = 0; i < len; i++ )
+        printf("%c%c", "0123456789ABCDEF" [buf[i] / 16],
+                       "0123456789ABCDEF" [buf[i] % 16] );
+    printf( "\n" );
 }
