@@ -19,13 +19,6 @@ target_include_directories(test_utxo_pool PUBLIC ${INCLUDE_ALL})
 target_link_libraries(test_utxo_pool 
   utxopool)
 
-# Test Constants 
-add_executable(test_constants test_constants.c)
-target_compile_options(test_constants PRIVATE ${COMPILE_OPTIONS_STD})
-target_include_directories(test_constants PUBLIC ${INCLUDE_ALL})
-target_link_libraries(test_constants 
-  constants)
-
 # Test List
 add_executable(test_list test_list.c)
 target_compile_options(test_list PRIVATE ${COMPILE_OPTIONS_STD})

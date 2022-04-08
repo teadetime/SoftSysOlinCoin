@@ -3,6 +3,7 @@
 #include <string.h>
 #include "minunit.h"
 #include "constants.h"
+#include "crypto.h"
 
 int tests_run = 0;
 
@@ -58,7 +59,7 @@ int main() {
   if (result != NULL) {
     printf("%s\n", result);
   } else {
-    printf("constants.c passing!\n");
+    printf("crypto.c passing!\n");
   }
   printf("Tests run: %d\n", tests_run);
 
