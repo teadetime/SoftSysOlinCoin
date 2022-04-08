@@ -4,12 +4,16 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "constants.h"
+#include "init_globals.h"
+#include "mempool.h"
+#include "blockchain.h"
+
+#include "wallet.h"
 #include "create_block.h"
 #include "validate_block.h"
-#include "constants.h"
-#include "wallet.h"
-#include "blockchain.h"
-#include "mempool.h"
+
+#include "crypto.h"
 
 #define DELIMS " \t\n"
 #define ARG_SIZE 32
