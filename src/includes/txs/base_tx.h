@@ -29,9 +29,6 @@ typedef struct UTXO{
   short spent;
 } UTXO;
 
-unsigned char *ser_utxo(UTXO *utxo);
-UTXO *dser_utxo(unsigned char *data);
-
 /**
  * @brief Get size required to serialize an input
  *  removes the pointer and adds the length of data pointed to
@@ -40,17 +37,10 @@ UTXO *dser_utxo(unsigned char *data);
  */
 int size_input();
 
-unsigned char *ser_input(unsigned char *dest, Input *input);
-unsigned char *deser_input(Input *dest, unsigned char *src);
-
 /*
 Return Size of a transaction, used for serialization and memory allocation
 */
 int size_tx(Transaction *tx);
-
-unsigned char *ser_tx(unsigned char *dest, Transaction *tx);
-unsigned char *ser_tx_alloc(Transaction *tx);
-Transaction* deser_tx(unsigned char *data);
 
 /* Hashes passed transaction
  *
