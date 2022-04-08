@@ -6,7 +6,7 @@ void double_spend_set_init(UTXOPool *set) {
   set = NULL;
 }
 
-UTXO *double_spend_add(UTXOPool *set, unsigned char tx_id[TX_HASH_LEN], unsigned int vout) {
+int double_spend_add(UTXOPool *set, unsigned char tx_id[TX_HASH_LEN], unsigned int vout) {
   UTXOPool *new_entry, *found_entry;
   UTXO *utxo;
 
@@ -31,10 +31,9 @@ UTXO *double_spend_add(UTXOPool *set, unsigned char tx_id[TX_HASH_LEN], unsigned
     return 0;
   } else {
     free(new_entry);
-    return NULL;
+    return 1;
   }
 }
-
 
 UTXOPool *double_spend_find_node(UTXOPool *set, unsigned char *tx_hash, unsigned int vout) {
   UTXOPoolKey key;

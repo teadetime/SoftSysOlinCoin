@@ -155,12 +155,12 @@ int check_tx_double_spent(Transaction *tx){
   UTXOPool *double_spend_set = NULL;
   for(int i = 0; i < tx->num_inputs; i++){
     if(double_spend_add(double_spend_set, tx->inputs[i].prev_tx_id,
-                        tx->inputs[i].prev_utxo_output) == 0){
-      // Destroy Hashmap
+                        tx->inputs[i].prev_utxo_output) != 0){
       double_spend_delete(double_spend_set);
       return 1;
     }
   }
+  double_spend_delete(double_spend_set);
   return 0;
 }
 
