@@ -1,6 +1,6 @@
 #include "wallet.h"
-#include "sign_tx.h"
 #include "constants.h"
+#include "crypto.h"
 
 #include "mbedtls/ecp.h"
 
