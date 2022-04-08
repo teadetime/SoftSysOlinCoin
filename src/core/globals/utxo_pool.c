@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "utxo_pool.h"
+#include "crypto.h"
 
 void utxo_pool_init() {
   utxo_pool = NULL;
