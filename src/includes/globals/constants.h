@@ -1,5 +1,4 @@
 #pragma once
-#include <stddef.h>
 
 #define TX_HASH_LEN 32
 #define ALL_TX_HASH_LEN 32
