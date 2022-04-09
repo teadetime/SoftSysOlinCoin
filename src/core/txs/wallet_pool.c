@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "wallet_pool.h"
-#include "sign_tx.h"
+#include "crypto.h"
 
 void wallet_init() {
   wallet_pool = NULL;

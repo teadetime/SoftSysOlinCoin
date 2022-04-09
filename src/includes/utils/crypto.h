@@ -95,6 +95,18 @@ size_t ser_pub_key(unsigned char *dest, mbedtls_ecp_point *point, mbedtls_ecp_gr
  */
 void deser_pub_key(mbedtls_ecp_point *dest, mbedtls_ecp_group *grp, unsigned char *data);
 
+/* HASHING */
+
+/**
+ * @brief Applies sha256 to input data
+ *
+ * @param output_hash Destination buffer to write to
+ * @param input_data Input buffer to hash
+ * @param input_sz Size of input buffer
+ * @return 0 if succesful
+ */
+int hash_sha256(unsigned char *output_hash, unsigned char *input_data, size_t input_sz); 
+
 /**
  * @brief Hash public key of a key pair
  *
@@ -102,6 +114,27 @@ void deser_pub_key(mbedtls_ecp_point *dest, mbedtls_ecp_group *grp, unsigned cha
  * @param key_pair Key pair containing public key to hash
  */
 void hash_pub_key(unsigned char *dest, mbedtls_ecdsa_context *key_pair);
+
+
+/* MISC */
+
+/**
+ * @brief Prints a byte buffer in hex
+ *
+ * Example Code:
+ * unsigned char *dest = malloc(TX_HASH_LEN);
+ * unsigned char tx_buf[] = "THIS IS A TEST";
+ * hash_sha256(dest, tx_buf, sizeof(tx_buf));
+ * dump_buf("Hash: ",dest, TX_HASH_LEN);
+ *
+ * @param prefix Prefix to add before printing
+ * @param title Title to be printed
+ * @param buf Buffer to be printed in hex
+ * @param len Length of buffer to be printed
+ */
+void dump_buf(char *prefix, const char *title, unsigned char *buf, size_t len);
+
+/* GLOBALS */
 
 extern char *seed;
 extern mbedtls_entropy_context *entropy;

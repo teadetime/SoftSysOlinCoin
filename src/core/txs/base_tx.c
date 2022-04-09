@@ -4,6 +4,7 @@
 
 #include "base_tx.h"
 #include "ser_tx.h"
+#include "crypto.h"
 
 void hash_tx(unsigned char *dest, Transaction *tx) {
   unsigned char *tx_buf;

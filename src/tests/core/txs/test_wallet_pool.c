@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "minunit.h"
 #include "wallet_pool.h"
-#include "sign_tx.h"
+#include "crypto.h"
 
 int tests_run = 0;
 
@@ -174,7 +174,7 @@ static char  *test_output_unlockable() {
   Transaction *tx;
   mbedtls_ecdsa_context *key_pair, *ret_pair;
   tx = _make_tx();
-  
+
   key_pair = gen_keys();
   hash_pub_key(tx->outputs[0].public_key_hash, key_pair);
 

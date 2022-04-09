@@ -1,4 +1,5 @@
 #include "mempool.h"
+#include "crypto.h"
 
 void mempool_init() {
   mempool = NULL;

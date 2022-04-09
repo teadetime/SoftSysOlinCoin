@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "minunit.h"
 #include "utxo_to_tx.h"
-#include "sign_tx.h"
+#include "crypto.h"
 
 int tests_run = 0;
 
