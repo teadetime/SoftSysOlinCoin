@@ -13,7 +13,7 @@
 #include "mempool.h"
 #include "constants.h"
 #include "mbedtls/ecdsa.h"
-#include "sign_tx.h"
+#include "crypto.h"
 #include "create_block.h"
 #include "validate_tx.h"
 #include "utxo_to_tx.h"

@@ -78,6 +78,7 @@ int validate_sig(
  * @param pub_key public key to put into the key pair
  */
 void build_ctx_from_public(mbedtls_ecdsa_context *ctx, mbedtls_ecp_point *pub_key);
+
 /* PUB KEY HANDLING */
 
 /**
