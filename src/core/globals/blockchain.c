@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "blockchain.h"
+#include "crypto.h"
 
 void blockchain_init() {
   Block* genesis_block;

@@ -4,10 +4,9 @@
 #include "create_block.h"
 #include "mempool.h"
 #include "utxo_pool.h"
-#include "sign_tx.h"
 #include "blockchain.h"
 #include "wallet_pool.h"
-#include "sign_tx.h"
+#include "crypto.h"
 
 int tests_run = 0;
 
@@ -64,7 +63,7 @@ void _fill_mempool(){
 static char  *test_coinbase_tx() {
   _fill_mempool();
   Block *test_block = create_block_alloc(); // Note this creates a valid block
-  
+
   mu_assert(
     "Coinbase Validation Broken",
     validate_coinbase_tx(test_block->txs, test_block->num_txs) == 0
@@ -75,7 +74,7 @@ static char  *test_coinbase_tx() {
 static char  *test_validate_txs() {
   _fill_mempool();
   Block *test_block = create_block_alloc();
-  
+
   mu_assert(
     "Transaction validation failing on valid txs",
     validate_incoming_block_txs(test_block->txs, test_block->num_txs) == 0
@@ -154,14 +153,14 @@ static char  *test_update_utxo_pool() {
   mu_assert(
     "Wallet pool didn't change by expected amount",
     prev_wallet_size+1 == HASH_COUNT(wallet_pool)
-  ); 
+  );
   return NULL;
 }
 
 static char  *test_update_mempool() {
   _fill_mempool();
   Block *good_block = mine_block();
-  
+
   unsigned int prev_mempool_size = HASH_COUNT(mempool);
   update_mempool(good_block);
   mu_assert(
@@ -201,7 +200,7 @@ static char  *test_accept_block() {
   mu_assert(
     "Accept: Wallet pool didn't change by expected amount",
     prev_wallet_size+1 == HASH_COUNT(wallet_pool)
-  ); 
+  );
   mu_assert(
     "MinedBlock hash does not match difficulty",
     validate_block(good_block) != 0
@@ -245,7 +244,7 @@ static char  *test_handle_block() {
   mu_assert(
     "Handle: Wallet pool didn't change by expected amount",
     prev_wallet_size+1 == HASH_COUNT(wallet_pool)
-  ); 
+  );
   mu_assert(
     "HaMinedBlock hash does not match difficulty",
     validate_block(good_block) != 0
@@ -286,7 +285,7 @@ static char *all_tests() {
   mu_run_test(test_update_mempool);
   mu_run_test(test_accept_block);
   mu_run_test(test_handle_block);
-  
+
   return NULL;
 }
 

@@ -1,4 +1,5 @@
 add_subdirectory(txs)
 add_subdirectory(globals)
 add_subdirectory(blocks)
+add_subdirectory(utils)
 add_subdirectory(tests)

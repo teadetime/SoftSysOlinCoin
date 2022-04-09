@@ -4,6 +4,7 @@
 
 #include "base_block.h"
 #include "ser_block.h"
+#include "crypto.h"
 
 void hash_blockheader(unsigned char *dest, BlockHeader *header) {
   unsigned char *header_buf;

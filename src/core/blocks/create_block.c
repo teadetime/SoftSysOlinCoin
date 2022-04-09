@@ -4,8 +4,8 @@
 #include "mempool.h"
 #include "blockchain.h"
 #include "utxo_pool.h"
-#include "sign_tx.h"
 #include "wallet_pool.h"
+#include "crypto.h"
 
 /*
 Get Number of transactions to try and include in block
