@@ -12,7 +12,6 @@
 #include "utxo_pool.h"
 #include "mempool.h"
 #include "constants.h"
-#include "mbedtls/ecdsa.h"
 #include "crypto.h"
 #include "create_block.h"
 #include "validate_tx.h"

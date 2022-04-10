@@ -71,3 +71,28 @@ int validate_coinbase_tx_parts_not_null(Transaction *tx);
  * @return int 0 if transaction is valid, not zero if invalid
  */
 int validate_tx_shared(Transaction *tx);
+
+/**
+ * @brief Check if UTXO is double-spent in a transaction
+ * 
+ * @param tx transaction to check
+ * @return int 0 if valid, not zero if invalid
+ */
+int check_tx_double_spent(Transaction *tx);
+
+/**
+ * @brief Check if an UTXO in a transaction is already referenced in the mempool
+ * 
+ * @param tx transaction to check
+ * @return int 0 if valid, not zero if conflict found
+ */
+int check_inputs_not_in_mempool(Transaction *tx);
+
+/**
+ * @brief Validate incoming transactions from the network (different than 
+ * block transaction validation)
+ * 
+ * @param tx transaction to validate
+ * @return int 0 if incoming tx is valid, not zero if invalid
+ */
+int validate_tx_incoming(Transaction *tx);
