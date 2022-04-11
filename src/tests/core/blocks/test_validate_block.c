@@ -51,7 +51,7 @@ void _fill_mempool(){
   hash_tx(tx1->inputs[0].prev_tx_id, input_tx);
   tx1->inputs[0].prev_utxo_output = 0;
   tx1->inputs[0].pub_key = &input_tx_context->private_Q;
-  tx1->outputs[0].amt = 90; 
+  tx1->outputs[0].amt = 90;
 
   unsigned char temp_hash[TX_HASH_LEN];
   hash_tx(temp_hash, tx1);

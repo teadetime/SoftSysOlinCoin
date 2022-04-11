@@ -15,6 +15,7 @@
 #include "blockchain.h"
 #include "utxo_pool.h"
 #include "wallet_pool.h"
+#include "utxo_to_tx.h"
 #include "validate_tx.h"
 
 
@@ -131,19 +132,37 @@ void update_UTXO_pool_and_wallet_pool(Block *block){
 }
 
 void update_mempool(Block *block){
-  //Remove txs from mempool
-  unsigned char tx_hash_to_remove[TX_HASH_LEN];
-  for(unsigned int i = 0; i < block->num_txs; i++){
-    hash_tx(tx_hash_to_remove, block->txs[i]);
-    Transaction *ret_tx = mempool_remove(tx_hash_to_remove);
-    if(ret_tx == NULL){
-      // This would be bad
+  Transaction *tx;
+  unsigned char found_tx_hash[TX_HASH_LEN];
+  int ret;
+
+  for (unsigned int i = 0; i < block->num_txs; i++) {
+    for (unsigned int j = 0; j < block->txs[i]->num_inputs; j++) {
+      ret = utxo_to_tx_find(
+        found_tx_hash,
+        block->txs[i]->inputs[j].prev_tx_id,
+        block->txs[i]->inputs[j].prev_utxo_output
+      );
+
+      // UTXO not in mapping, don't have to do anything
+      if (ret != 0)
+        continue;
+
+      // Remove tx from mempool
+      tx = mempool_remove(found_tx_hash);
+      // Remove every mapping that referenced removed tx
+      for (unsigned int k = 0; k < tx->num_inputs; k++)
+        utxo_to_tx_remove(
+          tx->inputs[k].prev_tx_id,
+          tx->inputs[k].prev_utxo_output
+        );
+      free_tx(tx);
     }
   }
 }
 
 void accept_block(Block *block){
-  // ALl the thigns to do when the block is good
+  // All the things to do when the block is good
   update_local_blockchain(block);
   update_UTXO_pool_and_wallet_pool(block);
   update_mempool(block);
@@ -157,5 +176,7 @@ void handle_new_block(Block *block){
   else{
     // Different messages here to determine if we need to request headers etc
     //Right now we are just accepting the block or rejecting, no in between
+  }
+}
   }
 }
