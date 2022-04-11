@@ -21,3 +21,10 @@ target_link_libraries(validate_tx
   core_tx
   utxo_to_tx
   double_spend)
+
+add_library(handle_tx STATIC handle_tx.c)
+target_include_directories(handle_tx PUBLIC ${INCLUDE_ALL})
+target_link_libraries(handle_tx
+  core_tx
+  utxo_to_tx
+  mempool)
