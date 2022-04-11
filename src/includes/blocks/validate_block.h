@@ -32,6 +32,8 @@ int validate_prev_block_exists(Block *block);
 
 int validate_all_tx_hash(Block *block);
 
+int validate_block_double_spend(Block *block);
+
 int validate_block(Block *block);
 
 void update_local_blockchain(Block *block);

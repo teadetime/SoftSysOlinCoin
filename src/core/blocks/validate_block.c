@@ -16,7 +16,43 @@
 #include "utxo_pool.h"
 #include "wallet_pool.h"
 #include "utxo_to_tx.h"
+#include "double_spend_set.h"
 #include "validate_tx.h"
+
+///OPTIONAL
+void request_prev_block(unsigned char *prev_header){
+  if(prev_header){}
+  //Add the previous missing header hash somewhere
+}
+
+void add_to_pending_blocks(unsigned char *curr_header){
+  if(curr_header){}
+  // Add to the blocks that need to be validated once we have the previous block
+}
+
+int validate_prev_block_exists(Block *block){
+  // Also check if it's in blockchain already....
+  // Check if prev block is our latest top block
+
+  Block *prev_block = blockchain_find(block->header.prev_header_hash);
+  if(prev_block == NULL){
+    add_to_pending_blocks(block->header.prev_header_hash);
+    request_prev_block(block->header.prev_header_hash);
+    return 1;
+  }
+
+  if(memcmp(block->header.prev_header_hash, top_block_header_hash, BLOCK_HASH_LEN) != 0 ){
+    // NOTE this means we already have atleast one block ahead
+    return 2;
+  }
+  return 0;
+}
+
+int validate_all_tx_hash(Block *block){
+  unsigned char calculated_all_tx_hash[ALL_TX_HASH_LEN];
+  hash_all_tx(calculated_all_tx_hash, block->txs, block->num_txs);
+  return (memcmp(block->header.all_tx, calculated_all_tx_hash, ALL_TX_HASH_LEN) != 0);
+}
 
 
 int validate_coinbase_tx(Transaction **txs, unsigned int num_txs){
@@ -48,39 +84,26 @@ int validate_incoming_block_txs(Transaction **txs, unsigned int num_txs){
 
   return 0;
 }
-///OPTIONAL
-void request_prev_block(unsigned char *prev_header){
-  if(prev_header){}
-  //Add the previous missiing header hash somewhere
-}
 
-void add_to_pending_blocks(unsigned char *curr_header){
-  if(curr_header){}
-  // Add to the blocks that need to be validated once we have teh previous block
-}
+int validate_block_double_spend(Block *block){
+  UTXOPool *double_spend_set;
 
-int validate_prev_block_exists(Block *block){
-  // Also check if it's in blockchain already....
-  // Check if prev block is our latest top block
-
-  Block *prev_block = blockchain_find(block->header.prev_header_hash);
-  if(prev_block == NULL){
-    add_to_pending_blocks(block->header.prev_header_hash);
-    request_prev_block(block->header.prev_header_hash);
-    return 1;
+  double_spend_set_init(double_spend_set);
+  for (unsigned int i = 0; i < block->num_txs; i++) {
+    for (unsigned int j = 0; j < block->txs[i]->num_inputs; j++) {
+      if (double_spend_add(
+            double_spend_set,
+            block->txs[i]->inputs[i].prev_tx_id,
+            block->txs[i]->inputs[i].prev_utxo_output
+      ) != 0) {
+        double_spend_delete(double_spend_set);
+        return 1;
+      }
+    }
   }
+  double_spend_delete(double_spend_set);
 
-  if(memcmp(block->header.prev_header_hash, top_block_header_hash, BLOCK_HASH_LEN) != 0 ){
-    // NOTE this means we already have atleast one block ahead
-    return 2;
-  }
   return 0;
-}
-
-int validate_all_tx_hash(Block *block){
-  unsigned char calculated_all_tx_hash[ALL_TX_HASH_LEN];
-  hash_all_tx(calculated_all_tx_hash, block->txs, block->num_txs);
-  return (memcmp(block->header.all_tx, calculated_all_tx_hash, ALL_TX_HASH_LEN) != 0);
 }
 
 int validate_block(Block *block){
@@ -100,6 +123,11 @@ int validate_block(Block *block){
   }
 
   int valid_txs = validate_incoming_block_txs(block->txs, block->num_txs);
+  if(valid_txs != 0){
+    return 4;
+  }
+
+  int valid_double_spend = validate_block_double_spend(block);
   if(valid_txs != 0){
     return 4;
   }
@@ -176,7 +204,5 @@ void handle_new_block(Block *block){
   else{
     // Different messages here to determine if we need to request headers etc
     //Right now we are just accepting the block or rejecting, no in between
-  }
-}
   }
 }
