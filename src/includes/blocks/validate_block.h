@@ -9,20 +9,16 @@
 */
 
 #pragma once
+
 #include "base_tx.h"
 #include "base_block.h"
-/*
-How do we store branches or do we not worry right now, 
-seems like a list would be okay but it's really a tree data structure?
-*/
 
-
-// WILL BE WRITTEN IN A SEPARATE PR by EAMON?
 int validate_tx_shared(Transaction *tx);
 
 int validate_coinbase_tx(Transaction **txs, unsigned int num_txs);
 
 int validate_incoming_block_txs(Transaction **txs, unsigned int num_txs);
+
 ///OPTIONAL
 void request_prev_block(unsigned char *prev_header);
 
@@ -35,13 +31,3 @@ int validate_all_tx_hash(Block *block);
 int validate_block_double_spend(Block *block);
 
 int validate_block(Block *block);
-
-void update_local_blockchain(Block *block);
-
-void update_UTXO_pool_and_wallet_pool(Block *block);
-
-void update_mempool(Block *block);
-
-void accept_block(Block *block);
-
-void handle_new_block(Block *block);

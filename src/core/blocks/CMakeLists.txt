@@ -12,3 +12,8 @@ target_link_libraries(core_mine
   utxopool
   wallet_pool
   validate_tx)
+
+add_library(handle_block STATIC handle_block.c)
+target_include_directories(handle_block PUBLIC ${INCLUDE_ALL})
+target_link_libraries(handle_block
+  core_mine)
