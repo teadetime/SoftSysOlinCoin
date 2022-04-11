@@ -26,7 +26,6 @@ typedef struct Transaction{
 typedef struct UTXO{
   unsigned long amt;
   unsigned char public_key_hash[PUB_KEY_HASH_LEN];
-  short spent;
 } UTXO;
 
 /**

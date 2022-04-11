@@ -13,9 +13,6 @@ unsigned char *ser_utxo(UTXO *utxo){
   unsigned char *sig = data + sizeof(utxo->amt);
   memcpy(sig, &(utxo->public_key_hash), sizeof(utxo->public_key_hash));
 
-  unsigned char *spent = sig + sizeof(utxo->public_key_hash);
-  memcpy(spent, &(utxo->spent), sizeof(utxo->spent));
-
   return data;
 }
 
@@ -27,9 +24,6 @@ UTXO *dser_utxo(unsigned char *data){
 
   unsigned char *sig = data + sizeof(((UTXO*)0)->amt);
   memcpy(&(new_UTXO->public_key_hash), sig, sizeof(((UTXO*)0)->public_key_hash));
-
-  unsigned char *spent = sig + sizeof(((UTXO*)0)->public_key_hash);
-  memcpy(&(new_UTXO->spent), spent, sizeof(((UTXO*)0)->spent));
 
   return new_UTXO;
 }
