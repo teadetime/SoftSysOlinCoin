@@ -21,6 +21,7 @@ set(INCLUDE_ALL
     CACHE INTERNAL "used internally")
 set(UTHASH_DOWNLOAD_LINK "https://raw.githubusercontent.com/troydhanson/uthash/master/src/uthash.h")
 find_file(UTHASH_LIB NAMES uthash.h PATHS ${CMAKE_CURRENT_SOURCE_DIR}/${UTHASH_IN_PROJ}/)
+message(STATUS ${UTHASH_LIB})
 if(NOT UTHASH_LIB)
   file(DOWNLOAD ${UTHASH_DOWNLOAD_LINK} ${CMAKE_CURRENT_SOURCE_DIR}/${UTHASH_IN_PROJ}/uthash.h)
   message(STATUS "Uthash not found")

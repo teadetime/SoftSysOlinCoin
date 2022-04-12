@@ -1,5 +1,6 @@
 #include "mempool.h"
 #include "crypto.h"
+#include "utxo_to_tx.h"
 
 void mempool_init() {
   mempool = NULL;
