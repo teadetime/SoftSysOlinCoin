@@ -101,11 +101,17 @@ int validate_sig(
     return 1;
   else {
     mbedtls_strerror(err, buf, ERR_BUF);
-    printf("Validate signature error! %s\n", buf);
-    exit(1);
+    // printf("Validate signature error! %s\n", buf);
+    // exit(1);
+    return 1;
   }
 }
 
+void build_ctx_from_public(mbedtls_ecdsa_context *ctx, mbedtls_ecp_point *pub_key){
+  mbedtls_ecdsa_init(ctx);
+  mbedtls_ecp_group_load(&ctx->private_grp, CURVE);
+  ctx->private_Q = *pub_key;
+}
 
 size_t ser_pub_key(
     unsigned char *dest, mbedtls_ecp_point *point, mbedtls_ecp_group *grp

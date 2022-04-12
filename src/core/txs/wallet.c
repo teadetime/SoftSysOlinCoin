@@ -48,6 +48,7 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
       &(map_value->entry->key_pair->MBEDTLS_PRIVATE(Q))
     );
     memset(tx->inputs[i].signature, 0, SIGNATURE_LEN);
+    tx->inputs[i].sig_len = 0;
     memcpy(tx->inputs[i].prev_tx_id, map_value->id.tx_hash, TX_HASH_LEN);
     tx->inputs[i].prev_utxo_output = map_value->id.vout;
 

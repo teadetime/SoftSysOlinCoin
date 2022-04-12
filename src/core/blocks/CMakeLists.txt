@@ -10,4 +10,5 @@ target_link_libraries(core_mine
   mempool
   blockchain
   utxopool
-  wallet_pool)
+  wallet_pool
+  validate_tx)

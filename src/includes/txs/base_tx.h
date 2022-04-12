@@ -1,4 +1,5 @@
 #pragma once
+#include <stdlib.h>
 #include "constants.h"
 #include "mbedtls/ecdsa.h"
 
@@ -51,4 +52,6 @@ void hash_tx(unsigned char *dest, Transaction *tx);
 void print_input(Input *input, char *prefix);
 void print_output(Output *output, char *prefix);
 void print_tx(Transaction *tx, char *prefix);
+
+void free_tx(Transaction *tx);
 void pretty_print_tx(Transaction *tx, char *prefix);
