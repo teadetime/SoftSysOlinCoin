@@ -48,9 +48,23 @@ int size_tx(Transaction *tx);
  */
 void hash_tx(unsigned char *dest, Transaction *tx);
 
+/**
+ * @brief Free transaction
+ *
+ * @param tx Transaction to free
+ */
+void free_tx(Transaction *tx);
+
+/**
+ * @brief Copy transaction
+ *
+ * @param tx Transaction to copy
+ * @return Copy of passed transcation
+ */
+Transaction *copy_tx(Transaction *tx);
+
 void print_input(Input *input, char *prefix);
 void print_output(Output *output, char *prefix);
 void print_tx(Transaction *tx, char *prefix);
 
-void free_tx(Transaction *tx);
 void pretty_print_tx(Transaction *tx, char *prefix);

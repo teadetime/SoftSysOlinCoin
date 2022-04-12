@@ -25,6 +25,49 @@ int size_tx(Transaction *tx){
     tx->num_inputs * size_input() + tx->num_outputs * sizeof(Output));
 }
 
+void free_tx(Transaction *tx){
+  if(tx != NULL){
+    if(tx->inputs != NULL){
+      for(unsigned int i = 0; i < tx->num_inputs; i++ ){
+        if(tx->inputs[i].pub_key != NULL){
+          mbedtls_ecp_point_free(tx->inputs[i].pub_key);
+        }
+      }
+      free(tx->inputs);
+    }
+    if(tx->outputs != NULL){
+      free(tx->outputs);
+    }
+  free(tx);
+  }
+}
+
+Transaction *copy_tx(Transaction *tx){
+  Transaction *copy = malloc(sizeof(Transaction));
+
+  // Copy inputs
+  // Harder since we need to also copy pub keys
+  copy->num_inputs = tx->num_inputs;
+  copy->inputs = malloc(tx->num_inputs * sizeof(Input));
+  for(unsigned int i = 0; i<tx->num_inputs; i++){
+    // Copy everything then overwrite the key pointer
+    memcpy(&(copy->inputs[i]), &(tx->inputs[i]), sizeof(Input));
+    copy->inputs[i].pub_key = malloc(sizeof(mbedtls_ecp_point));
+    mbedtls_ecp_point_init(copy->inputs[i].pub_key);
+    mbedtls_ecp_copy(
+      copy->inputs[i].pub_key,
+      tx->inputs[i].pub_key
+    );
+  }
+
+  // Copy outputs
+  copy->num_outputs = tx->num_outputs;
+  copy->outputs = malloc(tx->num_outputs * sizeof(Output));
+  memcpy(copy->outputs, tx->outputs, tx->num_outputs * sizeof(Output));
+
+  return copy;
+}
+
 void print_input(Input *input, char *prefix){
   char *sub_prefix = malloc(strlen(prefix)+strlen(PRINT_TAB)+1);
   strcpy(sub_prefix, prefix);
@@ -66,22 +109,6 @@ void print_tx(Transaction *tx, char *prefix){
   free(sub_prefix);
 }
 
-void free_tx(Transaction *tx){
-  if(tx != NULL){
-    if(tx->inputs != NULL){
-      for(unsigned int i = 0; i < tx->num_inputs; i++ ){
-        if(tx->inputs[i].pub_key != NULL){
-          mbedtls_ecp_point_free(tx->inputs[i].pub_key);
-        }
-      }
-      free(tx->inputs);
-    }
-    if(tx->outputs != NULL){
-      free(tx->outputs);
-    }
-  free(tx);
-  }
-}
 void pretty_print_tx(Transaction *tx, char *prefix){
   unsigned char tx_hash[TX_HASH_LEN];
 

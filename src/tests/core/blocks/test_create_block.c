@@ -127,7 +127,7 @@ static char *test_create_header(){
   _fill_mempool();
   Transaction **test_ptr = NULL;
   unsigned int num_tx = get_txs_from_mempool(&test_ptr);
-  BlockHeader *test_header = create_block_header(test_ptr, 2);
+  BlockHeader *test_header = create_block_header_alloc(test_ptr, 2);
   unsigned char total_hash[ALL_TX_HASH_LEN];
   hash_all_tx(total_hash, test_ptr, num_tx);
   mu_assert(

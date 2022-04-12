@@ -70,10 +70,10 @@ unsigned int get_txs_from_mempool(Transaction ***tx_pts){
   //Take minimum value of the mempool or the desired size
   unsigned int tx_to_get = ((tx_desired) < (tx_in_mempool)) ? (tx_desired) : (tx_in_mempool);
 
-  *tx_pts = malloc((tx_to_get+coinbase)*sizeof(Transaction*)); // Shouldn't this be multiplied by 4 because eeach pointer takes up 4 bytes?
+  *tx_pts = malloc((tx_to_get+coinbase)*sizeof(Transaction*));
 
   for(unsigned int i = 0; i < tx_to_get; i++) {
-    (*tx_pts)[i+coinbase] = s->tx; // Leave the first tx for coinbase tx
+    (*tx_pts)[i+coinbase] = copy_tx(s->tx); // Leave the first tx for coinbase tx
     tx_fees += calc_tx_fees(s->tx);
     s = s->hh.next;
     if(s == NULL){
@@ -97,21 +97,23 @@ void hash_all_tx(unsigned char *dest, Transaction **txs, unsigned int num_txs){
   free(temp_all);
 }
 
-BlockHeader *create_block_header(Transaction **txs, unsigned int num_txs){
-  BlockHeader *b_header = malloc(sizeof(BlockHeader));
-  hash_all_tx(b_header->all_tx, txs, num_txs);
+void create_block_header(BlockHeader *header, Transaction **txs, unsigned int num_txs){
+  hash_all_tx(header->all_tx, txs, num_txs);
+  memcpy(header->prev_header_hash, top_block_header_hash, ALL_TX_HASH_LEN);
+  header->nonce = 0;
+  header->timestamp = time(NULL);
+}
 
-  memcpy(b_header->prev_header_hash, top_block_header_hash, ALL_TX_HASH_LEN);
-  b_header->nonce = 0;
-  b_header->timestamp = time(NULL);
-
-  return b_header;
+BlockHeader *create_block_header_alloc(Transaction **txs, unsigned int num_txs){
+  BlockHeader *header = malloc(sizeof(BlockHeader));
+  create_block_header(header, txs, num_txs);
+  return header;
 }
 
 void create_block(Block *block){
   block->txs = NULL;
   block->num_txs = get_txs_from_mempool(&(block->txs));
-  block->header = *create_block_header(block->txs, block->num_txs);
+  create_block_header(&(block->header), block->txs, block->num_txs);
 }
 
 Block *create_block_alloc(){
