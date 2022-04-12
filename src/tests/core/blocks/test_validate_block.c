@@ -102,6 +102,16 @@ static char  *test_validate_all_tx() {
   return NULL;
 }
 
+static char  *test_validate_block_double_spend() {
+  _fill_mempool();
+  Block *test_block = create_block_alloc();
+  mu_assert(
+    "Detecting double spend in valid block",
+    validate_block_double_spend(test_block) == 0
+  );
+  return NULL;
+}
+
 static char  *test_validate_whole_block() {
   _fill_mempool();
   Block *test_block = create_block_alloc();
@@ -124,6 +134,7 @@ static char *all_tests() {
   mu_run_test(test_coinbase_tx);
   mu_run_test(test_validate_txs);
   mu_run_test(test_validate_prev_block);
+  mu_run_test(test_validate_block_double_spend);
   mu_run_test(test_validate_all_tx);
   mu_run_test(test_validate_whole_block);
 
