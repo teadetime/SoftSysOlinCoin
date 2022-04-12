@@ -15,6 +15,7 @@ Transaction *mempool_add(Transaction *tx) {
   found_entry = mempool_find_node(new_entry->id);
   if (found_entry == NULL) {
     HASH_ADD(hh, mempool, id, TX_HASH_LEN, new_entry);
+    utxo_to_tx_add_tx(tx);
     return tx;
   }
   free(new_entry);
