@@ -50,7 +50,7 @@ UTXOPool *double_spend_find_node_key(UTXOPool *set, UTXOPoolKey *key) {
   return found_entry;
 }
 
-void double_spend_delete(UTXOPool *set){
+void delete_double_spend_set(UTXOPool *set){
   UTXOPool *current_utxo, *tmp;
   HASH_ITER(hh, set, current_utxo, tmp) {
     HASH_DEL(set, current_utxo);  /* delete; users advances to next */

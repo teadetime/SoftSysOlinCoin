@@ -45,8 +45,8 @@ Transaction *build_complex_tx(){
   utxo_pool_init();
   utxo_pool_add(input_tx, 0);
   utxo_to_tx_add_tx(input_tx);
-  mbedtls_ecdsa_context *input_tx_context = malloc(sizeof(mbedtls_ecdsa_context));
-  memcpy(input_tx_context, last_key_pair, sizeof(mbedtls_ecdsa_context));
+  mbedtls_ecdsa_context *input_tx_context = last_key_pair;
+  
   tx1 = _make_tx();
   hash_tx(tx1->inputs[0].prev_tx_id, input_tx);
   tx1->inputs[0].prev_utxo_output = 0;
@@ -54,7 +54,8 @@ Transaction *build_complex_tx(){
   tx1->outputs[0].amt = 90; 
 
   unsigned char temp_hash[TX_HASH_LEN];
-  hash_tx(temp_hash, tx1);
+  
+  hash_tx(temp_hash, tx1); // This hash should balnk signature
   tx1->inputs[0].sig_len = write_sig(tx1->inputs[0].signature, SIGNATURE_LEN, temp_hash, TX_HASH_LEN, input_tx_context);
   return tx1;
 }
@@ -113,7 +114,7 @@ static char *test_validate_input_matches_utxo_pool() {
   Transaction *tx1 = build_complex_tx();
   for(unsigned int i = 0; i < tx1->num_inputs; i++){
     mu_assert(
-      "Input Not unlockable",
+      "Inputs are not found in the utxo pool",
       validate_input_matches_utxopool(&tx1->inputs[i]) == 0
     );
   }

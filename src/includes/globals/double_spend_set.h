@@ -41,4 +41,4 @@ UTXOPool *double_spend_find_node_key(UTXOPool *set, UTXOPoolKey *key);
  * 
  * @param set doublespend UTXOPool to clear
  */
-void double_spend_delete(UTXOPool *set);
+void delete_double_spend_set(UTXOPool *set);

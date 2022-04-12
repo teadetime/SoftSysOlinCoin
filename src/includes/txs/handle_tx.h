@@ -1,3 +1,4 @@
+#pragma once
 #include "base_tx.h"
 /**
  * @brief Do corresponding updates for a validated transaction 

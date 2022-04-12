@@ -48,7 +48,7 @@ int validate_input_matches_utxopool(Input *input);
 int validate_input(Input *input, unsigned char *blank_tx_hash);
 
 /**
- * @brief Check if a Transaction is malformed that it will not be usable, 
+ * @brief Check if a Transaction (Not a coinbase tx) is malformed 
  * this should be the first check run on a transaction
  * 
  * @param tx transaction to validate

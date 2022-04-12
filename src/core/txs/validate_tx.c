@@ -35,13 +35,11 @@ void create_blank_sig_txhash(unsigned char *blank_hash, Transaction *tx){
       blank_sig_tx->inputs[i].pub_key,
       tx->inputs[i].pub_key
     );
-  }
-  memcpy(blank_sig_tx->outputs, tx->outputs, tx->num_outputs*sizeof(Output));
-  
-  for(unsigned int i = 0; i < blank_sig_tx->num_inputs; i++){
     blank_sig_tx->inputs[i].sig_len = 0;
     memset(blank_sig_tx->inputs[i].signature, 0, SIGNATURE_LEN);
   }
+  memcpy(blank_sig_tx->outputs, tx->outputs, tx->num_outputs*sizeof(Output));
+  
   // need to make hash where the tx has signatures that are 0's
   hash_tx(blank_hash, blank_sig_tx);
   free_tx(blank_sig_tx);
@@ -88,10 +86,11 @@ int validate_tx_parts_not_null(Transaction *tx){
   if(tx == NULL){
     return 1;
   }
-  if(tx->num_inputs != 0){// Note 0 inputs happen for a coinbase tx and we expect inputs = Null
-    if(tx->inputs == NULL){
-      return 3;
-    }
+  if(tx->num_inputs == 0){
+    return 2;
+  }
+  if(tx->inputs == NULL){
+    return 3;
   }
   if(tx->num_outputs == 0){
     return 4;
@@ -139,11 +138,9 @@ int validate_tx_shared(Transaction *tx){
   }
 
   for(unsigned int i = 0; i < tx->num_outputs; i++){
-    total_out += tx->outputs->amt;
-    if(tx->outputs->public_key_hash == NULL){
-      return 3;
-    }
+    total_out += tx->outputs[i].amt;
   }
+
   if(total_in < total_out){
     return 4;
   }
@@ -155,17 +152,16 @@ int check_tx_double_spent(Transaction *tx){
   for(int i = 0; i < tx->num_inputs; i++){
     if(double_spend_add(double_spend_set, tx->inputs[i].prev_tx_id,
                         tx->inputs[i].prev_utxo_output) != 0){
-      double_spend_delete(double_spend_set);
+      delete_double_spend_set(double_spend_set);
       return 1;
     }
   }
-  double_spend_delete(double_spend_set);
+  delete_double_spend_set(double_spend_set);
   return 0;
 }
 
 int check_inputs_not_in_mempool(Transaction *tx){
   unsigned char found_tx[TX_HASH_LEN];
-  int found = 1;
   for(int i = 0; i<tx->num_inputs; i++){
     if(utxo_to_tx_find(found_tx, tx->inputs[i].prev_tx_id,
                      tx->inputs[i].prev_utxo_output) == 0){
