@@ -75,7 +75,7 @@ void hash_all_tx(unsigned char *dest, Transaction **txs, unsigned int num_txs);
 void create_block_header(BlockHeader *header, Transaction **txs, unsigned int num_txs);
 
 /**
- * @brief Creats a block header and allocates memory from it
+ * @brief Creats a block header and allocates memory for it
  *
  * @param txs txs to use for the block/header
  * @param num_txs number of txs in txs

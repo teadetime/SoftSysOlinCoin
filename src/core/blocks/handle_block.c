@@ -1,14 +1,3 @@
-/**
- * @file validate_block.c
- * @author Nathan Faber nfaber@olin.edu
- * @brief implementation of functions used to validate a new block that is
- * broadcast on the blockchain and update the various appropriate structures
- * @version 0.1
- * @date 2022-03-20
- *
- * @copyright Copyright (c) 2022
- *
- */
 #include "mempool.h"
 #include "blockchain.h"
 #include "utxo_pool.h"
