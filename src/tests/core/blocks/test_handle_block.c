@@ -61,8 +61,6 @@ void _fill_mempool(){
   tx1->inputs[0].sig_len = write_sig(tx1->inputs[0].signature, SIGNATURE_LEN, temp_hash, TX_HASH_LEN, input_tx_context);
   mempool_init();
   mempool_add(tx1);
-  utxo_to_tx_init();
-  utxo_to_tx_add_tx(tx1);
 }
 
 static char  *test_update_local_blockchain() {
@@ -109,10 +107,15 @@ static char  *test_update_mempool() {
   Block *good_block = mine_block();
 
   unsigned int prev_mempool_size = HASH_COUNT(mempool);
+  unsigned int prev_mapping_size = HASH_COUNT(utxo_to_tx);
   update_mempool(good_block);
   mu_assert(
     "Mempool didn't change by expected amount",
     prev_mempool_size-1 == HASH_COUNT(mempool)
+  );
+  mu_assert(
+    "UTXO to tx mapping didn't change by expected amount",
+    prev_mapping_size-1 == HASH_COUNT(utxo_to_tx)
   );
   return NULL;
 }
@@ -124,6 +127,7 @@ static char  *test_accept_block() {
   unsigned int prev_utxo_size = HASH_COUNT(utxo_pool);
   unsigned int prev_wallet_size = HASH_COUNT(wallet_pool);
   unsigned int prev_mempool_size = HASH_COUNT(mempool);
+  unsigned int prev_mapping_size = HASH_COUNT(utxo_to_tx);
   unsigned char block_hash[BLOCK_HASH_LEN];
   hash_blockheader(block_hash, &(good_block->header));
   accept_block(good_block);
@@ -151,6 +155,10 @@ static char  *test_accept_block() {
     "Accept: Mempool didn't change by expected amount",
     prev_mempool_size-1 == HASH_COUNT(mempool)
   );
+  mu_assert(
+    "Accept: UTXO to tx mapping didn't change by expected amount",
+    prev_mapping_size-1 == HASH_COUNT(utxo_to_tx)
+  );
   return NULL;
 }
 
@@ -162,6 +170,7 @@ static char  *test_handle_block() {
   unsigned int prev_utxo_size = HASH_COUNT(utxo_pool);
   unsigned int prev_wallet_size = HASH_COUNT(wallet_pool);
   unsigned int prev_mempool_size = HASH_COUNT(mempool);
+  unsigned int prev_mapping_size = HASH_COUNT(utxo_to_tx);
   unsigned char block_hash[BLOCK_HASH_LEN];
   hash_blockheader(block_hash, &(good_block->header));
   handle_new_block(good_block);
@@ -187,8 +196,12 @@ static char  *test_handle_block() {
     prev_wallet_size+1 == HASH_COUNT(wallet_pool)
   );
   mu_assert(
-    "Accept: Mempool didn't change by expected amount",
+    "Handle: Mempool didn't change by expected amount",
     prev_mempool_size-1 == HASH_COUNT(mempool)
+  );
+  mu_assert(
+    "Handle: UTXO to tx mapping didn't change by expected amount",
+    prev_mapping_size-1 == HASH_COUNT(utxo_to_tx)
   );
   return NULL;
 }
@@ -211,7 +224,7 @@ int main() {
   if (result != NULL) {
     printf("%s\n", result);
   } else {
-    printf("validate_block.c passing!\n");
+    printf("handle_block.c passing!\n");
   }
   printf("Tests run: %d\n", tests_run);
 
