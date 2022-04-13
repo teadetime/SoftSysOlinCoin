@@ -43,10 +43,14 @@ void free_tx(Transaction *tx){
 }
 
 Transaction *copy_tx(Transaction *tx){
-  Transaction *copy = malloc(sizeof(Transaction));
+  Transaction *copy;
+
+  if (tx == NULL)
+    return NULL;
 
   // Copy inputs
   // Harder since we need to also copy pub keys
+  copy = malloc(sizeof(Transaction));
   copy->num_inputs = tx->num_inputs;
   copy->inputs = malloc(tx->num_inputs * sizeof(Input));
   for(unsigned int i = 0; i<tx->num_inputs; i++){

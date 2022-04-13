@@ -58,6 +58,8 @@ void free_tx(Transaction *tx);
 /**
  * @brief Copy transaction
  *
+ * Copies transaction, returning NULL if the passed transaction is NULL
+ *
  * @param tx Transaction to copy
  * @return Copy of passed transcation
  */
