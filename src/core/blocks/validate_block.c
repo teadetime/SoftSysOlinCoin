@@ -94,12 +94,12 @@ int validate_block_double_spend(Block *block){
             block->txs[i]->inputs[i].prev_tx_id,
             block->txs[i]->inputs[i].prev_utxo_output
       ) != 0) {
-        double_spend_delete(double_spend_set);
+        delete_double_spend_set(double_spend_set);
         return 1;
       }
     }
   }
-  double_spend_delete(double_spend_set);
+  delete_double_spend_set(double_spend_set);
 
   return 0;
 }
