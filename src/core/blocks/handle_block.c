@@ -42,19 +42,10 @@ void update_mempool(Block *block){
         block->txs[i]->inputs[j].prev_utxo_output
       );
 
-      // UTXO not in mapping, don't have to do anything
-      if (ret != 0)
-        continue;
-
-      // Remove tx from mempool
-      tx = mempool_remove(found_tx_hash);
-      // Remove every mapping that referenced removed tx
-      for (unsigned int k = 0; k < tx->num_inputs; k++)
-        utxo_to_tx_remove(
-          tx->inputs[k].prev_tx_id,
-          tx->inputs[k].prev_utxo_output
-        );
-      free_tx(tx);
+      if (ret == 0) {
+        tx = mempool_remove(found_tx_hash);
+        free_tx(tx);
+      }
     }
   }
 }

@@ -29,14 +29,21 @@ Transaction *mempool_remove(unsigned char *tx_hash) {
   Transaction *tx;
 
   entry = mempool_find_node(tx_hash);
-  if (entry != NULL) {
-    tx = entry->tx;
-    HASH_DEL(mempool, entry);
-    free(entry);
-    return tx;
-  }
+  if (entry == NULL)
+    return NULL;
 
-  return NULL;
+  tx = entry->tx;
+  HASH_DEL(mempool, entry);
+  free(entry);
+
+  // Remove every mapping that referenced removed tx
+  for (unsigned int k = 0; k < tx->num_inputs; k++)
+    utxo_to_tx_remove(
+      tx->inputs[k].prev_tx_id,
+      tx->inputs[k].prev_utxo_output
+    );
+
+  return tx;
 }
 
 Transaction *mempool_find(unsigned char *tx_hash) {
