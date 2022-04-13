@@ -1,8 +1,10 @@
 #include "mempool.h"
 #include "crypto.h"
+#include "utxo_to_tx.h"
 
 void mempool_init() {
   mempool = NULL;
+  utxo_to_tx_init();
 }
 
 Transaction *mempool_add(Transaction *tx) {
