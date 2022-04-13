@@ -11,7 +11,7 @@
 
 #include "wallet.h"
 #include "create_block.h"
-#include "validate_block.h"
+#include "handle_block.h"
 
 #include "crypto.h"
 

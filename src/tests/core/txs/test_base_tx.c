@@ -8,24 +8,7 @@
 
 int tests_run = 0;
 
-static char  *test_tx_creation() {
-  Output *an_Output = malloc(sizeof(Output));
-  memset(an_Output, 0, sizeof(Output));
-  an_Output->amt = 5;
-  strcpy((char*)an_Output->public_key_hash, "a_val");
-
-  Input *input_1 = malloc(sizeof(Input));
-  memset(input_1, 0, sizeof(Input));
-  input_1->prev_utxo_output = 2;
-  mbedtls_ecdsa_context *key_pair_1 = gen_keys();
-  input_1->pub_key = &key_pair_1->private_Q;
-
-  Input *input_2 = malloc(sizeof(Input));
-  memset(input_2, 0, sizeof(Input));
-  input_2->prev_utxo_output = 4;
-  mbedtls_ecdsa_context *key_pair_2 = gen_keys();
-  input_2->pub_key = &key_pair_2->private_Q;
-
+Transaction *_make_tx() {
   Transaction *a_Tx = malloc(sizeof(Transaction));
   a_Tx->num_inputs = 2;
   a_Tx->num_outputs = 1;
@@ -33,22 +16,28 @@ static char  *test_tx_creation() {
   a_Tx->inputs = malloc(sizeof(Input) * (a_Tx->num_inputs));
   a_Tx->outputs = malloc(sizeof(Output) * (a_Tx->num_outputs));
 
-  // Copy over some inputs
-  memcpy(a_Tx->inputs, input_1, sizeof(*input_1) );
-  memcpy(a_Tx->inputs + 1, input_2, sizeof(*input_2) );
+  Output *an_Output = &(a_Tx->outputs[0]);
+  memset(an_Output, 0, sizeof(Output));
+  an_Output->amt = 5;
+  strcpy((char*)an_Output->public_key_hash, "a_val");
 
-  //Copy an Output
-  memcpy(a_Tx->outputs, an_Output, sizeof(*an_Output) );
+  Input *input_1 = &(a_Tx->inputs[0]);
+  memset(input_1, 0, sizeof(Input));
+  input_1->prev_utxo_output = 2;
+  mbedtls_ecdsa_context *key_pair_1 = gen_keys();
+  input_1->pub_key = &key_pair_1->private_Q;
 
-  //print_tx(a_Tx);
+  Input *input_2 = &(a_Tx->inputs[1]);
+  memset(input_2, 0, sizeof(Input));
+  input_2->prev_utxo_output = 4;
+  mbedtls_ecdsa_context *key_pair_2 = gen_keys();
+  input_2->pub_key = &key_pair_2->private_Q;
 
-  // Other Access ways
-  // printf("prev_tx_id[0]: %s\n", a_Tx->inputs->prev_tx_id);
-  // printf("prev_tx_id[1]: %s\n", a_Tx->inputs[1].prev_tx_id);
+  return a_Tx;
+}
 
-  // printf("Output Amount: %li\n", a_Tx->outputs[0].amt);
-  // printf("Output PubKey: %s\n", a_Tx->outputs[0].public_key_hash);
-  // //printf("prev_tx_id: %s\n", ((a_Tx->inputs)+1)->prev_tx_id);
+static char  *test_tx_creation() {
+  Transaction *a_Tx = _make_tx();
 
   //Serialization Testing
   unsigned char *char_tx = ser_tx_alloc(a_Tx);
@@ -124,8 +113,26 @@ static char  *test_tx_creation() {
   return NULL;
 }
 
+static char  *test_copy_tx() {
+  Transaction *tx, *copy;
+  unsigned char tx_hash[TX_HASH_LEN], copy_hash[TX_HASH_LEN];
+
+  tx = _make_tx();
+  hash_tx(tx_hash, tx);
+
+  copy = copy_tx(tx);
+  hash_tx(copy_hash, copy);
+
+  mu_assert(
+    "Copy produces different hash",
+    memcmp(tx_hash, copy_hash, TX_HASH_LEN) == 0
+  );
+  return NULL;
+}
+
 static char *all_tests() {
   mu_run_test(test_tx_creation);
+  mu_run_test(test_copy_tx);
   return NULL;
 }
 
