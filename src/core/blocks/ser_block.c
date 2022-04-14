@@ -51,13 +51,13 @@ int deser_blockheader(BlockHeader *dest_header, unsigned char *blockheader_data)
 
   memcpy(dest_header->all_tx, incoming_all_tx, sizeof(((BlockHeader*)0)->all_tx));
   unsigned char *incoming_prev_header_hash = incoming_all_tx + sizeof(((BlockHeader*)0)->all_tx);
-  
+
   memcpy(dest_header->prev_header_hash, incoming_prev_header_hash, sizeof(((BlockHeader*)0)->prev_header_hash));
   unsigned char *incoming_nonce = incoming_prev_header_hash + sizeof(((BlockHeader*)0)->prev_header_hash);
 
   memcpy(&dest_header->nonce, incoming_nonce, sizeof(((BlockHeader*)0)->nonce));
   unsigned char *end = incoming_nonce + sizeof(((BlockHeader*)0)->nonce);
-  
+
   return 1; // Seems like serialization should get an input size and it should check to make sure it is what is expected
 }
 
