@@ -7,13 +7,12 @@
 #include "crypto.h"
 
 void hash_tx(unsigned char *dest, Transaction *tx) {
-  unsigned char *tx_buf;
+  unsigned char tx_buf[TX_HASH_LEN];
   int tx_buf_size;
 
   tx_buf_size = size_tx(tx);
-  tx_buf = ser_tx_alloc(tx);
+  ser_tx(tx_buf, tx);
   hash_sha256(dest, tx_buf, tx_buf_size);
-  free(tx_buf);
 }
 
 int size_input() {
