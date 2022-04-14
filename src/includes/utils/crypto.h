@@ -141,7 +141,7 @@ void hash_pub_key(unsigned char *dest, mbedtls_ecdsa_context *key_pair);
  * @param buf Buffer to be printed in hex
  * @param len Length of buffer to be printed
  */
-void dump_buf(char *prefix, const char *title, unsigned char *buf, size_t len);
+void dump_buf(char *prefix, const char *title, const unsigned char *buf, size_t len);
 
 /* GLOBALS */
 

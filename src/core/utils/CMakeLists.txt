@@ -4,3 +4,8 @@ add_library(crypto STATIC crypto.c)
 target_include_directories(crypto PUBLIC ${INCLUDE_ALL})
 target_link_libraries(crypto
   mbedtls)
+  
+add_library(init_db STATIC init_db.c)
+target_include_directories(init_db PUBLIC ${INCLUDE_ALL})
+target_link_libraries(init_db
+  leveldb)

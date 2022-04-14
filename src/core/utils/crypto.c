@@ -166,7 +166,7 @@ void hash_pub_key(unsigned char *dest, mbedtls_ecdsa_context *key_pair) {
   hash_sha256(dest, ser_key, num_bytes);
 }
 
-void dump_buf(char *prefix, const char *title, unsigned char *buf, size_t len) {
+void dump_buf(char *prefix, const char *title, const unsigned char *buf, size_t len) {
     printf( "%s%s",prefix, title);
     for(size_t i = 0; i < len; i++ )
         printf("%c%c", "0123456789ABCDEF" [buf[i] / 16],

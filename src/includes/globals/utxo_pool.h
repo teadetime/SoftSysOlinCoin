@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "uthash.h"
 #include "base_tx.h"
+#include "leveldb/c.h"
 
 typedef struct UTXOPoolKey {
   unsigned char tx_hash[TX_HASH_LEN];
@@ -16,6 +17,11 @@ typedef struct UTXOPool {
 } UTXOPool;
 
 UTXOPool *utxo_pool;
+char *utxo_pool_path;
+leveldb_t *utxo_pool_db;  // Level DB Database
+
+void utxo_pool_init_leveldb();
+int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout);
 
 /* Initializes the global utxo_pool variable */
 void utxo_pool_init();

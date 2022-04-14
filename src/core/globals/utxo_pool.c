@@ -1,9 +1,44 @@
 #include <stdio.h>
 #include "utxo_pool.h"
 #include "crypto.h"
+#include "init_db.h"
+
+int make_utxo_pool_key(unsigned char *dest[], size_t *len, Transaction *tx, unsigned int vout){
+  *len = TX_HASH_LEN+sizeof(vout);
+  *dest = malloc(*len);
+  hash_tx(*dest, tx);
+  memcpy(*dest+TX_HASH_LEN, &vout, sizeof(vout));
+  return 0;
+}
+
+void utxo_pool_init_leveldb(){
+  set_db_path(&utxo_pool_path, "/utxo_pool");
+  open_or_create_db(&utxo_pool_db, utxo_pool_path);
+
+  //Maybe close the DB here?
+}
 
 void utxo_pool_init() {
   utxo_pool = NULL;
+}
+
+int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout){
+  unsigned char *db_key;
+  size_t key_len;
+  make_utxo_pool_key(&db_key, &key_len, tx, vout);
+
+  char *err = NULL;
+  leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
+  leveldb_put(utxo_pool_db, woptions, db_key, key_len, "value", 5, &err);
+  dump_buf("", "KEY: ", db_key, key_len);
+
+  if (err != NULL) {
+    fprintf(stderr, "Write fail.\n");
+    return(1);
+  }
+
+  leveldb_free(err); err = NULL;
+  return 0;
 }
 
 UTXO *utxo_pool_add(Transaction *tx, unsigned int vout) {
