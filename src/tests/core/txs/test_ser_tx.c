@@ -36,6 +36,14 @@ Transaction *_make_tx() {
   return a_Tx;
 }
 
+UTXO *_make_utxo() {
+  UTXO *utxo;
+  utxo = malloc(sizeof(UTXO));
+  utxo->amt = 100;
+  memset(utxo->public_key_hash, 0xAA, PUB_KEY_HASH_LEN);
+  return utxo;
+}
+
 static char  *test_ser_tx() {
   Transaction *a_Tx = _make_tx();
   unsigned char *char_tx = ser_tx_alloc(a_Tx);
@@ -107,8 +115,47 @@ static char  *test_ser_tx() {
   return NULL;
 }
 
+static char  *test_ser_utxo() {
+  UTXO *utxo, *dsered_utxo;
+  unsigned char *sered_utxo, *sered_utxo_2;
+
+  utxo = _make_utxo();
+  sered_utxo = ser_utxo(utxo);
+  dsered_utxo = dser_utxo(sered_utxo);
+
+  mu_assert(
+    "Amount isn't consistent after de-serialization",
+    utxo->amt == dsered_utxo->amt
+  );
+  mu_assert(
+    "Public key hash isn't consistent after de-serialization",
+    memcmp(
+      utxo->public_key_hash,
+      dsered_utxo->public_key_hash,
+      PUB_KEY_HASH_LEN
+    ) == 0
+  );
+
+  // Ensure that we don't have padding bytes
+  for (int i = 0; i < 10; i++) {
+    sered_utxo_2 = ser_utxo(utxo);
+    mu_assert(
+      "Serialization of UTXOs isn't consistent",
+      memcmp(sered_utxo, dsered_utxo, sizeof(UTXO)) == 0
+    );
+    free(sered_utxo_2);
+  }
+
+  free(utxo);
+  free(sered_utxo);
+  free(dsered_utxo);
+
+  return NULL;
+}
+
 static char *all_tests() {
   mu_run_test(test_ser_tx);
+  mu_run_test(test_ser_utxo);
   return NULL;
 }
 

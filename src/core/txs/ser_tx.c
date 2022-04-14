@@ -8,6 +8,8 @@
 
 unsigned char *ser_utxo(UTXO *utxo){
   unsigned char *data = malloc(sizeof(UTXO));
+  memset(data, 0, sizeof(UTXO));
+
   memcpy(data, &(utxo->amt), sizeof(utxo->amt));
 
   unsigned char *sig = data + sizeof(utxo->amt);
