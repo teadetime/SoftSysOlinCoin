@@ -42,7 +42,6 @@ int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout){
   UTXO *utxo = malloc(sizeof(UTXO));
   utxo->amt = tx->outputs[vout].amt;
   memcpy(utxo->public_key_hash, tx->outputs[vout].public_key_hash, PUB_KEY_HASH_LEN);
-  utxo->spent = 0;
   unsigned char *serialized_utxo = ser_utxo(utxo);
   size_t utxo_size = sizeof(UTXO);
 
