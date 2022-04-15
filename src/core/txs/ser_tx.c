@@ -5,6 +5,17 @@
 #include "base_tx.h"
 #include "crypto.h"
 
+#define RETURN_SER(data, ret, ptr) \
+  { \
+    if (ptr != NULL) \
+      *ptr = ret; \
+    if (ret == -1) { \
+      free(data); \
+      return NULL; \
+    } \
+    return data; \
+  }
+
 size_t size_ser_utxo() {
   return sizeof(((UTXO*)0)->amt) + sizeof(((UTXO*)0)->public_key_hash);
 }
@@ -18,16 +29,12 @@ ssize_t ser_utxo(unsigned char *dest, UTXO *utxo) {
   return (sig + sizeof(utxo->public_key_hash)) - dest;
 }
 
-unsigned char *ser_utxo_alloc(UTXO *utxo) {
+unsigned char *ser_utxo_alloc(ssize_t *written, UTXO *utxo) {
   unsigned char *data;
   ssize_t ret;
-
   data = malloc(size_ser_utxo());
   ret = ser_utxo(data, utxo);
-  if (ret == -1)
-    return NULL;
-
-  return data;
+  RETURN_SER(data, ret, written)
 }
 
 ssize_t deser_utxo(UTXO *dest, unsigned char *src) {
@@ -39,16 +46,12 @@ ssize_t deser_utxo(UTXO *dest, unsigned char *src) {
   return (sig + sizeof(((UTXO*)0)->public_key_hash)) - src;
 }
 
-UTXO *deser_utxo_alloc(unsigned char *src) {
+UTXO *deser_utxo_alloc(ssize_t *read, unsigned char *src) {
   UTXO *utxo;
   ssize_t ret;
-
   utxo = malloc(sizeof(UTXO));
   ret = deser_utxo(utxo, src);
-  if (ret == -1)
-    return NULL;
-
-  return utxo;
+  RETURN_SER(utxo, ret, read)
 }
 
 size_t size_ser_input() {
@@ -78,16 +81,12 @@ ssize_t ser_input(unsigned char *dest, Input *input) {
   return (vout + sizeof(input->prev_utxo_output)) - dest;
 }
 
-unsigned char *ser_input_alloc(Input *input) {
+unsigned char *ser_input_alloc(ssize_t *written, Input *input) {
   unsigned char *data;
   ssize_t ret;
-
   data = malloc(size_ser_input());
   ret = ser_input(data, input);
-  if (ret == -1)
-    return NULL;
-
-  return data;
+  RETURN_SER(data, ret, written)
 }
 
 ssize_t deser_input(Input *dest, unsigned char *src) {
@@ -114,16 +113,12 @@ ssize_t deser_input(Input *dest, unsigned char *src) {
   return (vout + sizeof(((Input*)0)->prev_utxo_output)) - src;
 }
 
-Input *deser_input_alloc(unsigned char *src) {
+Input *deser_input_alloc(ssize_t *read, unsigned char *src) {
   Input *input;
   ssize_t ret;
-
   input = malloc(sizeof(Input));
   ret = deser_input(input, src);
-  if (ret == -1)
-    return NULL;
-
-  return input;
+  RETURN_SER(input, ret, read)
 }
 
 size_t size_ser_tx(Transaction *tx) {
@@ -149,16 +144,12 @@ ssize_t ser_tx(unsigned char *dest, Transaction *tx) {
   return end - dest;
 }
 
-unsigned char *ser_tx_alloc(Transaction *tx) {
+unsigned char *ser_tx_alloc(ssize_t *written, Transaction *tx) {
   unsigned char *data;
   ssize_t ret;
-
   data = malloc(size_ser_tx(tx));
   ret = ser_tx(data, tx);
-  if (ret == -1)
-    return NULL;
-
-  return data;
+  RETURN_SER(data, ret, written)
 }
 
 ssize_t deser_tx(Transaction *dest, unsigned char *src) {
@@ -180,14 +171,10 @@ ssize_t deser_tx(Transaction *dest, unsigned char *src) {
   return (outputs + output_sz) - src;
 }
 
-Transaction *deser_tx_alloc(unsigned char *src) {
+Transaction *deser_tx_alloc(ssize_t *read, unsigned char *src) {
   Transaction *tx;
   ssize_t ret;
-
   tx = malloc(sizeof(Transaction));
   ret = deser_tx(tx, src);
-  if (ret == -1)
-    return NULL;
-
-  return tx;
+  RETURN_SER(tx, ret, read)
 }

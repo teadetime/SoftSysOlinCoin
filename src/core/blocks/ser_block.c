@@ -4,6 +4,17 @@
 #include "ser_block.h"
 #include "ser_tx.h"
 
+#define RETURN_SER(data, ret, ptr) \
+  { \
+    if (ptr != NULL) \
+      *ptr = ret; \
+    if (ret == -1) { \
+      free(data); \
+      return NULL; \
+    } \
+    return data; \
+  }
+
 size_t size_ser_blockheader() {
   return sizeof(((BlockHeader*)0)->timestamp) +
     sizeof(((BlockHeader*)0)->all_tx) +
@@ -28,16 +39,12 @@ ssize_t ser_blockheader(unsigned char *dest, BlockHeader *blockheader) {
   return end - dest;
 }
 
-unsigned char *ser_blockheader_alloc(BlockHeader *blockheader) {
+unsigned char *ser_blockheader_alloc(ssize_t *written, BlockHeader *blockheader) {
   unsigned char *data;
   ssize_t ret;
-
   data = malloc(size_ser_blockheader());
   ret = ser_blockheader(data, blockheader);
-  if (ret == -1)
-    return NULL;
-
-  return data;
+  RETURN_SER(data, ret, written)
 }
 
 ssize_t deser_blockheader(BlockHeader *dest, unsigned char *src) {
@@ -59,16 +66,12 @@ ssize_t deser_blockheader(BlockHeader *dest, unsigned char *src) {
   return end - src;
 }
 
-BlockHeader *deser_blockheader_alloc(unsigned char *src) {
+BlockHeader *deser_blockheader_alloc(ssize_t *read, unsigned char *src) {
   BlockHeader *header;
   ssize_t ret;
-
   header = malloc(sizeof(BlockHeader));
   ret = deser_blockheader(header, src);
-  if (ret == -1)
-    return NULL;
-
-  return header;
+  RETURN_SER(header, ret, read)
 }
 
 size_t size_ser_block(Block *block){
@@ -91,16 +94,12 @@ ssize_t ser_block(unsigned char *dest, Block *block){
   return end - dest;
 }
 
-unsigned char *ser_block_alloc(Block *block){
+unsigned char *ser_block_alloc(ssize_t *written, Block *block){
   unsigned char *data;
   ssize_t ret;
-
   data = malloc(size_ser_block(block));
   ret = ser_block(data, block);
-  if (ret == -1)
-    return NULL;
-
-  return data;
+  RETURN_SER(data, ret, written)
 }
 
 ssize_t deser_block(Block *dest, unsigned char *src){
@@ -119,14 +118,10 @@ ssize_t deser_block(Block *dest, unsigned char *src){
   return incoming_txs - src;
 }
 
-Block *deser_block_alloc(unsigned char *src) {
+Block *deser_block_alloc(ssize_t *read, unsigned char *src) {
   Block *block;
   ssize_t ret;
-
   block = malloc(sizeof(Block));
   ret = deser_block(block, src);
-  if (ret == -1)
-    return NULL;
-
-  return block;
+  RETURN_SER(block, ret, read)
 }

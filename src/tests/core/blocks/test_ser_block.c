@@ -58,12 +58,21 @@ static void _fill_mempool(){
 static char *test_ser_blockheader(){
   BlockHeader *header, *desered_header;
   unsigned char *sered_header, *sered_header_2;
+  ssize_t written_ser_header, read_ser_header;
 
   header = malloc(sizeof(BlockHeader));
   _set_header(header);
+  sered_header = ser_blockheader_alloc(&written_ser_header, header);
+  desered_header = deser_blockheader_alloc(&read_ser_header, sered_header);
 
-  sered_header = ser_blockheader_alloc(header);
-  desered_header = deser_blockheader_alloc(sered_header);
+  mu_assert(
+    "Num of bytes read incorrect",
+    read_ser_header == (ssize_t)size_ser_blockheader()
+  );
+  mu_assert(
+    "Num of bytes read and written don't match up",
+    read_ser_header == written_ser_header
+  );
 
   mu_assert(
     "Timestamp isn't consistent after serialization",
@@ -92,7 +101,7 @@ static char *test_ser_blockheader(){
 
   // Ensure that we don't have padding bytes
   for (int i = 0; i < 10; i++) {
-    sered_header_2 = ser_blockheader_alloc(header);
+    sered_header_2 = ser_blockheader_alloc(NULL, header);
     mu_assert(
       "Serialization of header isn't consistent",
       memcmp(sered_header, sered_header_2, size_ser_blockheader())  == 0
@@ -110,11 +119,21 @@ static char *test_ser_blockheader(){
 static char *test_ser_block(){
   Block *block, *desered_block;
   unsigned char *sered_block, *sered_block_2;
+  ssize_t written_ser_block, read_ser_block;
 
   _fill_mempool();
   block = create_block_alloc();
-  sered_block = ser_block_alloc(block);
-  desered_block = deser_block_alloc(sered_block);
+  sered_block = ser_block_alloc(&written_ser_block, block);
+  desered_block = deser_block_alloc(&read_ser_block, sered_block);
+
+  mu_assert(
+    "Num of bytes read incorrect",
+    read_ser_block == (ssize_t)size_ser_block(block)
+  );
+  mu_assert(
+    "Num of bytes read and written don't match up",
+    read_ser_block == written_ser_block
+  );
 
   mu_assert(
     "Num Txs don't match",
@@ -158,7 +177,7 @@ static char *test_ser_block(){
 
   // Ensure that we don't have padding bytes
   for (int i = 0; i < 10; i++) {
-    sered_block_2 = ser_block_alloc(block);
+    sered_block_2 = ser_block_alloc(NULL, block);
     mu_assert(
       "Serialization of block isn't consistent",
       memcmp(sered_block, sered_block_2, size_ser_block(block)) == 0

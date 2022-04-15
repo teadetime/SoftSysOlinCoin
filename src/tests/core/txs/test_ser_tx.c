@@ -45,9 +45,20 @@ UTXO *_make_utxo() {
 }
 
 static char  *test_ser_tx() {
+  ssize_t written_ser_tx, read_ser_tx;
+
   Transaction *a_Tx = _make_tx();
-  unsigned char *char_tx = ser_tx_alloc(a_Tx);
-  Transaction *other_tx = deser_tx_alloc(char_tx);
+  unsigned char *char_tx = ser_tx_alloc(&read_ser_tx, a_Tx);
+  Transaction *other_tx = deser_tx_alloc(&written_ser_tx, char_tx);
+
+  mu_assert(
+    "Num of bytes read incorrect",
+    read_ser_tx == (ssize_t)size_ser_tx(a_Tx)
+  );
+  mu_assert(
+    "Num of bytes read and written don't match up",
+    read_ser_tx == written_ser_tx
+  );
 
   mu_assert(
     "Num inputs doesn't match after serialization",
@@ -119,10 +130,20 @@ static char  *test_ser_tx() {
 static char  *test_ser_utxo() {
   UTXO *utxo, *desered_utxo;
   unsigned char *sered_utxo, *sered_utxo_2;
+  ssize_t read_ser_utxo, written_ser_utxo;
 
   utxo = _make_utxo();
-  sered_utxo = ser_utxo_alloc(utxo);
-  desered_utxo = deser_utxo_alloc(sered_utxo);
+  sered_utxo = ser_utxo_alloc(&read_ser_utxo, utxo);
+  desered_utxo = deser_utxo_alloc(&written_ser_utxo, sered_utxo);
+
+  mu_assert(
+    "Num of bytes read incorrect",
+    read_ser_utxo == (ssize_t)size_ser_utxo()
+  );
+  mu_assert(
+    "Num of bytes read and written don't match up",
+    read_ser_utxo == written_ser_utxo
+  );
 
   mu_assert(
     "Amount isn't consistent after de-serialization",
@@ -139,7 +160,7 @@ static char  *test_ser_utxo() {
 
   // Ensure that we don't have padding bytes
   for (int i = 0; i < 10; i++) {
-    sered_utxo_2 = ser_utxo_alloc(utxo);
+    sered_utxo_2 = ser_utxo_alloc(NULL, utxo);
     mu_assert(
       "Serialization of UTXOs isn't consistent",
       memcmp(sered_utxo, sered_utxo_2, size_ser_utxo()) == 0

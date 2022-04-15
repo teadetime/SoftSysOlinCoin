@@ -24,11 +24,12 @@ ssize_t ser_blockheader(unsigned char *dest, BlockHeader *blockheader);
 /**
  * @brief Allocates memory and serializes a BlockHeader
  *
+ * @param written Stores number of bytes written if succesfull, -1 otherwise
  * @param blockheader BlockHeader to serialize
  * @return unsigned char* Serialized blockheader of length
  *   size_ser_blockheader() if succesfull, NULL otherwise
  */
-unsigned char *ser_blockheader_alloc(BlockHeader *blockheader);
+unsigned char *ser_blockheader_alloc(ssize_t *written, BlockHeader *blockheader);
 
 /**
  * @brief Deserialize a BlockHeader
@@ -42,10 +43,11 @@ ssize_t deser_blockheader(BlockHeader *dest, unsigned char *src);
 /**
  * @brief Allocate memory and deserialize a BlockHeader
  *
+ * @param read Stores number of bytes read if succesfull, -1 otherwise
  * @param src Buffer of length size_ser_blockheader() to read from
  * @return Deserialized blockheader if succesfull, NULL otherwise
  */
-BlockHeader *deser_blockheader_alloc(unsigned char *src);
+BlockHeader *deser_blockheader_alloc(ssize_t *read, unsigned char *src);
 
 /******************************************************************************
  * Blocks
@@ -70,11 +72,12 @@ ssize_t ser_block(unsigned char *dest, Block *block);
 /**
  * @brief Allocates memory and serializes a Block
  *
+ * @param written Stores number of bytes written if succesfull, -1 otherwise
  * @param block Block to serialize
  * @return unsigned char* Serialized block of length size_ser_block(block) if
  *   succesfull, NULL otherwise
  */
-unsigned char *ser_block_alloc(Block *block);
+unsigned char *ser_block_alloc(ssize_t *written, Block *block);
 
 /**
  * @brief Deserialize a Block
@@ -89,7 +92,8 @@ ssize_t deser_block(Block *dest, unsigned char *src);
 /**
  * @brief Allocate memory and deserialize a Block
  *
+ * @param read Stores number of bytes read if succesfull, -1 otherwise
  * @param src Buffer of length size_ser_block(block) to read from
  * @return Deserialized block if succesfull, NULL otherwise
  */
-Block *deser_block_alloc(unsigned char *src);
+Block *deser_block_alloc(ssize_t *read, unsigned char *src);
