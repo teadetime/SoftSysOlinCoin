@@ -25,7 +25,8 @@ ssize_t ser_utxo(unsigned char *dest, UTXO *utxo);
  * @brief Allocates memory and serializes a UTXO
  *
  * @param utxo UTXO to serialize
- * @return unsigned char* Serialized UTXO, of length size_ser_utxo()
+ * @return unsigned char* Serialized UTXO of length size_ser_utxo() if
+ *   succesfull, NULL otherwise
  */
 unsigned char *ser_utxo_alloc(UTXO *utxo);
 
@@ -42,7 +43,7 @@ ssize_t deser_utxo(UTXO *dest, unsigned char *src);
  * @brief Allocate memory and deserialize a UTXO
  *
  * @param src Buffer of length size_ser_utxo() to read from
- * @return Deserialized UTXO
+ * @return Deserialized UTXO if succesfull, NULL otherwise
  */
 UTXO *deser_utxo_alloc(unsigned char *src);
 
@@ -69,7 +70,8 @@ ssize_t ser_input(unsigned char *dest, Input *input);
  * @brief Allocates memory and serializes an Input
  *
  * @param input Input to serialize
- * @return unsigned char* Serialized Input, of length size_ser_input()
+ * @return unsigned char* Serialized input of length size_ser_input() if
+ *   succesfull, NULL otherwise
  */
 unsigned char *ser_input_alloc(Input *input);
 
@@ -86,7 +88,7 @@ ssize_t deser_input(Input *dest, unsigned char *src);
  * @brief Allocate memory and deserialize an Input
  *
  * @param src Buffer of length size_ser_input() to read from
- * @return Deserialized Input
+ * @return Deserialized input if succesfull, NULL otherwise
  */
 Input *deser_input_alloc(unsigned char *src);
 
@@ -97,7 +99,7 @@ Input *deser_input_alloc(unsigned char *src);
  * @brief Get size of a Transaction if serialized
  *
  * @param tx Transaction to get size of
- * @return Size of Transaction if serialized
+ * @return Size of tx if serialized
  */
 size_t size_ser_tx(Transaction *tx);
 
@@ -114,7 +116,8 @@ ssize_t ser_tx(unsigned char *dest, Transaction *tx);
  * @brief Allocates memory and serializes a Transaction
  *
  * @param tx Transaction to serialize
- * @return unsigned char* Serialized Transaction, of length size_ser_tx(tx)
+ * @return unsigned char* Serialized tx of length size_ser_tx(tx) if succesfull,
+ *   NULL otherwise
  */
 unsigned char *ser_tx_alloc(Transaction *tx);
 
@@ -125,13 +128,13 @@ unsigned char *ser_tx_alloc(Transaction *tx);
  * @param src Buffer of length size_ser_tx(tx) to read from
  * @return Number of bytes read if succesfull, -1 otherwise
  */
-ssize_t deser_tx(Transaction *dest, unsigned char *data);
+ssize_t deser_tx(Transaction *dest, unsigned char *src);
 
 
 /**
  * @brief Allocate memory and deserialize a Transaction
  *
  * @param src Buffer of length size_ser_tx(tx) to read from
- * @return Deserialized Transaction
+ * @return Deserialized tx if succesfull, NULL otherwise
  */
-Transaction* deser_tx_alloc(unsigned char *data);
+Transaction* deser_tx_alloc(unsigned char *src);

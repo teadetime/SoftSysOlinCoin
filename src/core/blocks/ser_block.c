@@ -11,29 +11,29 @@ size_t size_ser_blockheader() {
     sizeof(((BlockHeader*)0)->nonce);
 }
 
-ssize_t ser_blockheader(unsigned char *dest, BlockHeader *block_header) {
-  memcpy(dest, &(block_header->timestamp), sizeof(block_header->timestamp));
+ssize_t ser_blockheader(unsigned char *dest, BlockHeader *blockheader) {
+  memcpy(dest, &(blockheader->timestamp), sizeof(blockheader->timestamp));
 
-  unsigned char *all_tx = dest + sizeof(block_header->timestamp);
-  memcpy(all_tx, &(block_header->all_tx), sizeof(block_header->all_tx));
+  unsigned char *all_tx = dest + sizeof(blockheader->timestamp);
+  memcpy(all_tx, &(blockheader->all_tx), sizeof(blockheader->all_tx));
 
-  unsigned char *prev_header_hash = all_tx + sizeof(block_header->all_tx);
-  memcpy(prev_header_hash, &(block_header->prev_header_hash),
-      sizeof(block_header->prev_header_hash));
+  unsigned char *prev_header_hash = all_tx + sizeof(blockheader->all_tx);
+  memcpy(prev_header_hash, &(blockheader->prev_header_hash),
+      sizeof(blockheader->prev_header_hash));
 
-  unsigned char *nonce = prev_header_hash + sizeof(block_header->prev_header_hash);
-  memcpy(nonce, &(block_header->nonce), sizeof(block_header->nonce));
+  unsigned char *nonce = prev_header_hash + sizeof(blockheader->prev_header_hash);
+  memcpy(nonce, &(blockheader->nonce), sizeof(blockheader->nonce));
 
-  unsigned char* end = nonce + sizeof(block_header->nonce);
+  unsigned char* end = nonce + sizeof(blockheader->nonce);
   return end - dest;
 }
 
-unsigned char *ser_blockheader_alloc(BlockHeader *block_header) {
+unsigned char *ser_blockheader_alloc(BlockHeader *blockheader) {
   unsigned char *data;
   ssize_t ret;
 
   data = malloc(size_ser_blockheader());
-  ret = ser_blockheader(data, block_header);
+  ret = ser_blockheader(data, blockheader);
   if (ret == -1)
     return NULL;
 
