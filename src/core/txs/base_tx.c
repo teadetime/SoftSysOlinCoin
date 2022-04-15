@@ -7,22 +7,13 @@
 #include "crypto.h"
 
 void hash_tx(unsigned char *dest, Transaction *tx) {
-  unsigned char *tx_buf;
   int tx_buf_size;
+  unsigned char *tx_buf;
 
-  tx_buf_size = size_tx(tx);
-  tx_buf = ser_tx_alloc(tx);
+  tx_buf_size = size_ser_tx(tx);
+  tx_buf = malloc(size_ser_tx(tx));
+  ser_tx(tx_buf, tx);
   hash_sha256(dest, tx_buf, tx_buf_size);
-  free(tx_buf);
-}
-
-int size_input() {
-  return sizeof(Input) - sizeof(mbedtls_ecp_point*) + PUB_KEY_SER_LEN;
-}
-
-int size_tx(Transaction *tx){
-  return (sizeof(tx->num_inputs) + sizeof(tx->num_outputs) +
-    tx->num_inputs * size_input() + tx->num_outputs * sizeof(Output));
 }
 
 void free_tx(Transaction *tx){
@@ -99,7 +90,7 @@ void print_tx(Transaction *tx, char *prefix){
   char *sub_prefix = malloc(strlen(prefix)+strlen(PRINT_TAB)+1);
   strcpy(sub_prefix, prefix);
   strcat(sub_prefix, PRINT_TAB);
-  printf("%sTransaction Sizeof(%li), full_size(%i):\n", prefix, sizeof(*tx), size_tx(tx));
+  printf("%sTransaction Sizeof(%li), full_size(%zu):\n", prefix, sizeof(*tx), size_ser_tx(tx));
   printf("%snum_inputs: %i\n", sub_prefix, tx->num_inputs);
   printf("%snum_outputs: %i\n", sub_prefix, tx->num_outputs);
   printf("%sInputs\n", sub_prefix);

@@ -49,3 +49,5 @@ add_test(test_utxo_pool ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_utxo_pool)
 add_test(test_mempool ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_mempool)
 add_test(test_blockchain ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_blockchain)
 add_test(test_utxo_to_tx ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_utxo_to_tx)
+
+add_subdirectory(chef_wrap)

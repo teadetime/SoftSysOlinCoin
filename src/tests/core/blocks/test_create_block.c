@@ -143,14 +143,6 @@ static char *test_create_header(){
     test_header->timestamp > 1647573975
   );
 
-  // Test deserialization
-  BlockHeader deser_header;
-  unsigned char *ser_header = ser_blockheader_alloc(test_header);
-  deser_blockheader(&deser_header, ser_header);
-  mu_assert(
-    "Blockheaders not deserialized correctly",
-    memcmp(&deser_header, test_header, sizeof(BlockHeader)) == 0
-  );
   return NULL;
 }
 
@@ -204,37 +196,6 @@ static char *test_mine_block(){
   return NULL;
 }
 
-static char *test_deser_block(){
-  Block *test_block = create_block_alloc();
-  unsigned char *ser_test = ser_block_alloc(test_block);
-  Block *new_deser_block = malloc(sizeof(Block));
-  deser_block(new_deser_block, ser_test);
-
-  mu_assert(
-    "Num Txs don't match",
-    test_block->num_txs == new_deser_block->num_txs
-  );
-  mu_assert(
-    "Blockheaders don't match",
-    memcmp(&new_deser_block->header, &test_block->header, sizeof(BlockHeader)) == 0
-  );
-
-  unsigned char base_tx_hash[TX_HASH_LEN];
-
-  unsigned char deser_tx_hash[TX_HASH_LEN];
-
-  for(unsigned int i = 0; i < test_block->num_txs; i++){
-    hash_tx(base_tx_hash, test_block->txs[i]);
-    hash_tx(deser_tx_hash, new_deser_block->txs[i]);
-    mu_assert(
-    "Transaction hashes don't match -> Transaction serialization error",
-    memcmp(base_tx_hash, deser_tx_hash, TX_HASH_LEN) == 0
-    );
-  }
-
-  return NULL;
-}
-
 static char  *test_calc_block_reward() {
   mu_assert(
     "calc clock reward not returning correct rewards",
@@ -259,8 +220,6 @@ static char  *test_coinbase_tx() {
   return NULL;
 }
 
-
-
 static char *all_tests() {
   mu_run_test(test_calc_block_reward);
   mu_run_test(test_calc_num_tx_target);
@@ -270,7 +229,6 @@ static char *all_tests() {
   mu_run_test(test_hash_all);
   mu_run_test(test_create_header);
   mu_run_test(test_create_block);
-  mu_run_test(test_deser_block);
   mu_run_test(test_mine_block);
   return NULL;
 }
