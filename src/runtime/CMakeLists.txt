@@ -12,4 +12,5 @@ target_include_directories(shell PUBLIC
 target_link_libraries(shell  
   core_mine
   wallet
+  handle_block
   init_globals)

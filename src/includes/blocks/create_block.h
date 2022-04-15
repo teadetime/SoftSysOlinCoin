@@ -68,12 +68,20 @@ void hash_all_tx(unsigned char *dest, Transaction **txs, unsigned int num_txs);
 /**
  * @brief Create block header from a set of transactions
  * 
+ * @param block block to write block header into
  * @param txs txs to use for the block/header
  * @param num_txs number of txs in txs
- * @return BlockHeader* new header based on txs, 
- * freeing is responsibility of caller
  */
-BlockHeader *create_block_header(Transaction **txs, unsigned int num_txs);
+void create_block_header(BlockHeader *header, Transaction **txs, unsigned int num_txs);
+
+/**
+ * @brief Creats a block header and allocates memory for it
+ *
+ * @param txs txs to use for the block/header
+ * @param num_txs number of txs in txs
+ * @return New blockheader
+ */
+BlockHeader *create_block_header_alloc(Transaction **txs, unsigned int num_txs);
 
 /**
  * @brief Create a block from mempool to then be mined

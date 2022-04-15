@@ -169,7 +169,6 @@ UTXO *utxo_pool_add(Transaction *tx, unsigned int vout) {
   utxo = malloc(sizeof(UTXO));
   utxo->amt = tx->outputs[vout].amt;
   memcpy(utxo->public_key_hash, tx->outputs[vout].public_key_hash, PUB_KEY_HASH_LEN);
-  utxo->spent = 0;
 
   new_entry->utxo = utxo;
 
@@ -232,7 +231,6 @@ void print_utxo(UTXO *utxo, char *prefix){
   strcat(sub_prefix, PRINT_TAB);
   printf("%sUTXO Sizeof(%li):\n", prefix, sizeof(*utxo));
   printf("%samount: %li\n", sub_prefix, utxo->amt);
-  printf("%sspent: %i\n", sub_prefix, utxo->spent);
   dump_buf(sub_prefix, "public_key_hash:", utxo->public_key_hash, PUB_KEY_HASH_LEN);
   free(sub_prefix);
 }

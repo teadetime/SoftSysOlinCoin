@@ -57,10 +57,6 @@ static char  *test_utxo_pool_add() {
       PUB_KEY_HASH_LEN
     ) == 0
   );
-  mu_assert(
-    "UTXO spent incorrect",
-    ret_utxo->spent == 0
-  );
 
   free(tx->inputs);
   free(tx->outputs);
