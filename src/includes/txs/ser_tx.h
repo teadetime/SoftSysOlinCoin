@@ -15,7 +15,7 @@ unsigned char *ser_utxo(UTXO *utxo);
  * @param data Serialized UTXO
  * @return UTXO* Deserialized UTO
  */
-UTXO *dser_utxo(unsigned char *data);
+UTXO *deser_utxo(unsigned char *data);
 
 /**
  * @brief Serialize an input

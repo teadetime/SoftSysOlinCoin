@@ -19,7 +19,7 @@ unsigned char *ser_utxo(UTXO *utxo){
   return data;
 }
 
-UTXO *dser_utxo(unsigned char *data){
+UTXO *deser_utxo(unsigned char *data){
   UTXO *new_UTXO = malloc(sizeof(UTXO));
 
   // Stolen from https://cboard.cprogramming.com/cplusplus-programming/43180-sizeof-struct-member-problem.html

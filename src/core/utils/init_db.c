@@ -20,17 +20,28 @@ int open_or_create_db(leveldb_t **db, char *path){
   leveldb_options_set_create_if_missing(options, 1);
   leveldb_options_set_compression(options, 0);  // Turn Off compression
   //leveldb_options_set_cache(options, leveldb_cache_create_lru(100 * 1048576)); // Set large cache size@
-  printf("DB ptr: %p\n", *db);
   *db = leveldb_open(options, path, &err);
-  printf("DB ptr after open: %p\n", *db);
   if (err != NULL) {
     //fprintf(stderr, "Open fail.\n");
     ret = 1;
   }
   /* reset error var */
+  leveldb_options_destroy(options);
   leveldb_free(err); err = NULL;
   return ret;
 }
+
+int check_if_db_loaded(leveldb_t **db, char *path){
+  if(*db == NULL){
+    fprintf(stderr, "Database in use by other process!\n");
+    // Try to open it again and see if that works
+    if(open_or_create_db(db, path) != 0){
+      return 1;
+    }
+  }
+  return 0;
+}
+
 
 int destroy_db(leveldb_t *db, char *name){
   /**Note this could be weird, maybe we don't care about closing the database */
@@ -47,6 +58,7 @@ int destroy_db(leveldb_t *db, char *name){
     ret = 1;
   }
   /* reset error var */
+  leveldb_options_destroy(options);
   leveldb_free(err); err = NULL;
   return ret;
 }

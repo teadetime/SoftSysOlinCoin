@@ -41,7 +41,8 @@ target_include_directories(test_leveldb PUBLIC ${INCLUDE_ALL})
 target_link_libraries(test_leveldb
 leveldb
 utxopool
-crypto)
+crypto
+core_tx)
 
 add_test(test_list ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_list)
 add_test(test_utxo_pool ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_utxo_pool)
