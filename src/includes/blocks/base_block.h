@@ -4,7 +4,7 @@
 
 typedef struct BlockHeader{
   unsigned long timestamp;
-  unsigned char all_tx[TX_HASH_LEN];
+  unsigned char all_tx[ALL_TX_HASH_LEN];
   unsigned char prev_header_hash[BLOCK_HASH_LEN];
   unsigned long nonce;
 } BlockHeader;
@@ -21,14 +21,6 @@ typedef struct Block{
  * header: Block header to hash
  */
 void hash_blockheader(unsigned char *dest, BlockHeader *header);
-
-/*
-Returns size of block including size of variable inputs and outputs that
-are malloced separately. Useful for serialization buffer creation
-
-block: Block of which to get the size
-*/
-int size_block(Block *block);
 
 /*
 Prints a Block Header to stdout so data can be visualized

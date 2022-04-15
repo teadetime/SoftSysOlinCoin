@@ -28,19 +28,6 @@ typedef struct UTXO{
   unsigned char public_key_hash[PUB_KEY_HASH_LEN];
 } UTXO;
 
-/**
- * @brief Get size required to serialize an input
- *  removes the pointer and adds the length of data pointed to
- * 
- * @return int 
- */
-int size_input();
-
-/*
-Return Size of a transaction, used for serialization and memory allocation
-*/
-int size_tx(Transaction *tx);
-
 /* Hashes passed transaction
  *
  * dest: Buffer to write hash to, expected to be of size TX_HASH_LEN

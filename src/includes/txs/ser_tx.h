@@ -1,61 +1,146 @@
 #pragma once
+
 #include "base_tx.h"
 
+/******************************************************************************
+ * UTXOs
+ ******************************************************************************/
 /**
- * @brief Serializes a UTXO
- * 
+ * @brief Gets size of serialized UTXO
+ *
+ * @return Size of serialized UTXO
+ */
+size_t size_ser_utxo();
+
+/**
+ * @brief Serialize a UTXO
+ *
+ * @param dest Buffer of length size_ser_utxo() to write to
  * @param utxo UTXO to serialize
- * @return unsigned char* serialized UTXO
+ * @return Number of bytes written if succesfull, -1 otherwise
  */
-unsigned char *ser_utxo(UTXO *utxo);
+ssize_t ser_utxo(unsigned char *dest, UTXO *utxo);
 
 /**
- * @brief Deserializes a UTXO
- * 
- * @param data Serialized UTXO
- * @return UTXO* Deserialized UTO
+ * @brief Allocates memory and serializes a UTXO
+ *
+ * @param written Stores number of bytes written if succesfull, -1 otherwise
+ * @param utxo UTXO to serialize
+ * @return Serialized UTXO of length size_ser_utxo() if succesfull, NULL
+ *   otherwise
  */
-UTXO *dser_utxo(unsigned char *data);
+unsigned char *ser_utxo_alloc(ssize_t *written, UTXO *utxo);
 
 /**
- * @brief Serialize an input
- * 
- * @param dest buffer for serialization output of size size_input()
- * @param input input to desrialized
- * @return unsigned char* next byte after serialization
+ * @brief Deserialize a UTXO
+ *
+ * @param dest UTXO to write to
+ * @param src Buffer of length size_ser_utxo() to read from
+ * @return Number of bytes read if succesfull, -1 otherwise
  */
-unsigned char *ser_input(unsigned char *dest, Input *input);
+ssize_t deser_utxo(UTXO *dest, unsigned char *src);
 
 /**
- * @brief Deserialize an input
- * 
- * @param dest Input deserialization destination
- * @param src buffer containing serialized input
- * @return unsigned char* next byte of data in src buffer
+ * @brief Allocate memory and deserialize a UTXO
+ *
+ * @param read Stores number of bytes read if succesfull, -1 otherwise
+ * @param src Buffer of length size_ser_utxo() to read from
+ * @return Deserialized UTXO if succesfull, NULL otherwise
  */
-unsigned char *deser_input(Input *dest, unsigned char *src);
+UTXO *deser_utxo_alloc(ssize_t* read, unsigned char *src);
+
+/******************************************************************************
+ * Inputs
+ ******************************************************************************/
+/**
+ * @brief Get size of serialized Input
+ *
+ * @return Size of serialized Input
+ */
+size_t size_ser_input();
 
 /**
- * @brief Serializes an entire TX
- * 
- * @param dest destination buffer for serialized TX, size of size_tx(a_tx)
+ * @brief Serialize an Input
+ *
+ * @param dest Buffer of length size_ser_input() to write to
+ * @param input Input to serialize
+ * @return Number of bytes written if succesfull, -1 otherwise
+ */
+ssize_t ser_input(unsigned char *dest, Input *input);
+
+/**
+ * @brief Allocates memory and serializes an Input
+ *
+ * @param written Stores number of bytes written if succesfull, -1 otherwise
+ * @param input Input to serialize
+ * @return Serialized input of length size_ser_input() if succesfull, NULL
+ *   otherwise
+ */
+unsigned char *ser_input_alloc(ssize_t *written, Input *input);
+
+/**
+ * @brief Deserialize an Input
+ *
+ * @param dest Input to write to
+ * @param src Buffer of length size_ser_input() to read from
+ * @return Number of bytes read if succesfull, -1 otherwise
+ */
+ssize_t deser_input(Input *dest, unsigned char *src);
+
+/**
+ * @brief Allocate memory and deserialize an Input
+ *
+ * @param read Stores number of bytes read if succesfull, -1 otherwise
+ * @param src Buffer of length size_ser_input() to read from
+ * @return Deserialized input if succesfull, NULL otherwise
+ */
+Input *deser_input_alloc(ssize_t *read, unsigned char *src);
+
+/******************************************************************************
+ * Transactions
+ ******************************************************************************/
+/**
+ * @brief Get size of a Transaction if serialized
+ *
+ * @param tx Transaction to get size of
+ * @return Size of tx if serialized
+ */
+size_t size_ser_tx(Transaction *tx);
+
+/**
+ * @brief Serialize a Transaction
+ *
+ * @param dest Buffer of length size_ser_tx(tx) to write to
  * @param tx Transaction to serialize
- * @return unsigned char* byte after serialization in dest
+ * @return Number of bytes written if succesfull, -1 otherwise
  */
-unsigned char *ser_tx(unsigned char *dest, Transaction *tx);
+ssize_t ser_tx(unsigned char *dest, Transaction *tx);
 
 /**
- * @brief Serializes a TX and allocates memory for it
- * 
- * @param tx Transaction to serialize 
- * @return unsigned char* buffer of length size_tx(tx) containing serialized tx
+ * @brief Allocates memory and serializes a Transaction
+ *
+ * @param written Stores number of bytes written if succesfull, -1 otherwise
+ * @param tx Transaction to serialize
+ * @return unsigned char* Serialized tx of length size_ser_tx(tx) if succesfull,
+ *   NULL otherwise
  */
-unsigned char *ser_tx_alloc(Transaction *tx);
+unsigned char *ser_tx_alloc(ssize_t *written, Transaction *tx);
 
 /**
- * @brief Deserialize TX
- * 
- * @param data Buffer containing serialized Transation
- * @return Transaction* Transaction deserialized
+ * @brief Deserialize a Transaction
+ *
+ * @param dest Transaction to write to
+ * @param src Buffer of length size_ser_tx(tx) to read from
+ * @return Number of bytes read if succesfull, -1 otherwise
  */
-Transaction* deser_tx(unsigned char *data);
+ssize_t deser_tx(Transaction *dest, unsigned char *src);
+
+
+/**
+ * @brief Allocate memory and deserialize a Transaction
+ *
+ * @param read Stores number of bytes read if succesfull, -1 otherwise
+ * @param src Buffer of length size_ser_tx(tx) to read from
+ * @return Deserialized tx if succesfull, NULL otherwise
+ */
+Transaction* deser_tx_alloc(ssize_t *read, unsigned char *src);

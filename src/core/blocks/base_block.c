@@ -8,17 +8,10 @@
 
 void hash_blockheader(unsigned char *dest, BlockHeader *header) {
   unsigned char *header_buf;
-  header_buf = ser_blockheader_alloc(header);
-  hash_sha256(dest, header_buf, sizeof(BlockHeader));
+  ssize_t header_size;
+  header_buf = ser_blockheader_alloc(&header_size, header);
+  hash_sha256(dest, header_buf, header_size);
   free(header_buf);
-}
-
-int size_block(Block *block){
-  int size = (sizeof(block->num_txs) + sizeof(block->header));
-  for(unsigned int i = 0; i < block->num_txs; i++){
-      size += size_tx(block->txs[i]);
-  }
-  return size;
 }
 
 void print_block_header(BlockHeader *header, char *prefix){
