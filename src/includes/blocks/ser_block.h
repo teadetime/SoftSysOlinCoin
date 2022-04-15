@@ -11,7 +11,7 @@ for hashing, storage, or transmission
 dest: buffer to write serialization into, must be sizeof(Block_header)
 block_header: block header ot serialize
 */
-size_t ser_blockheader(unsigned char *dest, BlockHeader *block_header);
+ssize_t ser_blockheader(unsigned char *dest, BlockHeader *block_header);
 
 /*
 returns a pointer to start of memory containing serialization of a block header 
@@ -28,7 +28,7 @@ unsigned char *ser_blockheader_alloc(BlockHeader *block_header);
  * @param blockheader_data Buffer containing serialized data
  * @return int always returns 1 TODO: Fail if bad deserialization
  */
-size_t deser_blockheader(BlockHeader *dest, unsigned char *data);
+ssize_t deser_blockheader(BlockHeader *dest, unsigned char *data);
 BlockHeader *deser_blockheader_alloc(unsigned char *data);
 
 /*
@@ -45,7 +45,7 @@ Returns pointer to end of dest buffer that contains the serialization of a block
 dest: buffer to write the block serialization into, must be of size_block(block)
 block: block to be serialized
 */
-size_t ser_block(unsigned char *dest, Block *block);
+ssize_t ser_block(unsigned char *dest, Block *block);
 
 /*
 Serializes a block and returns a pointer to the beginning of the memory where 
@@ -62,5 +62,5 @@ unsigned char *ser_block_alloc(Block *block);
  * @param block_data Buffer containing a serialized Block
  * @return int Always returns 1 TODO: Fail if unable to deserialize
  */
-size_t deser_block(Block *dest_block, unsigned char *block_data);
+ssize_t deser_block(Block *dest_block, unsigned char *block_data);
 Block *deser_block_alloc(unsigned char *block_data);

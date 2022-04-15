@@ -11,7 +11,7 @@ size_t size_ser_blockheader() {
     sizeof(((BlockHeader*)0)->nonce);
 }
 
-size_t ser_blockheader(unsigned char *dest, BlockHeader *block_header) {
+ssize_t ser_blockheader(unsigned char *dest, BlockHeader *block_header) {
   memcpy(dest, &(block_header->timestamp), sizeof(block_header->timestamp));
 
   unsigned char *all_tx = dest + sizeof(block_header->timestamp);
@@ -30,12 +30,17 @@ size_t ser_blockheader(unsigned char *dest, BlockHeader *block_header) {
 
 unsigned char *ser_blockheader_alloc(BlockHeader *block_header) {
   unsigned char *data;
+  ssize_t ret;
+
   data = malloc(size_ser_blockheader());
-  ser_blockheader(data, block_header);
+  ret = ser_blockheader(data, block_header);
+  if (ret == -1)
+    return NULL;
+
   return data;
 }
 
-size_t deser_blockheader(BlockHeader *dest, unsigned char *src) {
+ssize_t deser_blockheader(BlockHeader *dest, unsigned char *src) {
   memcpy(&dest->timestamp, src, sizeof(((BlockHeader*)0)->timestamp));
   unsigned char *incoming_all_tx = src + sizeof(((BlockHeader*)0)->timestamp);
 
@@ -56,8 +61,13 @@ size_t deser_blockheader(BlockHeader *dest, unsigned char *src) {
 
 BlockHeader *deser_blockheader_alloc(unsigned char *src) {
   BlockHeader *header;
+  ssize_t ret;
+
   header = malloc(sizeof(BlockHeader));
-  deser_blockheader(header, src);
+  ret = deser_blockheader(header, src);
+  if (ret == -1)
+    return NULL;
+
   return header;
 }
 
@@ -68,7 +78,7 @@ size_t size_ser_block(Block *block){
   return size;
 }
 
-size_t ser_block(unsigned char *dest, Block *block){
+ssize_t ser_block(unsigned char *dest, Block *block){
   memcpy(dest, &(block->num_txs), sizeof(block->num_txs));
 
   unsigned char *block_header = dest + sizeof(block->num_txs);
@@ -83,12 +93,17 @@ size_t ser_block(unsigned char *dest, Block *block){
 
 unsigned char *ser_block_alloc(Block *block){
   unsigned char *data;
+  ssize_t ret;
+
   data = malloc(size_ser_block(block));
-  ser_block(data, block);
+  ret = ser_block(data, block);
+  if (ret == -1)
+    return NULL;
+
   return data;
 }
 
-size_t deser_block(Block *dest, unsigned char *src){
+ssize_t deser_block(Block *dest, unsigned char *src){
   memcpy(&dest->num_txs, src, sizeof(((Block*)0)->num_txs));
   unsigned char *incoming_header = src + sizeof(((Block*)0)->num_txs);
 
@@ -106,7 +121,12 @@ size_t deser_block(Block *dest, unsigned char *src){
 
 Block *deser_block_alloc(unsigned char *src) {
   Block *block;
+  ssize_t ret;
+
   block = malloc(sizeof(Block));
-  deser_block(block, src);
+  ret = deser_block(block, src);
+  if (ret == -1)
+    return NULL;
+
   return block;
 }

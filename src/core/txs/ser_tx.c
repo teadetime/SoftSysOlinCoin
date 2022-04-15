@@ -9,7 +9,7 @@ size_t size_ser_utxo() {
   return sizeof(((UTXO*)0)->amt) + sizeof(((UTXO*)0)->public_key_hash);
 }
 
-size_t ser_utxo(unsigned char *dest, UTXO *utxo) {
+ssize_t ser_utxo(unsigned char *dest, UTXO *utxo) {
   memcpy(dest, &(utxo->amt), sizeof(utxo->amt));
 
   unsigned char *sig = dest + sizeof(utxo->amt);
@@ -20,12 +20,17 @@ size_t ser_utxo(unsigned char *dest, UTXO *utxo) {
 
 unsigned char *ser_utxo_alloc(UTXO *utxo) {
   unsigned char *data;
+  ssize_t ret;
+
   data = malloc(size_ser_utxo());
-  ser_utxo(data, utxo);
+  ret = ser_utxo(data, utxo);
+  if (ret == -1)
+    return NULL;
+
   return data;
 }
 
-size_t deser_utxo(UTXO *dest, unsigned char *src) {
+ssize_t deser_utxo(UTXO *dest, unsigned char *src) {
   memcpy(&(dest->amt), src, sizeof(((UTXO*)0)->amt));
 
   unsigned char *sig = src + sizeof(((UTXO*)0)->amt);
@@ -36,8 +41,13 @@ size_t deser_utxo(UTXO *dest, unsigned char *src) {
 
 UTXO *deser_utxo_alloc(unsigned char *src) {
   UTXO *utxo;
+  ssize_t ret;
+
   utxo = malloc(sizeof(UTXO));
-  deser_utxo(utxo, src);
+  ret = deser_utxo(utxo, src);
+  if (ret == -1)
+    return NULL;
+
   return utxo;
 }
 
@@ -46,7 +56,7 @@ size_t size_ser_input() {
     TX_HASH_LEN + sizeof(((Input*)0)->prev_utxo_output);
 }
 
-size_t ser_input(unsigned char *dest, Input *input) {
+ssize_t ser_input(unsigned char *dest, Input *input) {
   mbedtls_ecp_group group;
 
   mbedtls_ecp_group_init(&group);
@@ -69,13 +79,18 @@ size_t ser_input(unsigned char *dest, Input *input) {
 }
 
 unsigned char *ser_input_alloc(Input *input) {
-  unsigned char *dest;
-  dest = malloc(size_ser_input());
-  ser_input(dest, input);
-  return dest;
+  unsigned char *data;
+  ssize_t ret;
+
+  data = malloc(size_ser_input());
+  ret = ser_input(data, input);
+  if (ret == -1)
+    return NULL;
+
+  return data;
 }
 
-size_t deser_input(Input *dest, unsigned char *src) {
+ssize_t deser_input(Input *dest, unsigned char *src) {
   mbedtls_ecp_group group;
 
   mbedtls_ecp_group_init(&group);
@@ -101,8 +116,13 @@ size_t deser_input(Input *dest, unsigned char *src) {
 
 Input *deser_input_alloc(unsigned char *src) {
   Input *input;
+  ssize_t ret;
+
   input = malloc(sizeof(Input));
-  deser_input(input, src);
+  ret = deser_input(input, src);
+  if (ret == -1)
+    return NULL;
+
   return input;
 }
 
@@ -111,7 +131,7 @@ size_t size_ser_tx(Transaction *tx) {
     tx->num_inputs * size_ser_input() + tx->num_outputs * sizeof(Output));
 }
 
-size_t ser_tx(unsigned char *dest, Transaction *tx) {
+ssize_t ser_tx(unsigned char *dest, Transaction *tx) {
   memcpy(dest, &(tx->num_inputs), sizeof(tx->num_inputs));
 
   unsigned char *num_outputs = dest + sizeof(tx->num_inputs);
@@ -130,12 +150,18 @@ size_t ser_tx(unsigned char *dest, Transaction *tx) {
 }
 
 unsigned char *ser_tx_alloc(Transaction *tx) {
-  unsigned char *data = malloc(size_ser_tx(tx));
-  ser_tx(data, tx);
+  unsigned char *data;
+  ssize_t ret;
+
+  data = malloc(size_ser_tx(tx));
+  ret = ser_tx(data, tx);
+  if (ret == -1)
+    return NULL;
+
   return data;
 }
 
-size_t deser_tx(Transaction *dest, unsigned char *src) {
+ssize_t deser_tx(Transaction *dest, unsigned char *src) {
   memcpy(&(dest->num_inputs), src, sizeof(((Transaction*)0)->num_inputs));
 
   unsigned char *num_outputs = src + sizeof(((Transaction*)0)->num_inputs);
@@ -156,7 +182,12 @@ size_t deser_tx(Transaction *dest, unsigned char *src) {
 
 Transaction *deser_tx_alloc(unsigned char *src) {
   Transaction *tx;
+  ssize_t ret;
+
   tx = malloc(sizeof(Transaction));
-  deser_tx(tx, src);
+  ret = deser_tx(tx, src);
+  if (ret == -1)
+    return NULL;
+
   return tx;
 }

@@ -9,7 +9,7 @@ size_t size_ser_utxo();
  * @param utxo UTXO to serialize
  * @return unsigned char* serialized UTXO
  */
-size_t ser_utxo(unsigned char *dest, UTXO *utxo);
+ssize_t ser_utxo(unsigned char *dest, UTXO *utxo);
 unsigned char *ser_utxo_alloc(UTXO *utxo);
 
 /**
@@ -18,7 +18,7 @@ unsigned char *ser_utxo_alloc(UTXO *utxo);
  * @param src Serialized UTXO
  * @return UTXO* Deserialized UTO
  */
-size_t deser_utxo(UTXO *dest, unsigned char *src);
+ssize_t deser_utxo(UTXO *dest, unsigned char *src);
 UTXO *deser_utxo_alloc(unsigned char *src);
 
 /**
@@ -36,7 +36,7 @@ size_t size_ser_input();
  * @param input input to desrialized
  * @return unsigned char* next byte after serialization
  */
-size_t ser_input(unsigned char *dest, Input *input);
+ssize_t ser_input(unsigned char *dest, Input *input);
 unsigned char *ser_input_alloc(Input *input);
 
 /**
@@ -46,7 +46,7 @@ unsigned char *ser_input_alloc(Input *input);
  * @param src buffer containing serialized input
  * @return unsigned char* next byte of data in src buffer
  */
-size_t deser_input(Input *dest, unsigned char *src);
+ssize_t deser_input(Input *dest, unsigned char *src);
 Input *deser_input_alloc(unsigned char *src);
 
 /*
@@ -61,7 +61,7 @@ size_t size_ser_tx(Transaction *tx);
  * @param tx Transaction to serialize
  * @return unsigned char* byte after serialization in dest
  */
-size_t ser_tx(unsigned char *dest, Transaction *tx);
+ssize_t ser_tx(unsigned char *dest, Transaction *tx);
 
 /**
  * @brief Serializes a TX and allocates memory for it
@@ -77,5 +77,5 @@ unsigned char *ser_tx_alloc(Transaction *tx);
  * @param data Buffer containing serialized Transation
  * @return Transaction* Transaction deserialized
  */
-size_t deser_tx(Transaction *dest, unsigned char *data);
+ssize_t deser_tx(Transaction *dest, unsigned char *data);
 Transaction* deser_tx_alloc(unsigned char *data);
