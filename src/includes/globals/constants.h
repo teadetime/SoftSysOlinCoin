@@ -1,9 +1,10 @@
 #pragma once
 
-#define TX_HASH_LEN 32
-#define ALL_TX_HASH_LEN 32
-#define BLOCK_HASH_LEN 32
-#define PUB_KEY_HASH_LEN 32
+#define SHA_HASH_LEN 32
+#define TX_HASH_LEN SHA_HASH_LEN
+#define ALL_TX_HASH_LEN SHA_HASH_LEN
+#define BLOCK_HASH_LEN SHA_HASH_LEN
+#define PUB_KEY_HASH_LEN SHA_HASH_LEN
 #define PUB_KEY_SER_LEN 65
 #define SIGNATURE_LEN 72
 #define PRINT_TAB "  "

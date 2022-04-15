@@ -4,78 +4,109 @@
 #include "ser_block.h"
 #include "ser_tx.h"
 
-unsigned char *ser_blockheader(unsigned char *dest, BlockHeader *block_header){
+size_t size_ser_blockheader() {
+  return sizeof(((BlockHeader*)0)->timestamp) +
+    sizeof(((BlockHeader*)0)->all_tx) +
+    sizeof(((BlockHeader*)0)->prev_header_hash) +
+    sizeof(((BlockHeader*)0)->nonce);
+}
+
+size_t ser_blockheader(unsigned char *dest, BlockHeader *block_header) {
   memcpy(dest, &(block_header->timestamp), sizeof(block_header->timestamp));
 
   unsigned char *all_tx = dest + sizeof(block_header->timestamp);
   memcpy(all_tx, &(block_header->all_tx), sizeof(block_header->all_tx));
 
   unsigned char *prev_header_hash = all_tx + sizeof(block_header->all_tx);
-  memcpy(prev_header_hash, &(block_header->prev_header_hash), sizeof(block_header->prev_header_hash));
+  memcpy(prev_header_hash, &(block_header->prev_header_hash),
+      sizeof(block_header->prev_header_hash));
 
   unsigned char *nonce = prev_header_hash + sizeof(block_header->prev_header_hash);
   memcpy(nonce, &(block_header->nonce), sizeof(block_header->nonce));
 
-  unsigned char* terminate = nonce+sizeof(block_header->nonce);
-  return terminate;
+  unsigned char* end = nonce + sizeof(block_header->nonce);
+  return end - dest;
 }
 
-unsigned char *ser_blockheader_alloc(BlockHeader *block_header){
-  unsigned char *data = malloc(sizeof(BlockHeader));
+unsigned char *ser_blockheader_alloc(BlockHeader *block_header) {
+  unsigned char *data;
+  data = malloc(size_ser_blockheader());
   ser_blockheader(data, block_header);
   return data;
 }
 
-unsigned char *ser_block(unsigned char *dest, Block *block){
+size_t deser_blockheader(BlockHeader *dest, unsigned char *src) {
+  memcpy(&dest->timestamp, src, sizeof(((BlockHeader*)0)->timestamp));
+  unsigned char *incoming_all_tx = src + sizeof(((BlockHeader*)0)->timestamp);
+
+  memcpy(dest->all_tx, incoming_all_tx, sizeof(((BlockHeader*)0)->all_tx));
+  unsigned char *incoming_prev_header_hash = incoming_all_tx +
+    sizeof(((BlockHeader*)0)->all_tx);
+
+  memcpy(dest->prev_header_hash, incoming_prev_header_hash,
+      sizeof(((BlockHeader*)0)->prev_header_hash));
+  unsigned char *incoming_nonce = incoming_prev_header_hash +
+    sizeof(((BlockHeader*)0)->prev_header_hash);
+
+  memcpy(&dest->nonce, incoming_nonce, sizeof(((BlockHeader*)0)->nonce));
+  unsigned char *end = incoming_nonce + sizeof(((BlockHeader*)0)->nonce);
+
+  return end - src;
+}
+
+BlockHeader *deser_blockheader_alloc(unsigned char *src) {
+  BlockHeader *header;
+  header = malloc(sizeof(BlockHeader));
+  deser_blockheader(header, src);
+  return header;
+}
+
+size_t size_ser_block(Block *block){
+  size_t size = sizeof(block->num_txs) + size_ser_blockheader();
+  for(unsigned int i = 0; i < block->num_txs; i++)
+      size += size_ser_tx(block->txs[i]);
+  return size;
+}
+
+size_t ser_block(unsigned char *dest, Block *block){
   memcpy(dest, &(block->num_txs), sizeof(block->num_txs));
 
   unsigned char *block_header = dest + sizeof(block->num_txs);
-  unsigned char *txs = ser_blockheader(block_header, &(block->header));
+  unsigned char *txs = block_header + ser_blockheader(block_header, &(block->header));
 
-  for(unsigned int i = 0; i < block->num_txs; i++){
-      txs = ser_tx(txs, block->txs[i]);
-  }
+  for(unsigned int i = 0; i < block->num_txs; i++)
+      txs += ser_tx(txs, block->txs[i]);
   unsigned char *end = txs;
-  return end;
+
+  return end - dest;
 }
 
 unsigned char *ser_block_alloc(Block *block){
-  unsigned char *data = malloc(size_block(block));
+  unsigned char *data;
+  data = malloc(size_ser_block(block));
   ser_block(data, block);
   return data;
 }
 
-int deser_blockheader(BlockHeader *dest_header, unsigned char *blockheader_data){
-  memcpy(&dest_header->timestamp, blockheader_data, sizeof(((BlockHeader*)0)->timestamp));
-  unsigned char *incoming_all_tx = blockheader_data + sizeof(((BlockHeader*)0)->timestamp);
+size_t deser_block(Block *dest, unsigned char *src){
+  memcpy(&dest->num_txs, src, sizeof(((Block*)0)->num_txs));
+  unsigned char *incoming_header = src + sizeof(((Block*)0)->num_txs);
 
-  memcpy(dest_header->all_tx, incoming_all_tx, sizeof(((BlockHeader*)0)->all_tx));
-  unsigned char *incoming_prev_header_hash = incoming_all_tx + sizeof(((BlockHeader*)0)->all_tx);
+  unsigned char *incoming_txs = incoming_header +
+    deser_blockheader(&dest->header, incoming_header);
 
-  memcpy(dest_header->prev_header_hash, incoming_prev_header_hash, sizeof(((BlockHeader*)0)->prev_header_hash));
-  unsigned char *incoming_nonce = incoming_prev_header_hash + sizeof(((BlockHeader*)0)->prev_header_hash);
+  dest->txs = malloc(dest->num_txs * sizeof(Transaction*));
+  for(int tx = 0; tx < dest->num_txs; tx++){
+    dest->txs[tx] = malloc(sizeof(Transaction));
+    incoming_txs += deser_tx(dest->txs[tx], incoming_txs);
+  }
 
-  memcpy(&dest_header->nonce, incoming_nonce, sizeof(((BlockHeader*)0)->nonce));
-  unsigned char *end = incoming_nonce + sizeof(((BlockHeader*)0)->nonce);
-
-  return 1; // Seems like serialization should get an input size and it should check to make sure it is what is expected
+  return incoming_txs - src;
 }
 
-int deser_block(Block *dest_block, unsigned char *block_data){
-  // How can we alc the size that this should be?
-  memcpy(&dest_block->num_txs, block_data, sizeof(((Block*)0)->num_txs));
-  unsigned char *incoming_header = block_data + sizeof(((Block*)0)->num_txs);
-
-  deser_blockheader(&dest_block->header, incoming_header);
-  size_t header_sz = sizeof((BlockHeader*)0)->nonce + sizeof((BlockHeader*)0)->all_tx
-   + sizeof((BlockHeader*)0)->prev_header_hash + sizeof((BlockHeader*)0)->timestamp;
-  unsigned char *incoming_txs = incoming_header + header_sz;
-
-  dest_block->txs = malloc(dest_block->num_txs * sizeof(Transaction*));
-  for(int tx = 0; tx < dest_block->num_txs; tx++){
-    // This should be refactored to return the next address in memory since these are variable sized to avoid calling size tx twice
-    dest_block->txs[tx] = deser_tx(incoming_txs);
-    incoming_txs += size_tx(dest_block->txs[tx]);
-  }
-  return 1;
+Block *deser_block_alloc(unsigned char *src) {
+  Block *block;
+  block = malloc(sizeof(Block));
+  deser_block(block, src);
+  return block;
 }

@@ -13,14 +13,6 @@ void hash_blockheader(unsigned char *dest, BlockHeader *header) {
   free(header_buf);
 }
 
-int size_block(Block *block){
-  int size = (sizeof(block->num_txs) + sizeof(block->header));
-  for(unsigned int i = 0; i < block->num_txs; i++){
-      size += size_tx(block->txs[i]);
-  }
-  return size;
-}
-
 void print_block_header(BlockHeader *header, char *prefix){
   char *sub_prefix = malloc(strlen(prefix)+strlen(PRINT_TAB)+1);
   strcpy(sub_prefix, prefix);

@@ -1,21 +1,33 @@
 #pragma once
 #include "base_tx.h"
 
+size_t size_ser_utxo();
+
 /**
  * @brief Serializes a UTXO
  * 
  * @param utxo UTXO to serialize
  * @return unsigned char* serialized UTXO
  */
-unsigned char *ser_utxo(UTXO *utxo);
+size_t ser_utxo(unsigned char *dest, UTXO *utxo);
+unsigned char *ser_utxo_alloc(UTXO *utxo);
 
 /**
  * @brief Deserializes a UTXO
  * 
- * @param data Serialized UTXO
+ * @param src Serialized UTXO
  * @return UTXO* Deserialized UTO
  */
-UTXO *dser_utxo(unsigned char *data);
+size_t deser_utxo(UTXO *dest, unsigned char *src);
+UTXO *deser_utxo_alloc(unsigned char *src);
+
+/**
+ * @brief Get size required to serialize an input
+ *  removes the pointer and adds the length of data pointed to
+ * 
+ * @return int 
+ */
+size_t size_ser_input();
 
 /**
  * @brief Serialize an input
@@ -24,7 +36,8 @@ UTXO *dser_utxo(unsigned char *data);
  * @param input input to desrialized
  * @return unsigned char* next byte after serialization
  */
-unsigned char *ser_input(unsigned char *dest, Input *input);
+size_t ser_input(unsigned char *dest, Input *input);
+unsigned char *ser_input_alloc(Input *input);
 
 /**
  * @brief Deserialize an input
@@ -33,7 +46,13 @@ unsigned char *ser_input(unsigned char *dest, Input *input);
  * @param src buffer containing serialized input
  * @return unsigned char* next byte of data in src buffer
  */
-unsigned char *deser_input(Input *dest, unsigned char *src);
+size_t deser_input(Input *dest, unsigned char *src);
+Input *deser_input_alloc(unsigned char *src);
+
+/*
+Return Size of a transaction, used for serialization and memory allocation
+*/
+size_t size_ser_tx(Transaction *tx);
 
 /**
  * @brief Serializes an entire TX
@@ -42,7 +61,7 @@ unsigned char *deser_input(Input *dest, unsigned char *src);
  * @param tx Transaction to serialize
  * @return unsigned char* byte after serialization in dest
  */
-unsigned char *ser_tx(unsigned char *dest, Transaction *tx);
+size_t ser_tx(unsigned char *dest, Transaction *tx);
 
 /**
  * @brief Serializes a TX and allocates memory for it
@@ -58,4 +77,5 @@ unsigned char *ser_tx_alloc(Transaction *tx);
  * @param data Buffer containing serialized Transation
  * @return Transaction* Transaction deserialized
  */
-Transaction* deser_tx(unsigned char *data);
+size_t deser_tx(Transaction *dest, unsigned char *data);
+Transaction* deser_tx_alloc(unsigned char *data);
