@@ -7,6 +7,7 @@
 void node_init() {
   blockchain_init();
   utxo_pool_init();
+  utxo_pool_init_leveldb();
 }
 
 void miner_init() {

@@ -20,7 +20,7 @@ UTXOPool *utxo_pool;
 char *utxo_pool_path;
 leveldb_t *utxo_pool_db;  // Level DB Database
 
-void utxo_pool_init_leveldb();
+int utxo_pool_init_leveldb();
 int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout);
 int utxo_pool_find_leveldb(UTXO **found_utxo, Transaction *tx, unsigned int vout);
 int utxo_pool_remove_leveldb(Transaction *tx, unsigned int vout);

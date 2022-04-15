@@ -15,11 +15,11 @@ int make_utxo_pool_key(unsigned char *dest[], size_t *len, Transaction *tx, unsi
   return 0;
 }
 
-void utxo_pool_init_leveldb(){
-  set_db_path(&utxo_pool_path, "/utxo_pool");
-  open_or_create_db(&utxo_pool_db, utxo_pool_path);
-
-  //Maybe close the DB here?
+int utxo_pool_init_leveldb(){
+  return init_db(&utxo_pool_db, &utxo_pool_path, "/utxo_pool");
+  
+  int ret = open_or_create_db(&utxo_pool_db, utxo_pool_path);
+  printf("Open Return value: %i\n", ret);
 }
 
 void utxo_pool_init() {
@@ -42,9 +42,12 @@ int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout){
   UTXO *utxo = malloc(sizeof(UTXO));
   utxo->amt = tx->outputs[vout].amt;
   memcpy(utxo->public_key_hash, tx->outputs[vout].public_key_hash, PUB_KEY_HASH_LEN);
-  unsigned char *serialized_utxo = ser_utxo(utxo);
-  size_t utxo_size = sizeof(UTXO);
-
+  
+  size_t utxo_size;
+  unsigned char *serialized_utxo = ser_utxo_alloc(&utxo_size, utxo);
+  if(!serialized_utxo){
+    return 3;
+  }
   
   leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
   leveldb_put(utxo_pool_db, woptions, db_key, key_len, serialized_utxo, utxo_size, &err);
@@ -93,8 +96,12 @@ int utxo_pool_find_leveldb(UTXO **found_utxo, Transaction *tx, unsigned int vout
   if(read == NULL){
     return 1;
   }
-
-  *found_utxo = deser_utxo((unsigned char*) read);
+  
+  size_t read_bytes;
+  *found_utxo = deser_utxo_alloc(&read_bytes, (unsigned char*) read);
+  if(!*found_utxo){
+    return 4;
+  }
   return 0;
 }
 

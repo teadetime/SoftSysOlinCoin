@@ -33,13 +33,15 @@ int main() {
   int ret;
   UTXO *found = NULL;
   utxo_pool_init_leveldb();
-  
+  utxo_pool_init_leveldb();
   // leveldb_t *db1 = NULL;
   // int success = open_or_create_db(&db1, utxo_pool_path);
 
   Transaction *tx;
   tx = _make_tx();
   ret = utxo_pool_add_leveldb(tx, 0);
+
+  
   printf("Add Return Value: %i\n", ret);
   ret = utxo_pool_find_leveldb(&found, tx, 0);
   

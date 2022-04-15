@@ -6,6 +6,7 @@
 #include "time.h"
 #include "ser_block.h"
 #include "crypto.h"
+#include "init_db.h"
 
 int tests_run = 0;
 
@@ -37,8 +38,9 @@ void _fill_mempool(){
   Transaction *input_tx, *tx1;
   input_tx = _make_tx();
   input_tx->outputs[0].amt = 100;
-  utxo_pool_init();
+  utxo_pool_init_leveldb();
   utxo_pool_add(input_tx, 0);
+  utxo_pool_add_leveldb(input_tx, 0);
 
   tx1 = _make_tx();
   hash_tx(tx1->inputs[0].prev_tx_id, input_tx);
@@ -103,6 +105,7 @@ static char *test_get_txs_from_mempool(){
     "TX output amt doesn't match",
     test_ptr[1]->outputs[0].amt == 90
   );
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 
@@ -120,6 +123,7 @@ static char *test_hash_all(){
     "Total hash is inconsistent",
     memcmp(total_hash, total_hash2, ALL_TX_HASH_LEN) == 0
   );
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 
@@ -142,7 +146,7 @@ static char *test_create_header(){
     "Header timestamp invalid",
     test_header->timestamp > 1647573975
   );
-
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 
@@ -175,10 +179,12 @@ static char *test_create_block(){
     try_header_hash(&(test_block->header)) == 1
   );
 
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 
 static char *test_mine_block(){
+  _fill_mempool();
   unsigned long start = time(NULL);
   Block *mined_block = mine_block();
   unsigned long end = time(NULL);
@@ -193,6 +199,7 @@ static char *test_mine_block(){
 
   free(mined_block);
   // Really need to free all the internal structures...
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 
