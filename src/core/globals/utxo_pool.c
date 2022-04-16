@@ -23,9 +23,6 @@ int make_utxo_pool_key(unsigned char **dest, size_t *len, Transaction *tx, unsig
 
 int utxo_pool_init_leveldb(){
   return init_db(&utxo_pool_db, &utxo_pool_path, "/utxo_pool");
-  
-  int ret = open_or_create_db(&utxo_pool_db, utxo_pool_path);
-  printf("Open Return value: %i\n", ret);
 }
 
 int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout){
@@ -47,13 +44,17 @@ int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout){
   
   size_t utxo_size;
   unsigned char *serialized_utxo = ser_utxo_alloc(&utxo_size, utxo);
+  free(utxo);
+
   if(!serialized_utxo){
+    free(db_key);
     return 3;
   }
   
   leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
   leveldb_put(utxo_pool_db, woptions, db_key, key_len, serialized_utxo, utxo_size, &err);
   leveldb_writeoptions_destroy(woptions);
+  free(db_key);
   dump_buf("", "KEY: ", db_key, key_len);
 
   if (err != NULL) {
@@ -62,6 +63,7 @@ int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout){
   }
 
   leveldb_free(err); err = NULL;
+
   return 0;
 }
 
@@ -83,6 +85,8 @@ int utxo_pool_find_leveldb(UTXO **found_utxo, unsigned char *tx_hash, unsigned i
   leveldb_readoptions_t *roptions = leveldb_readoptions_create();
   read = leveldb_get(utxo_pool_db, roptions, db_key, key_len, &read_len, &err);
   leveldb_readoptions_destroy(roptions);
+  free(db_key);
+
   if (err != NULL) {
     fprintf(stderr, "Read fail.\n");
     return 3;
@@ -115,6 +119,7 @@ int utxo_pool_remove_leveldb(unsigned char *tx_hash, unsigned int vout){
   leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
   leveldb_delete(utxo_pool_db, woptions, db_key, key_len, &err);
   leveldb_writeoptions_destroy(woptions);
+  free(db_key);
   if (err != NULL) {
     fprintf(stderr, "Delete fail.\n");
     return(3);

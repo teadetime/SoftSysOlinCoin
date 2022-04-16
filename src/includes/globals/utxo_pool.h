@@ -16,67 +16,73 @@ typedef struct UTXOPool {
   UT_hash_handle hh;
 } UTXOPool;
 
-//UTXOPool *utxo_pool;
 char *utxo_pool_path;
 leveldb_t *utxo_pool_db;  // Level DB Database
 
-int utxo_pool_init_leveldb();
-int make_utxo_pool_key_with_hash(unsigned char **dest, size_t *len, unsigned char *hash, unsigned int vout);
-int make_utxo_pool_key(unsigned char **dest, size_t *len, Transaction *tx, unsigned int vout);
-int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout);
-int utxo_pool_find_leveldb(UTXO **found_utxo, unsigned char *tx_hash, unsigned int vout);
-int utxo_pool_remove_leveldb(unsigned char *tx_hash, unsigned int vout);
-int utxo_pool_count(unsigned int *num_entries);
-/* Initializes the global utxo_pool variable */
-void utxo_pool_init();
-
-/* Creates a new UTXO using transaction and output number, then ceates a new
- * entry in the hashmap
+/**
+ * @brief Initializes Global Database, database must not be open by another process
  * 
- * Returns pointer to newly created UTXO if entry created, NULL otherwise
- *
- * transaction: Transaction pointer to transaction the new UTXO is an output of
- * vout: Which output of the passed transaction the new UTXO is
+ * @return int 0 if successful
  */
-UTXO *utxo_pool_add(Transaction *tx, unsigned int vout);
+int utxo_pool_init_leveldb();
 
-/* Removes the entry corresponding to transaction hash and output number
- *
- * Returns the UTXO pointer stored in removed entry if succesfully removed, NULL
- * otherwise
- *
- * tx_hash: Buffer of length TX_HASH_LEN, hash of transaction the UTXO is from
- * vout: Which output of the transaction the UTXO is from
+/**
+ * @brief Creates key for utxopool 
+ * 
+ * @param dest pointer to character buffer that will be allocated freeing responsibility of caller
+ * @param len pointer to integer containing length of alloced dest
+ * @param hash hash of transaction for the utxo
+ * @param vout output to use
+ * @return int 0 if success not zero if failure
  */
-UTXO *utxo_pool_remove(unsigned char *tx_hash, unsigned int vout);
+int make_utxo_pool_key_with_hash(unsigned char **dest, size_t *len, unsigned char *hash, unsigned int vout);
 
-/* Finds UTXO corresponding to transaction hash and output number
- *
- * Returns UTXO pointer if found, NULL otherwise
- *
- * tx_hash: Buffer of length TX_HASH_LEN, hash of transaction the UTXO is from
- * vout: Which output of the transaction the UTXO is from
+/**
+ * @brief Make Utxo pool from a transaction and vout
+ * 
+ * @param dest pointer to character buffer that will be allocated freeing responsibility of caller
+ * @param len pointer to integer containing length of alloced dest
+ * @param tx transaction to use as key for utxo
+ * @param vout output to use as utxo
+ * @return int 0 if success not zero if failure
  */
-UTXO *utxo_pool_find(unsigned char *tx_hash, unsigned int vout);
+int make_utxo_pool_key(unsigned char **dest, size_t *len, Transaction *tx, unsigned int vout);
 
-/* Finds entry corresponding to transaction hash and output number
- *
- * Returns entry if found, NULL otherwise
- *
- * tx_hash: Buffer of length TX_HASH_LEN, hash of transaction the UTXO is from
- * vout: Which output of the transaction the UTXO is from
+/**
+ * @brief Add a transaction to the utxo Pool
+ * 
+ * @param tx Transaction to add
+ * @param vout vout for the utxo
+ * @return int 0 if success not zero if failure
  */
-UTXOPool *utxo_pool_find_node(unsigned char *tx_hash, unsigned int vout);
+int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout);
 
-/* Finds entry corresponding to UTXOPoolKey. Same behavior as
- * utxo_pool_find_node, but takes UTXOPoolKey instead. Primarily an internal
- * func
- *
- * Returns entry if found, NULL otherwise
- *
- * key: UTXOPoolKey struct containing tx_hash and vout to query for
+/**
+ * @brief Find a UTXO in the utxopool
+ * 
+ * @param found_utxo pointer to utxo pointer to store found result in freeing is responsibility of the caller
+ * @param tx_hash hash for utxo to find
+ * @param vout output for utxo to find
+ * @return int 0 if success not zero if failure
  */
-UTXOPool *utxo_pool_find_node_key(UTXOPoolKey *key);
+int utxo_pool_find_leveldb(UTXO **found_utxo, unsigned char *tx_hash, unsigned int vout);
+
+/**
+ * @brief Remove utxo from utxopool
+ * 
+ * @param tx_hash hash to remove from the utxopool
+ * @param vout output to remove from the mempool
+ * @return int 0 if success not zero if failure
+ */
+int utxo_pool_remove_leveldb(unsigned char *tx_hash, unsigned int vout);
+
+/**
+ * @brief Count number of items in utxo_pool
+ * 
+ * @param num_entries pointer to hold returned number of values in the utxopool
+ * @return int 0 if success not zero if failure
+ */
+int utxo_pool_count(unsigned int *num_entries);
 
 /**
  * @brief Prints a utxo to stdout, for visualization
@@ -92,11 +98,3 @@ Prints all of the utxo_pool hashmap to stdout with keys for visualizatoin
 prefix: string to put in front of all print commands used for tabbing structure
 */
 void print_utxo_hashmap(char *prefix);
-
-/*
-Prints a member the utxo_pool hashmap to stdout with keys for visualizatoin 
-as well as utxo data
-
-prefix: string to put in front of all print commands used for tabbing structure
-*/
-void print_UTXOPOOL(UTXOPool *utxo_pool_node, char *prefix);
