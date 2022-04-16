@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "string.h"
+#include "init_db.h"
 
 int set_db_path(char **dest, char *name){
   if(!getenv("HOME")){
@@ -33,7 +34,7 @@ int open_or_create_db(leveldb_t **db, char *path){
   }
   /* reset error var */
   leveldb_options_destroy(options);
-  leveldb_free(err); err = NULL;
+  leveldb_free(err);
   return ret;
 }
 
@@ -44,6 +45,7 @@ int init_db(leveldb_t **db, char **dest, char *name){
   }
   return 0;
 }
+
 int check_if_db_loaded(leveldb_t **db, char *path){
   if(*db == NULL){
     // Try to open it again and see if that works
@@ -74,4 +76,23 @@ int destroy_db(leveldb_t **db, char *name){
   leveldb_options_destroy(options);
   leveldb_free(err); err = NULL;
   return ret;
+}
+
+int db_count(leveldb_t *db, char *db_path, unsigned int *num_entries){
+  if(check_if_db_loaded(&db, db_path) != 0){
+    return 5;
+  }
+  int count = 0;
+  leveldb_readoptions_t *roptions;
+  roptions = leveldb_readoptions_create();
+  leveldb_iterator_t *iter = leveldb_create_iterator(db, roptions);
+
+  for (leveldb_iter_seek_to_first(iter); leveldb_iter_valid(iter); leveldb_iter_next(iter))
+  {
+    count++;
+  }
+  leveldb_iter_destroy(iter);
+  leveldb_readoptions_destroy(roptions);
+  *num_entries = count;
+  return 0;
 }

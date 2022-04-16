@@ -8,3 +8,5 @@ int init_db(leveldb_t **db, char **dest, char *name);
 int check_if_db_loaded(leveldb_t **db, char *path);
 
 int destroy_db(leveldb_t **db, char *name);
+
+int db_count(leveldb_t *db, char *db_path, unsigned int *num_entries);

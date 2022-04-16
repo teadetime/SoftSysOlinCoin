@@ -4,6 +4,7 @@
 #include "uthash.h"
 #include "base_block.h"
 #include "constants.h"
+#include "leveldb/c.h"
 
 typedef struct BlockChain {
   unsigned char id[BLOCK_HASH_LEN];
@@ -14,6 +15,11 @@ typedef struct BlockChain {
 BlockChain *blockchain;
 unsigned char top_block_header_hash[BLOCK_HASH_LEN];
 unsigned long chain_height;
+
+char *blockchain_path;
+leveldb_t *blockchain_db;  // Level DB Database
+
+int blockchain_add_leveldb(Block *block);
 
 /* Initializes the global blockchain variable */
 void blockchain_init();
