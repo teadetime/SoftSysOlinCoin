@@ -4,6 +4,7 @@
 #include "minunit.h"
 #include "handle_tx.h"
 #include "crypto.h"
+#include "init_db.h"
 
 int tests_run = 0;
 mbedtls_ecdsa_context *last_key_pair;
@@ -39,9 +40,9 @@ Transaction *build_complex_tx(){
   Transaction *input_tx, *tx1;
   input_tx = _make_tx();
   input_tx->outputs[0].amt = 100;
-  utxo_pool_init();
-  utxo_pool_add(input_tx, 0);
-  // utxo_to_tx_add_tx(input_tx);
+  utxo_pool_init_leveldb();
+  int ret = utxo_pool_add_leveldb(input_tx, 0);
+
   mbedtls_ecdsa_context *input_tx_context = malloc(sizeof(mbedtls_ecdsa_context));
   memcpy(input_tx_context, last_key_pair, sizeof(mbedtls_ecdsa_context));
   tx1 = _make_tx();
@@ -91,7 +92,7 @@ static char *test_handle_tx(){
     "Mempool entry matching tx not found",
     mempool_find(temp_hash) != NULL
   );
-  
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 

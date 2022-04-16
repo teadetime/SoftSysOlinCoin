@@ -17,7 +17,8 @@ add_executable(test_utxo_pool  test_utxo_pool.c)
 target_compile_options(test_utxo_pool PRIVATE ${COMPILE_OPTIONS_STD})
 target_include_directories(test_utxo_pool PUBLIC ${INCLUDE_ALL})
 target_link_libraries(test_utxo_pool 
-  utxopool)
+  utxopool
+  init_db)
 
 # Test List
 add_executable(test_list test_list.c)

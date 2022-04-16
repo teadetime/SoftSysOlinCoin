@@ -33,7 +33,6 @@ int main() {
   int ret;
   UTXO *found = NULL;
   utxo_pool_init_leveldb();
-  utxo_pool_init_leveldb();
   // leveldb_t *db1 = NULL;
   // int success = open_or_create_db(&db1, utxo_pool_path);
 
@@ -43,16 +42,22 @@ int main() {
 
   
   printf("Add Return Value: %i\n", ret);
-  ret = utxo_pool_find_leveldb(&found, tx, 0);
+  unsigned char tx_hash[TX_HASH_LEN];
+  hash_tx(tx_hash, tx);
+  ret = utxo_pool_find_leveldb(&found, tx_hash, 0);
   
   printf("Find Return Value: %i\n", ret);
-  // if(ret == 0){
-  //   print_utxo(found, "");
-  //   free(found);
-  // }
-  ret = utxo_pool_remove_leveldb(tx, 0);
+  if(ret == 0){
+    print_utxo(found, "");
+    free(found);
+  }
 
-  int entries;
+
+  print_utxo_hashmap("");
+
+  ret = utxo_pool_remove_leveldb(tx_hash, 0);
+
+  unsigned int entries;
   int count_ret = utxo_pool_count(&entries);
   printf("count Return Value: %i, counted: %i\n", count_ret, entries);
   return(0);

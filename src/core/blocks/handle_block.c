@@ -13,16 +13,16 @@ void update_local_blockchain(Block *block){
 void update_UTXO_pool_and_wallet_pool(Block *block){
   for(unsigned int i = 0; i < block->num_txs; i++){
     for(unsigned int j = 0; j < block->txs[i]->num_outputs; j++){
-      utxo_pool_add(block->txs[i], j); // Don't need to do anything with return
+
+      utxo_pool_add_leveldb(block->txs[i], j);
       mbedtls_ecdsa_context *keypair = check_if_output_unlockable(block->txs[i], j);
       if(keypair != NULL){
         wallet_pool_add(block->txs[i], j, keypair);
       }
     }
     for(unsigned int k = 0; k < block->txs[i]->num_inputs; k++){
-      UTXO *spent_utxo = utxo_pool_remove(block->txs[i]->inputs[k].prev_tx_id,
+      utxo_pool_remove_leveldb(block->txs[i]->inputs[k].prev_tx_id,
         block->txs[i]->inputs[k].prev_utxo_output);
-      free(spent_utxo);
       wallet_pool_remove(block->txs[i]->inputs[k].prev_tx_id,
         block->txs[i]->inputs[k].prev_utxo_output);
     }

@@ -16,15 +16,17 @@ typedef struct UTXOPool {
   UT_hash_handle hh;
 } UTXOPool;
 
-UTXOPool *utxo_pool;
+//UTXOPool *utxo_pool;
 char *utxo_pool_path;
 leveldb_t *utxo_pool_db;  // Level DB Database
 
 int utxo_pool_init_leveldb();
+int make_utxo_pool_key_with_hash(unsigned char **dest, size_t *len, unsigned char *hash, unsigned int vout);
+int make_utxo_pool_key(unsigned char **dest, size_t *len, Transaction *tx, unsigned int vout);
 int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout);
-int utxo_pool_find_leveldb(UTXO **found_utxo, Transaction *tx, unsigned int vout);
-int utxo_pool_remove_leveldb(Transaction *tx, unsigned int vout);
-int utxo_pool_count(int *num_entries);
+int utxo_pool_find_leveldb(UTXO **found_utxo, unsigned char *tx_hash, unsigned int vout);
+int utxo_pool_remove_leveldb(unsigned char *tx_hash, unsigned int vout);
+int utxo_pool_count(unsigned int *num_entries);
 /* Initializes the global utxo_pool variable */
 void utxo_pool_init();
 

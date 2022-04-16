@@ -6,6 +6,7 @@
 #include "time.h"
 #include "ser_block.h"
 #include "crypto.h"
+#include "init_db.h"
 
 int tests_run = 0;
 
@@ -44,8 +45,9 @@ static void _fill_mempool(){
   Transaction *input_tx, *tx1;
   input_tx = _make_tx();
   input_tx->outputs[0].amt = 100;
-  utxo_pool_init();
-  utxo_pool_add(input_tx, 0);
+  utxo_pool_init_leveldb();
+
+  int ret = utxo_pool_add_leveldb(input_tx, 0);
 
   tx1 = _make_tx();
   hash_tx(tx1->inputs[0].prev_tx_id, input_tx);
@@ -188,7 +190,7 @@ static char *test_ser_block(){
   free(block);
   free(sered_block);
   free(desered_block);
-
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 

@@ -2,6 +2,7 @@
 #include "minunit.h"
 #include "utxo_pool.h"
 #include "crypto.h"
+#include "init_db.h"
 
 int tests_run = 0;
 
@@ -30,11 +31,16 @@ Transaction *_make_tx() {
 }
 
 static char *test_utxo_pool_init() {
-  utxo_pool_init();
+  utxo_pool_init_leveldb();
   mu_assert(
-      "UTXO pool was not initialized",
-      utxo_pool == NULL
+    "UTXO DB is still null",
+    utxo_pool_db != NULL
   );
+  mu_assert(
+    "UTXO path is null",
+    utxo_pool_path != NULL
+  );
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 
@@ -43,80 +49,88 @@ static char  *test_utxo_pool_add() {
   UTXO *ret_utxo;
 
   tx = _make_tx();
-  utxo_pool_init();
-  ret_utxo = utxo_pool_add(tx, 0);
+  utxo_pool_init_leveldb();
+  int ret = utxo_pool_add_leveldb(tx,0);
   mu_assert(
-    "UTXO amt incorrect",
-    ret_utxo->amt == tx->outputs[0].amt
-  );
-  mu_assert(
-    "UTXO hash incorrect",
-    memcmp(
-      ret_utxo->public_key_hash,
-      tx->outputs[0].public_key_hash,
-      PUB_KEY_HASH_LEN
-    ) == 0
+    "Return Value indicates a failure",
+    ret == 0
   );
 
   free(tx->inputs);
   free(tx->outputs);
   free(tx);
   free(ret_utxo);
+  destroy_db(&utxo_pool_db, utxo_pool_path);
 
   return NULL;
 }
 
 static char  *test_utxo_pool_find() {
   Transaction *tx;
-  UTXO *new_utxo, *ret_utxo;
+  UTXO *ret_utxo = NULL;
   unsigned char hash[TX_HASH_LEN];
 
   tx = _make_tx();
   hash_tx(hash, tx);
 
-  utxo_pool_init();
-  new_utxo = utxo_pool_add(tx, 0);
-  ret_utxo = utxo_pool_find(hash, 0);
+  utxo_pool_init_leveldb();
+  utxo_pool_add_leveldb(tx, 0);
+  int ret_found = utxo_pool_find_leveldb(&ret_utxo, hash, 0);
   mu_assert(
-    "Find did not return correct utxo",
-    ret_utxo == new_utxo
+    "Found did not return proper error code",
+    ret_found == 0 
+  );
+  mu_assert(
+    "Returned utxo not different",
+    ret_utxo != NULL
+  );
+  mu_assert(
+    "Returned utxo amount if off",
+    ret_utxo->amt == tx->outputs[0].amt
+  );
+  mu_assert(
+    "Returned utxo amount if off",
+    memcmp(ret_utxo->public_key_hash, tx->outputs[0].public_key_hash, PUB_KEY_HASH_LEN) == 0
   );
 
   free(tx->inputs);
   free(tx->outputs);
   free(tx);
   free(ret_utxo);
-
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 
 static char  *test_utxo_pool_remove() {
   Transaction *tx;
-  UTXO *new_utxo, *ret_utxo;
+  UTXO  *ret_utxo = NULL;
   unsigned char hash[TX_HASH_LEN];
 
   tx = _make_tx();
   hash_tx(hash, tx);
 
-  utxo_pool_init();
-  new_utxo = utxo_pool_add(tx, 0);
-  ret_utxo = utxo_pool_remove(hash, 0);
+  utxo_pool_init_leveldb();
+  utxo_pool_add_leveldb(tx, 0);
+  int ret_remove = utxo_pool_remove_leveldb(hash, 0);
+  
   mu_assert(
-    "Remove did not return correct tx",
-    ret_utxo == new_utxo
+    "Remove returned failed code",
+    ret_remove == 0 
   );
-
-  ret_utxo = utxo_pool_find(hash, 0);
+  int ret_found = utxo_pool_find_leveldb(&ret_utxo, hash, 0);
   mu_assert(
-    "Tx was not removed",
+    "utxo was found after it was deleted?",
+    ret_found != 0 
+  );
+  mu_assert(
+    "utxo find value not null after delete",
     ret_utxo == NULL
   );
 
   free(tx->inputs);
   free(tx->outputs);
   free(tx);
-  free(new_utxo);
-
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 

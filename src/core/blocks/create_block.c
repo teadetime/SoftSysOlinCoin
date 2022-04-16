@@ -49,7 +49,8 @@ unsigned int calc_tx_fees(Transaction *tx){
   unsigned long total_out = 0;
 
   for(unsigned int i = 0; i < tx->num_inputs; i++){
-    UTXO* input_utxo = utxo_pool_find(tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
+    UTXO *input_utxo = NULL;// = utxo_pool_find(tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
+    utxo_pool_find_leveldb(&input_utxo, tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
     total_in += input_utxo->amt;  // This could be null if no uxto found so make sure to confirm tx has all valid inputs
   }
   for(unsigned int i = 0; i < tx->num_outputs; i++){

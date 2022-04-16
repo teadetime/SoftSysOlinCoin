@@ -39,7 +39,6 @@ void _fill_mempool(){
   input_tx = _make_tx();
   input_tx->outputs[0].amt = 100;
   utxo_pool_init_leveldb();
-  utxo_pool_add(input_tx, 0);
   utxo_pool_add_leveldb(input_tx, 0);
 
   tx1 = _make_tx();
