@@ -48,10 +48,10 @@ int blockchain_init_leveldb(){
 }
 
 int blockchain_add_leveldb(Block *block){
-  if(check_if_db_loaded(&blockchain_db, blockchain_path) != 0){
-    return 5;
-  }
-  
+  /* if(check_if_db_loaded(&blockchain_db, blockchain_path) != 0){ */
+  /*   return 5; */
+  /* } */
+
   unsigned char db_key[BLOCK_HASH_LEN];
   hash_blockheader(db_key, &(block->header));
 
@@ -63,7 +63,7 @@ int blockchain_add_leveldb(Block *block){
   if(!serialized_block){
     return 3;
   }
-  
+
   leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
   leveldb_put(blockchain_db, woptions, db_key, key_len, serialized_block, block_size, &err);
   leveldb_writeoptions_destroy(woptions);

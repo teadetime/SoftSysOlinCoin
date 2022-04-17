@@ -63,7 +63,7 @@ int main() {
   Block* block = _make_block();
   //print_block(block, "");
   size_t sz ;//= size_ser_block(block);
-  unsigned char* test = ser_block_alloc(sz, block);
+  unsigned char* test = ser_block_alloc(&sz, block);
   //blockchain_add_leveldb(block);
   // blockchain_count(&count);
 
@@ -79,12 +79,12 @@ int main() {
   // tx = _make_tx();
   // ret = utxo_pool_add_leveldb(tx, 0);
 
-  
+
   // printf("Add Return Value: %i\n", ret);
   // unsigned char tx_hash[TX_HASH_LEN];
   // hash_tx(tx_hash, tx);
   // ret = utxo_pool_find_leveldb(&found, tx_hash, 0);
-  
+
   // printf("Find Return Value: %i\n", ret);
   // if(ret == 0){
   //   print_utxo(found, "");

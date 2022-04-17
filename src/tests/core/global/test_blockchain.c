@@ -10,7 +10,10 @@ Block *_make_block() {
   Transaction *tx;
 
   block = malloc(sizeof(Block));
-  tx = malloc(sizeof(Transaction));
+
+  block->txs = malloc(sizeof(Transaction*) * 1);
+  block->txs[0] = malloc(sizeof(Transaction));
+  tx = block->txs[0];
 
   tx->num_inputs = 0;
   tx->inputs = NULL;
@@ -18,7 +21,6 @@ Block *_make_block() {
   tx->outputs = NULL;
 
   block->num_txs = 1;
-  block->txs = &tx;
 
   block->header.timestamp = 1;
   memset(block->header.all_tx, 1, TX_HASH_LEN);
@@ -94,11 +96,11 @@ static char *test_blockchain_init_correct() {
 }
 
 static char  *test_blockchain_add() {
-  Block *block;
 
-  block = _make_block();
   blockchain_init_leveldb();
   //ret_block = blockchain_add(block);
+  Block *block;
+  block = _make_block();
   int ret_add = blockchain_add_leveldb(block);
   unsigned int entries;
   blockchain_count(&entries);
@@ -108,9 +110,9 @@ static char  *test_blockchain_add() {
   );
   mu_assert(
     "Add did not return correct block",
-    entries == 1
+    entries == 2
   );
-  
+
 
   free(block->txs[0]);
   free(block);
@@ -172,7 +174,7 @@ static char  *test_blockchain_remove() {
     "Chain Height not decremented",
     chain_height = prev_chain_height-1
   );
-  
+
   int ret_find = blockchain_find_leveldb(&ret_block, hash);
   mu_assert(
     "Block Find returns success after block removed",
@@ -194,8 +196,8 @@ static char *all_tests() {
   mu_run_test(test_blockchain_init_exists);
   mu_run_test(test_blockchain_init_correct);
   mu_run_test(test_blockchain_add);
-  // mu_run_test(test_blockchain_find);
-  // mu_run_test(test_blockchain_remove);
+  mu_run_test(test_blockchain_find);
+  mu_run_test(test_blockchain_remove);
   return NULL;
 }
 
