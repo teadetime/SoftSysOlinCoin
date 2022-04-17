@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "ser_tx.h"
+#include "ser_key.h"
 #include "base_tx.h"
 #include "crypto.h"
 
@@ -15,6 +16,10 @@
     } \
     return data; \
   }
+
+/******************************************************************************
+ * UTXOs
+ ******************************************************************************/
 
 size_t size_ser_utxo() {
   return sizeof(((UTXO*)0)->amt) + sizeof(((UTXO*)0)->public_key_hash);
@@ -54,19 +59,18 @@ UTXO *deser_utxo_alloc(ssize_t *read, unsigned char *src) {
   RETURN_SER(utxo, ret, read)
 }
 
+/******************************************************************************
+ * Inputs
+ ******************************************************************************/
+
 size_t size_ser_input() {
   return PUB_KEY_SER_LEN + sizeof(((Input*)0)->sig_len) + SIGNATURE_LEN +
     TX_HASH_LEN + sizeof(((Input*)0)->prev_utxo_output);
 }
 
 ssize_t ser_input(unsigned char *dest, Input *input) {
-  mbedtls_ecp_group group;
+  unsigned char *sig_len = dest + ser_pub_key(dest, input->pub_key);
 
-  mbedtls_ecp_group_init(&group);
-  mbedtls_ecp_group_load(&group, CURVE);
-  ser_pub_key(dest, input->pub_key, &group);
-
-  unsigned char *sig_len = dest + PUB_KEY_SER_LEN;
   memcpy(sig_len, &(input->sig_len), sizeof(input->sig_len));
 
   unsigned char *sig = sig_len + sizeof(input->sig_len);
@@ -90,13 +94,9 @@ unsigned char *ser_input_alloc(ssize_t *written, Input *input) {
 }
 
 ssize_t deser_input(Input *dest, unsigned char *src) {
-  mbedtls_ecp_group group;
-
-  mbedtls_ecp_group_init(&group);
-  mbedtls_ecp_group_load(&group, CURVE);
   dest->pub_key = malloc(sizeof(mbedtls_ecp_point));
   mbedtls_ecp_point_init(dest->pub_key);
-  deser_pub_key(dest->pub_key, &group, src);
+  deser_pub_key(dest->pub_key, src);
 
   unsigned char *sig_len = src + PUB_KEY_SER_LEN;
   memcpy(&(dest->sig_len), sig_len, sizeof(((Input*)0)->sig_len));
@@ -120,6 +120,10 @@ Input *deser_input_alloc(ssize_t *read, unsigned char *src) {
   ret = deser_input(input, src);
   RETURN_SER(input, ret, read)
 }
+
+/******************************************************************************
+ * Transactions
+ ******************************************************************************/
 
 size_t size_ser_tx(Transaction *tx) {
   return (sizeof(tx->num_inputs) + sizeof(tx->num_outputs) +

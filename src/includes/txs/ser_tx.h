@@ -5,6 +5,7 @@
 /******************************************************************************
  * UTXOs
  ******************************************************************************/
+
 /**
  * @brief Gets size of serialized UTXO
  *
@@ -52,6 +53,7 @@ UTXO *deser_utxo_alloc(ssize_t* read, unsigned char *src);
 /******************************************************************************
  * Inputs
  ******************************************************************************/
+
 /**
  * @brief Get size of serialized Input
  *
@@ -99,6 +101,7 @@ Input *deser_input_alloc(ssize_t *read, unsigned char *src);
 /******************************************************************************
  * Transactions
  ******************************************************************************/
+
 /**
  * @brief Get size of a Transaction if serialized
  *
@@ -134,7 +137,6 @@ unsigned char *ser_tx_alloc(ssize_t *written, Transaction *tx);
  * @return Number of bytes read if succesfull, -1 otherwise
  */
 ssize_t deser_tx(Transaction *dest, unsigned char *src);
-
 
 /**
  * @brief Allocate memory and deserialize a Transaction

@@ -4,6 +4,7 @@
 #include "minunit.h"
 #include "base_tx.h"
 #include "ser_tx.h"
+#include "ser_key.h"
 #include "crypto.h"
 
 int tests_run = 0;
@@ -98,11 +99,8 @@ static char  *test_ser_tx() {
       ) == 0
     );
 
-    mbedtls_ecp_group group;
-    mbedtls_ecp_group_init(&group);
-    mbedtls_ecp_group_load(&group, CURVE);
-    ser_pub_key(buf_1, a_Tx->inputs[i].pub_key, &group);
-    ser_pub_key(buf_2, other_tx->inputs[i].pub_key, &group);
+    ser_pub_key(buf_1, a_Tx->inputs[i].pub_key);
+    ser_pub_key(buf_2, other_tx->inputs[i].pub_key);
     mu_assert(
       "Input pub key doesn't match up after de/serialization",
       memcmp(buf_1, buf_2, PUB_KEY_SER_LEN) == 0
