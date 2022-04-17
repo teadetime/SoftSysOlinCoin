@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.13)
 # set the project name
 project(OlinCoin C CXX)
 enable_testing()
-# set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BINARY_DIR ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -28,7 +28,7 @@ if(NOT UTHASH_LIB)
 endif()
 
 
-set(COMPILE_OPTIONS_STD -Wall -Wextra -pedantic -O2 CACHE INTERNAL "used internally")
+set(COMPILE_OPTIONS_STD -Wall -Wextra -pedantic CACHE INTERNAL "used internally")
 set(BUILD_TESTS ON)
 set(BUILD_RUNTIME ON)  
 add_subdirectory(src)

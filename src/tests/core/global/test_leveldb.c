@@ -46,7 +46,7 @@ Block *_make_block() {
   block->txs = &tx;
 
   block->header.timestamp = 1;
-  memset(block->header.all_tx, 1, TX_HASH_LEN);
+  memset(block->header.all_tx, 1, ALL_TX_HASH_LEN);
   memset(block->header.prev_header_hash, 1, BLOCK_HASH_LEN);
   block->header.nonce = 1;
 
@@ -55,18 +55,20 @@ Block *_make_block() {
 
 int main() {
 
-  blockchain_init_leveldb();
-  unsigned int count;
-  blockchain_count(&count);
-  printf("After Blockchain init: %i", count);
+  // blockchain_init_leveldb();
+  // unsigned int count;
+  // blockchain_count(&count);
+  // printf("After Blockchain init: %i", count);
 
   Block* block = _make_block();
-  //size_t sz = size_ser_block(block);
+  //print_block(block, "");
+  size_t sz ;//= size_ser_block(block);
+  unsigned char* test = ser_block_alloc(sz, block);
   //blockchain_add_leveldb(block);
   // blockchain_count(&count);
 
   // printf("After Blockchain init: %i", count);
-  destroy_db(&blockchain_db, blockchain_path);
+  //destroy_db(&blockchain_db, blockchain_path);
   // int ret;
   // UTXO *found = NULL;
   // utxo_pool_init_leveldb();
