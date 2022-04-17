@@ -147,13 +147,15 @@ int shell_print_block(char **args) {
       buf, args[1],
       BLOCK_HASH_LEN, strlen(args[1])
   );
-  block = blockchain_find(buf);
-
-  if (!block) {
+  int ret_find = blockchain_find_leveldb(&block, buf);
+  if (!block || ret_find != 0) {
     printf("%s: block not found\n", args[0]);
     return 0;
   }
   pretty_print_block(block, "");
+  if(block != NULL){
+    free(block); //TODO: USE PROPER BLOCK TEARDOWN
+  }
   return 0;
 }
 

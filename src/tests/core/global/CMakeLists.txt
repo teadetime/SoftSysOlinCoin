@@ -43,7 +43,8 @@ target_link_libraries(test_leveldb
 leveldb
 utxopool
 crypto
-core_tx)
+core_tx
+blockchain)
 
 add_test(test_list ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_list)
 add_test(test_utxo_pool ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_utxo_pool)

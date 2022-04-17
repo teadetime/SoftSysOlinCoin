@@ -7,7 +7,12 @@
 
 void update_local_blockchain(Block *block){
   // NOTE: NOT DEALING WITH BRANCHES HERE This is left for branch resolution code here
-  blockchain_add(block);  // T\NOTE this increases chain height and sets new top header hash
+  //blockchain_add(block);  // T\NOTE this increases chain height and sets new top header hash
+  int ret_add = blockchain_add_leveldb(block);
+  if(ret_add != 0){
+    fprintf(stderr, "Blockchain Add Failed: \n");
+    exit(1);
+  }
 }
 
 void update_UTXO_pool_and_wallet_pool(Block *block){

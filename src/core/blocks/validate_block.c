@@ -32,8 +32,10 @@ int validate_prev_block_exists(Block *block){
   // Also check if it's in blockchain already....
   // Check if prev block is our latest top block
 
-  Block *prev_block = blockchain_find(block->header.prev_header_hash);
-  if(prev_block == NULL){
+  Block *prev_block = NULL;
+  int ret_find = blockchain_find_leveldb(&prev_block, block->header.prev_header_hash);
+  printf("Find return: %i", ret_find);
+  if(prev_block == NULL || ret_find != 0){
     add_to_pending_blocks(block->header.prev_header_hash);
     request_prev_block(block->header.prev_header_hash);
     return 1;

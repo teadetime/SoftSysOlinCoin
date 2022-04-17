@@ -24,7 +24,8 @@ void blockchain_init() {
 }
 
 int blockchain_init_leveldb(){
-  if(init_db(&blockchain_db, &blockchain_path, "/blockchain") != 0){
+  int init_ret = init_db(&blockchain_db, &blockchain_path, "/blockchain");
+  if(init_ret != 0){
     return 5;
   }
   Block* genesis_block;
@@ -42,14 +43,15 @@ int blockchain_init_leveldb(){
   memset(genesis_block->header.all_tx, 0, TX_HASH_LEN);
   memset(genesis_block->header.prev_header_hash, 0, BLOCK_HASH_LEN);
 
-  blockchain_add_leveldb(genesis_block);
+  int ret = blockchain_add_leveldb(genesis_block);
+  return 0;
 }
 
 int blockchain_add_leveldb(Block *block){
   if(check_if_db_loaded(&blockchain_db, blockchain_path) != 0){
     return 5;
   }
-
+  
   unsigned char db_key[BLOCK_HASH_LEN];
   hash_blockheader(db_key, &(block->header));
 
@@ -72,6 +74,7 @@ int blockchain_add_leveldb(Block *block){
     return 1;
   }
 
+  chain_height += 1;
   leveldb_free(err);
   return 0;
 }

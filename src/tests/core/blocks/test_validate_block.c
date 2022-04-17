@@ -44,7 +44,7 @@ void _fill_mempool(){
   input_tx = _make_tx();
   input_tx->outputs[0].amt = 100;
   utxo_pool_init_leveldb();
-  int ret = utxo_pool_add_leveldb(input_tx, 0);
+  utxo_pool_add_leveldb(input_tx, 0);
   mbedtls_ecdsa_context *input_tx_context = malloc(sizeof(mbedtls_ecdsa_context));
   memcpy(input_tx_context, last_key_pair, sizeof(mbedtls_ecdsa_context));
   tx1 = _make_tx();
@@ -88,6 +88,7 @@ static char  *test_validate_txs() {
 static char  *test_validate_prev_block() {
   _fill_mempool();
   Block *test_block = create_block_alloc();
+  printf("test_validate ret: %i", validate_prev_block_exists(test_block));
   mu_assert(
     "Previous block hash compare error",
     validate_prev_block_exists(test_block) == 0
@@ -136,7 +137,7 @@ static char  *test_validate_whole_block() {
 }
 
 static char *all_tests() {
-  blockchain_init();
+  blockchain_init_leveldb();
   mu_run_test(test_coinbase_tx);
   mu_run_test(test_validate_txs);
   mu_run_test(test_validate_prev_block);

@@ -46,7 +46,7 @@ void _fill_mempool(){
   input_tx = _make_tx();
   input_tx->outputs[0].amt = 100;
   utxo_pool_init_leveldb();
-  int ret = utxo_pool_add_leveldb(input_tx, 0);
+  utxo_pool_add_leveldb(input_tx, 0);
 
   mbedtls_ecdsa_context *input_tx_context = malloc(sizeof(mbedtls_ecdsa_context));
   memcpy(input_tx_context, last_key_pair, sizeof(mbedtls_ecdsa_context));
@@ -67,10 +67,12 @@ void _fill_mempool(){
 static char  *test_update_local_blockchain() {
   _fill_mempool();
   Block *good_block = mine_block();
+  Block *found_block = NULL;
   unsigned int prev_height = chain_height;
   update_local_blockchain(good_block);
   unsigned char block_hash[BLOCK_HASH_LEN];
   hash_blockheader(block_hash, &(good_block->header));
+  int ret_find = blockchain_find_leveldb(&found_block, block_hash);
   mu_assert(
     "Top Block Hash not set",
     memcmp(top_block_header_hash, block_hash, BLOCK_HASH_LEN) == 0
@@ -81,7 +83,11 @@ static char  *test_update_local_blockchain() {
   );
   mu_assert(
     "Unable to locate block in blockchain",
-    blockchain_find(block_hash) == good_block
+    ret_find == 0
+  );
+  mu_assert(
+    "Find did not return correct block",
+    memcmp(&found_block->header, &good_block->header, sizeof(BlockHeader)) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
@@ -131,6 +137,7 @@ static char  *test_accept_block() {
   _fill_mempool();
   unsigned int prev_height = chain_height;
   Block *good_block = mine_block();
+  Block *found_block = NULL;
   unsigned int prev_utxo_size;
   utxo_pool_count(&prev_utxo_size);
   unsigned int prev_wallet_size = HASH_COUNT(wallet_pool);
@@ -141,6 +148,7 @@ static char  *test_accept_block() {
   accept_block(good_block);
   unsigned int new_utxo_size;
   utxo_pool_count(&new_utxo_size);
+  int ret_find = blockchain_find_leveldb(&found_block, block_hash);
   mu_assert(
     "Accept: Top Block Hash not set",
     memcmp(top_block_header_hash, block_hash, BLOCK_HASH_LEN) == 0
@@ -151,7 +159,11 @@ static char  *test_accept_block() {
   );
   mu_assert(
     "Accept: Unable to locate block in blockchain",
-    blockchain_find(block_hash) == good_block
+    ret_find == 0
+  );
+  mu_assert(
+    "Find did not return correct block",
+    memcmp(&found_block->header, &good_block->header, sizeof(BlockHeader)) == 0
   );
   mu_assert(
     "Accept: UTXO pool didn't change by expected amount",
@@ -178,6 +190,7 @@ static char  *test_handle_block() {
   _fill_mempool();
   unsigned int prev_height = chain_height;
   Block *good_block = mine_block();
+  Block *found_block = NULL;
   unsigned int prev_utxo_size;
   utxo_pool_count(&prev_utxo_size);
   unsigned int prev_wallet_size = HASH_COUNT(wallet_pool);
@@ -186,6 +199,7 @@ static char  *test_handle_block() {
   unsigned char block_hash[BLOCK_HASH_LEN];
   hash_blockheader(block_hash, &(good_block->header));
   handle_new_block(good_block);
+  int ret_find = blockchain_find_leveldb(&found_block, block_hash);
   unsigned int new_utxo_size;
   utxo_pool_count(&new_utxo_size); 
   // Accept tests because accept only runs if validation pasts
@@ -199,7 +213,11 @@ static char  *test_handle_block() {
   );
   mu_assert(
     "Handle: Unable to locate block in blockchain",
-    blockchain_find(block_hash) == good_block
+    ret_find == 0
+  );
+  mu_assert(
+    "Find did not return correct block",
+    memcmp(&found_block->header, &good_block->header, sizeof(BlockHeader)) == 0
   );
   mu_assert(
     "Handle: UTXO pool didn't change by expected amount",
@@ -222,7 +240,7 @@ static char  *test_handle_block() {
 }
 
 static char *all_tests() {
-  blockchain_init(); // Set the prev Header Hash
+  blockchain_init_leveldb(); // Set the prev Header Hash
   wallet_init();
   mu_run_test(test_update_local_blockchain);
   mu_run_test(test_update_utxo_pool);

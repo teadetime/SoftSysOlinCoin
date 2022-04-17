@@ -19,7 +19,11 @@ unsigned long chain_height;
 char *blockchain_path;
 leveldb_t *blockchain_db;  // Level DB Database
 
+int blockchain_init_leveldb();
 int blockchain_add_leveldb(Block *block);
+int blockchain_find_leveldb(Block **found_block, unsigned char *block_hash);
+int blockchain_remove_leveldb(unsigned char *block_hash);
+int blockchain_count(unsigned int *num_entries);
 
 /* Initializes the global blockchain variable */
 void blockchain_init();

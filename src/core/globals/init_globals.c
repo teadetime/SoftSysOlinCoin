@@ -5,7 +5,7 @@
 #include "mempool.h"
 
 void node_init() {
-  blockchain_init();
+  blockchain_init_leveldb();
   utxo_pool_init_leveldb();
 }
 
