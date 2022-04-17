@@ -136,7 +136,7 @@ static char  *test_ser_utxo() {
 
   mu_assert(
     "Num of bytes read incorrect",
-    read_ser_utxo == (ssize_t)size_ser_utxo()
+    read_ser_utxo == UTXO_SER_LEN
   );
   mu_assert(
     "Num of bytes read and written don't match up",
@@ -161,7 +161,7 @@ static char  *test_ser_utxo() {
     sered_utxo_2 = ser_utxo_alloc(NULL, utxo);
     mu_assert(
       "Serialization of UTXOs isn't consistent",
-      memcmp(sered_utxo, sered_utxo_2, size_ser_utxo()) == 0
+      memcmp(sered_utxo, sered_utxo_2, UTXO_SER_LEN) == 0
     );
     free(sered_utxo_2);
   }

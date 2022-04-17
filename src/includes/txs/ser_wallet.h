@@ -3,14 +3,16 @@
 #include "wallet_pool.h"
 #include "ser_key.h"
 
-#define WALLET_ENTRY_SER_LEN \
-  KEYPAIR_SER_LEN + \
-  sizeof(((WalletEntry*)0)->amt) + \
-  sizeof(((WalletEntry*)0)->spent)
-
 /******************************************************************************
  * Wallet Entries
  ******************************************************************************/
+
+#define WALLET_ENTRY_SER_LEN \
+  ( \
+    KEYPAIR_SER_LEN + \
+    sizeof(((WalletEntry*)0)->amt) + \
+    sizeof(((WalletEntry*)0)->spent) \
+  )
 
 /**
  * @brief Serialize a WalletEntry

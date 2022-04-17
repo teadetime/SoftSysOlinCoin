@@ -21,10 +21,6 @@
  * UTXOs
  ******************************************************************************/
 
-size_t size_ser_utxo() {
-  return sizeof(((UTXO*)0)->amt) + sizeof(((UTXO*)0)->public_key_hash);
-}
-
 ssize_t ser_utxo(unsigned char *dest, UTXO *utxo) {
   memcpy(dest, &(utxo->amt), sizeof(utxo->amt));
 
@@ -37,7 +33,7 @@ ssize_t ser_utxo(unsigned char *dest, UTXO *utxo) {
 unsigned char *ser_utxo_alloc(ssize_t *written, UTXO *utxo) {
   unsigned char *data;
   ssize_t ret;
-  data = malloc(size_ser_utxo());
+  data = malloc(UTXO_SER_LEN);
   ret = ser_utxo(data, utxo);
   RETURN_SER(data, ret, written)
 }
@@ -63,11 +59,6 @@ UTXO *deser_utxo_alloc(ssize_t *read, unsigned char *src) {
  * Inputs
  ******************************************************************************/
 
-size_t size_ser_input() {
-  return PUB_KEY_SER_LEN + sizeof(((Input*)0)->sig_len) + SIGNATURE_LEN +
-    TX_HASH_LEN + sizeof(((Input*)0)->prev_utxo_output);
-}
-
 ssize_t ser_input(unsigned char *dest, Input *input) {
   unsigned char *sig_len = dest + ser_pub_key(dest, input->pub_key);
 
@@ -88,7 +79,7 @@ ssize_t ser_input(unsigned char *dest, Input *input) {
 unsigned char *ser_input_alloc(ssize_t *written, Input *input) {
   unsigned char *data;
   ssize_t ret;
-  data = malloc(size_ser_input());
+  data = malloc(INPUT_SER_LEN);
   ret = ser_input(data, input);
   RETURN_SER(data, ret, written)
 }
@@ -127,7 +118,7 @@ Input *deser_input_alloc(ssize_t *read, unsigned char *src) {
 
 size_t size_ser_tx(Transaction *tx) {
   return (sizeof(tx->num_inputs) + sizeof(tx->num_outputs) +
-    tx->num_inputs * size_ser_input() + tx->num_outputs * sizeof(Output));
+    tx->num_inputs * INPUT_SER_LEN + tx->num_outputs * sizeof(Output));
 }
 
 ssize_t ser_tx(unsigned char *dest, Transaction *tx) {

@@ -2,13 +2,11 @@
 
 #include "mbedtls/ecdsa.h"
 
-#define PUB_KEY_SER_LEN 65
-#define PRIV_KEY_SER_LEN 32
-#define KEYPAIR_SER_LEN PUB_KEY_SER_LEN + PRIV_KEY_SER_LEN
-
 /******************************************************************************
  * Pub Keys
  ******************************************************************************/
+
+#define PUB_KEY_SER_LEN 65
 
 /**
  * @brief Serialize a public key
@@ -51,6 +49,8 @@ mbedtls_ecp_point *deser_pub_key_alloc(ssize_t *read, unsigned char *src);
  * Private Keys
  ******************************************************************************/
 
+#define PRIV_KEY_SER_LEN 32
+
 /**
  * @brief Serialize a private key
  *
@@ -91,6 +91,8 @@ mbedtls_mpi *deser_priv_key_alloc(ssize_t *read, unsigned char *src);
 /******************************************************************************
  * Key Pairs
  ******************************************************************************/
+
+#define KEYPAIR_SER_LEN PUB_KEY_SER_LEN + PRIV_KEY_SER_LEN
 
 /**
  * @brief Serialize a keypair
