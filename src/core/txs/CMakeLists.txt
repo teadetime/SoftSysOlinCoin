@@ -9,7 +9,8 @@ add_library(wallet_pool STATIC wallet_pool.c)
 target_include_directories(wallet_pool PUBLIC ${INCLUDE_ALL})
 target_link_libraries(wallet_pool
   core_tx
-  leveldb)
+  init_db
+  utxopool)
 
 add_library(wallet STATIC wallet.c)
 target_include_directories(wallet PUBLIC ${INCLUDE_ALL})

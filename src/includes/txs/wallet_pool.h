@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "uthash.h"
 #include "utxo_pool.h"
+#include "init_db.h"
 
 typedef struct {
   mbedtls_ecdsa_context *key_pair;
@@ -21,6 +22,12 @@ typedef struct {
   mbedtls_ecdsa_context *key_pair;
   UT_hash_handle hh;
 } KeyPool;
+
+char *key_pool_path;
+leveldb_t *key_pool_db;  // Level DB Database
+char *wallet_pool_path;
+leveldb_t *wallet_pool_db;  // Level DB Database
+
 
 /* The wallet pool tracks all outputs the wallet controls
  *

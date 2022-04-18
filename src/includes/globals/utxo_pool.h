@@ -4,6 +4,7 @@
 #include "uthash.h"
 #include "base_tx.h"
 #include "leveldb/c.h"
+#define UTXO_POOL_KEY_LEN TX_HASH_LEN+sizeof(((Transaction*)0)->inputs->prev_utxo_output)
 
 typedef struct UTXOPoolKey {
   unsigned char tx_hash[TX_HASH_LEN];
@@ -35,7 +36,7 @@ int utxo_pool_init_leveldb();
  * @param vout output to use
  * @return int 0 if success not zero if failure
  */
-int make_utxo_pool_key_with_hash(unsigned char **dest, size_t *len, unsigned char *hash, unsigned int vout);
+int make_utxo_pool_key_with_hash(unsigned char *dest, size_t *len, unsigned char *hash, unsigned int vout);
 
 /**
  * @brief Make Utxo pool from a transaction and vout
@@ -46,7 +47,7 @@ int make_utxo_pool_key_with_hash(unsigned char **dest, size_t *len, unsigned cha
  * @param vout output to use as utxo
  * @return int 0 if success not zero if failure
  */
-int make_utxo_pool_key(unsigned char **dest, size_t *len, Transaction *tx, unsigned int vout);
+int make_utxo_pool_key(unsigned char *dest, size_t *len, Transaction *tx, unsigned int vout);
 
 /**
  * @brief Add a transaction to the utxo Pool

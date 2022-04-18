@@ -1,10 +1,68 @@
 #include <stdio.h>
 #include "wallet_pool.h"
 #include "crypto.h"
+#include "utxo_pool.h"
 
 void wallet_init() {
   wallet_pool = NULL;
   key_pool = NULL;
+}
+
+int wallet_init_leveldb(){
+  int init_wallet_pool = init_db(&wallet_pool_db, &wallet_pool_path, "/wallet_pool");
+  int init_key_pool = init_db(&key_pool_db, &key_pool_path, "/key_pool");
+  if(init_wallet_pool!= 0){
+    return 5;
+  }
+  if(init_key_pool!= 0){
+    return 6;
+  }
+}
+
+int wallet_pool_add_leveldb(Transaction *tx, unsigned int vout, mbedtls_ecdsa_context *key_pair){
+  //WalletPool *new_entry, *found_entry;
+  
+
+  unsigned char db_key[UTXO_POOL_KEY_LEN];
+  size_t key_len;
+  char *err = NULL;
+  //Make Key
+  if(make_utxo_pool_key(db_key, &key_len, tx, vout) != 0){
+    return 2;
+  }
+  //new_entry = malloc(sizeof(WalletPool));
+  // // Build key
+  // memset(&(new_entry->id), 0, sizeof(UTXOPoolKey));
+  // hash_tx(new_entry->id.tx_hash, tx);
+  // new_entry->id.vout = vout;
+
+
+  // Build content
+  WalletEntry *content = malloc(sizeof(WalletEntry));
+  content->amt = tx->outputs[vout].amt;
+  content->key_pair = key_pair;
+  content->spent = 0;
+
+
+  // size_t wallet_entry_size;
+  // unsigned char *serialized_wallet_entry = ser_utxo_alloc(&wallet_entry_size, content);
+  // free(content);
+  // if(!serialized_wallet_entry ){
+  //   return 3;
+  // }
+  // leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
+  // leveldb_put(utxo_pool_db, woptions, db_key, key_len, serialized_wallet_entry, wallet_entry_size, &err);
+  // leveldb_writeoptions_destroy(woptions);
+  // free(serialized_wallet_entry);
+  // dump_buf("", "KEY: ", db_key, key_len);
+
+  // if (err != NULL) {
+  //   fprintf(stderr, "Write fail: %s\n", err);
+  //   leveldb_free(err);
+  //   return(1);
+  // }
+  leveldb_free(err);
+
 }
 
 /* WALLET POOL FUNCS */

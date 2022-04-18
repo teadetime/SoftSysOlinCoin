@@ -24,6 +24,10 @@ int blockchain_init_leveldb(){
   memset(genesis_block->header.prev_header_hash, 0, BLOCK_HASH_LEN);
 
   int ret = blockchain_add_leveldb(genesis_block);
+  if(ret != 0){
+    free(genesis_block);
+    return 3;
+  }
   return 0;
 }
 
