@@ -19,56 +19,42 @@ unsigned long chain_height;
 char *blockchain_path;
 leveldb_t *blockchain_db;  // Level DB Database
 
+/* Initializes the global blockchain variables */
 int blockchain_init_leveldb();
+
+/**
+ * @brief Creates a new block in the blockchain
+ * 
+ * @param block block to add
+ * @return int 0 if successs, not zero if not
+ */
 int blockchain_add_leveldb(Block *block);
+
+/**
+ * @brief Find a block in the blockchain
+ * 
+ * @param found_block Pointer in which to malloc a block if found. 
+ * Not allocated if block not found
+ * @param block_hash hash of block to locate
+ * @return int 0 if successs, not zero if not
+ */
 int blockchain_find_leveldb(Block **found_block, unsigned char *block_hash);
+
+/**
+ * @brief Rmeoves a block from the blockchain
+ * 
+ * @param block_hash hash of block to remove
+ * @return int 0 if successs, not zero if not
+ */
 int blockchain_remove_leveldb(unsigned char *block_hash);
+
+/**
+ * @brief Count the number of elements in the blockchain
+ * 
+ * @param num_entries pointer to store count into
+ * @return int 0 if success, not zero if not
+ */
 int blockchain_count(unsigned int *num_entries);
-
-/* Initializes the global blockchain variable */
-void blockchain_init();
-
-/* Creates a new entry in the hashmap with the passed block
- *
- * Returns passed block pointer if entry created, NULL otherwise
- *
- * block: Block pointer that will be stored in entry
- */
-Block *blockchain_add(Block *block);
-
-/* Removes the entry corresponding to header_hash
- *
- * Returns the block pointer stored in removed entry if succesfully removed,
- * NULL otherwise
- *
- * header_hash: Buffer of length BLOCK_HASH_LEN, hash of block header
- */
-Block *blockchain_remove(unsigned char *header_hash);
-
-/* Finds block corresponding to header_hash
- *
- * Returns block pointer if found, NULL otherwise
- *
- * header_hash: Buffer of length BLOCK_HASH_LEN, hash of block header
- */
-Block *blockchain_find(unsigned char *header_hash);
-
-
-/* Finds entry corresponding to header_hash
- *
- * Returns entry if found, NULL otherwise
- *
- * header_hash: Buffer of length BLOCK_HASH_LEN, hash of block header
- */
-BlockChain *blockchain_find_node(unsigned char *header_hash);
-
-/*
-Prints a single hashmap entry to stdout
-
-prefix: string to put in front of all print commands used for tabbing structure
-*/
-void print_blockchain(BlockChain *blockchain_node, char *prefix);
-void pretty_print_blockchain(BlockChain *blockchain_node, char *prefix);
 
 /*
 Prints the entire blockchain Hashmap to stdout

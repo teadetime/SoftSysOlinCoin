@@ -109,7 +109,7 @@ static char  *test_blockchain_add() {
     "Add did not return correct block",
     entries == 2
   );
-
+  pretty_print_blockchain_hashmap();
 
   free(block->txs[0]);
   free(block);

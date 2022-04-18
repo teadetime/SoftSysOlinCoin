@@ -4,25 +4,6 @@
 #include "init_db.h"
 #include "ser_block.h"
 
-void blockchain_init() {
-  Block* genesis_block;
-  chain_height = 0;
-  blockchain = NULL;  // Must always start at NULL
-
-  genesis_block = malloc(sizeof(Block));
-
-  // Initialize with a totally empty block
-  genesis_block->num_txs = 0;
-  genesis_block->txs = NULL;
-
-  genesis_block->header.timestamp = 0;
-  genesis_block->header.nonce = 0;
-  memset(genesis_block->header.all_tx, 0, TX_HASH_LEN);
-  memset(genesis_block->header.prev_header_hash, 0, BLOCK_HASH_LEN);
-
-  blockchain_add(genesis_block);
-}
-
 int blockchain_init_leveldb(){
   int init_ret = init_db(&blockchain_db, &blockchain_path, "/blockchain");
   if(init_ret != 0){
@@ -30,7 +11,6 @@ int blockchain_init_leveldb(){
   }
   Block* genesis_block;
   chain_height = 0;
-  blockchain = NULL;  // Must always start at NULL
 
   genesis_block = malloc(sizeof(Block));
 
@@ -131,87 +111,64 @@ int blockchain_count(unsigned int *num_entries){
   return db_count(blockchain_db, blockchain_path, num_entries);
 }
 
-Block *blockchain_add(Block *block) {
-  BlockChain *new_entry, *found_entry;
-
-  new_entry = malloc(sizeof(BlockChain));
-  hash_blockheader(new_entry->id, &(block->header));
-  new_entry->block = block;
-
-  found_entry = blockchain_find_node(new_entry->id);
-  if (found_entry == NULL) {
-    HASH_ADD(hh, blockchain, id, BLOCK_HASH_LEN, new_entry);
-    chain_height += 1;
-    hash_blockheader(top_block_header_hash, &(block->header));
-    return block;
-  }
-  free(new_entry);
-  return NULL;
-}
-
-Block *blockchain_remove(unsigned char *header_hash) {
-  BlockChain *entry;
-  Block *block;
-
-  entry = blockchain_find_node(header_hash);
-  if (entry != NULL) {
-    block = entry->block;
-    HASH_DEL(blockchain, entry);
-    free(entry);
-    chain_height -= 1;
-    return block;
-  }
-
-  return NULL;
-}
-
-Block *blockchain_find(unsigned char *header_hash) {
-  BlockChain *found_entry;
-
-  found_entry = blockchain_find_node(header_hash);
-  if (found_entry != NULL) {
-    return found_entry->block;
-  }
-
-  return NULL;
-}
-
-BlockChain *blockchain_find_node(unsigned char *header_hash) {
-  BlockChain *found_entry;
-  HASH_FIND(hh, blockchain, header_hash, BLOCK_HASH_LEN, found_entry);
-  return found_entry;
-}
-
-void print_blockchain(BlockChain *blockchain_node, char *prefix){
-  dump_buf(prefix, "hashmap_id: ", blockchain_node->id, BLOCK_HASH_LEN);
-  print_block(blockchain_node->block, prefix);
-}
-
-
 void print_blockchain_hashmap(char *prefix){
   char *sub_prefix = malloc(strlen(prefix)+strlen(PRINT_TAB)+1);
   strcpy(sub_prefix, prefix);
   strcat(sub_prefix, PRINT_TAB);
+  unsigned int num_items;
+  blockchain_count(&num_items);
+  printf("%sBlockchain Hashmap items(%i):\n", prefix, num_items);
 
-  BlockChain *s;
-  printf("%sBlockchain Hashmap items(%i):\n", prefix, HASH_COUNT(blockchain));
-  for (s = blockchain; s != NULL; s = s->hh.next) {
-    print_blockchain(s, sub_prefix);
+  char *err = NULL;
+  leveldb_readoptions_t *roptions;
+  roptions = leveldb_readoptions_create();
+  leveldb_iterator_t *iter = leveldb_create_iterator(blockchain_db, roptions);
+
+  for (leveldb_iter_seek_to_first(iter); leveldb_iter_valid(iter); leveldb_iter_next(iter))
+  {
+      size_t key_len, value_len;
+      unsigned const char *key_ptr = (unsigned const char*) leveldb_iter_key(iter, &key_len);
+      unsigned const char *value_ptr = (unsigned const char*) leveldb_iter_value(iter, &value_len);
+
+      printf("%shashmap_id:\n", prefix);
+      dump_buf(sub_prefix, "block_hash:", key_ptr, BLOCK_HASH_LEN);
+      
+
+      Block *read_block = deser_block_alloc(NULL, (unsigned char*)value_ptr);
+      print_block(read_block, prefix);
+      // /* Prints some binary noise with the data */
   }
+  leveldb_iter_destroy(iter);
+  leveldb_readoptions_destroy(roptions);
+  leveldb_free(err); 
   free(sub_prefix);
 }
 
-void pretty_print_blockchain(BlockChain *blockchain_node, char *prefix){
-  dump_buf(prefix, "Block Hash: ", blockchain_node->id, BLOCK_HASH_LEN);
-  pretty_print_block_header(&blockchain_node->block->header, prefix);
-  printf(LINE_BREAK);
-}
-
 void pretty_print_blockchain_hashmap(){
-  BlockChain *s;
-  printf("%i items...\n", HASH_COUNT(blockchain));
+  unsigned int num_items;
+  blockchain_count(&num_items);
+  printf("%i items...\n", num_items);
   printf(LINE_BREAK);
-  for (s = blockchain; s != NULL; s = s->hh.next) {
-    pretty_print_blockchain(s, "");
+
+  char *err = NULL;
+  leveldb_readoptions_t *roptions;
+  roptions = leveldb_readoptions_create();
+  leveldb_iterator_t *iter = leveldb_create_iterator(blockchain_db, roptions);
+
+  for (leveldb_iter_seek_to_first(iter); leveldb_iter_valid(iter); leveldb_iter_next(iter))
+  {
+      size_t key_len, value_len;
+      unsigned const char *key_ptr = (unsigned const char*) leveldb_iter_key(iter, &key_len);
+      unsigned const char *value_ptr = (unsigned const char*) leveldb_iter_value(iter, &value_len);
+
+      dump_buf("", "Block_Hash:", key_ptr, BLOCK_HASH_LEN);
+      
+
+      Block *read_block = deser_block_alloc(NULL, (unsigned char*)value_ptr);
+      pretty_print_block_header(&read_block->header, PRINT_TAB);
+      // /* Prints some binary noise with the data */
   }
+  leveldb_iter_destroy(iter);
+  leveldb_readoptions_destroy(roptions);
+  leveldb_free(err); 
 }

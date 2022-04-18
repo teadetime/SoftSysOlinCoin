@@ -62,8 +62,9 @@ int main() {
 
   Block* block = _make_block();
   //print_block(block, "");
-  size_t sz ;//= size_ser_block(block);
+  ssize_t sz ;//= size_ser_block(block);
   unsigned char* test = ser_block_alloc(&sz, block);
+  free(test);
   //blockchain_add_leveldb(block);
   // blockchain_count(&count);
 

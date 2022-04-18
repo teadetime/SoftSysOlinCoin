@@ -41,7 +41,7 @@ Transaction *build_complex_tx(){
   input_tx = _make_tx();
   input_tx->outputs[0].amt = 100;
   utxo_pool_init_leveldb();
-  int ret = utxo_pool_add_leveldb(input_tx, 0);
+  utxo_pool_add_leveldb(input_tx, 0);
 
   mbedtls_ecdsa_context *input_tx_context = malloc(sizeof(mbedtls_ecdsa_context));
   memcpy(input_tx_context, last_key_pair, sizeof(mbedtls_ecdsa_context));
