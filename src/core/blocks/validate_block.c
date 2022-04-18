@@ -93,8 +93,8 @@ int validate_block_double_spend(Block *block){
     for (unsigned int j = 0; j < block->txs[i]->num_inputs; j++) {
       if (double_spend_add(
             double_spend_set,
-            block->txs[i]->inputs[i].prev_tx_id,
-            block->txs[i]->inputs[i].prev_utxo_output
+            block->txs[i]->inputs[j].prev_tx_id,
+            block->txs[i]->inputs[j].prev_utxo_output
       ) != 0) {
         delete_double_spend_set(double_spend_set);
         return 1;

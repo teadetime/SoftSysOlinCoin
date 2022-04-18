@@ -46,7 +46,6 @@ static char *test_utxo_pool_init() {
 
 static char  *test_utxo_pool_add() {
   Transaction *tx;
-  UTXO *ret_utxo;
 
   tx = _make_tx();
   utxo_pool_init_leveldb();
@@ -59,7 +58,6 @@ static char  *test_utxo_pool_add() {
   free(tx->inputs);
   free(tx->outputs);
   free(tx);
-  free(ret_utxo);
   destroy_db(&utxo_pool_db, utxo_pool_path);
 
   return NULL;

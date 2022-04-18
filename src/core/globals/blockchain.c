@@ -75,6 +75,7 @@ int blockchain_add_leveldb(Block *block){
   }
 
   chain_height += 1;
+  memcpy(top_block_header_hash, db_key, BLOCK_HASH_LEN);
   leveldb_free(err);
   return 0;
 }
