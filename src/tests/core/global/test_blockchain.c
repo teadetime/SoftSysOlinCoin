@@ -31,16 +31,13 @@ Block *_make_block() {
 }
 
 static char *test_blockchain_init_exists() {
-  //blockchain = NULL;
   int init_ret = blockchain_init_leveldb();
+  destroy_db(&blockchain_db, blockchain_path);
+  init_ret = blockchain_init_leveldb();
   mu_assert(
       "Init return indicates fialure",
       init_ret == 0
   );
-  // mu_assert(
-  //     "Genesis block was not created",
-  //     blockchain_db != NULL
-  // );
   unsigned int count;
   blockchain_count(&count);
   mu_assert(

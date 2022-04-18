@@ -65,6 +65,7 @@ void _fill_mempool(){
 }
 
 static char  *test_update_local_blockchain() {
+  blockchain_init_leveldb();
   _fill_mempool();
   Block *good_block = mine_block();
   Block *found_block = NULL;
@@ -90,10 +91,12 @@ static char  *test_update_local_blockchain() {
     memcmp(&found_block->header, &good_block->header, sizeof(BlockHeader)) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_db(&blockchain_db, blockchain_path);
   return NULL;
 }
 
 static char  *test_update_utxo_pool() {
+  blockchain_init_leveldb();
   _fill_mempool();
   Block *good_block = mine_block();
   unsigned int prev_utxo_size;
@@ -111,10 +114,12 @@ static char  *test_update_utxo_pool() {
     prev_wallet_size+1 == HASH_COUNT(wallet_pool)
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_db(&blockchain_db, blockchain_path);
   return NULL;
 }
 
 static char  *test_update_mempool() {
+  blockchain_init_leveldb();
   _fill_mempool();
   Block *good_block = mine_block();
 
@@ -130,10 +135,12 @@ static char  *test_update_mempool() {
     prev_mapping_size-1 == HASH_COUNT(utxo_to_tx)
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_db(&blockchain_db, blockchain_path);
   return NULL;
 }
 
 static char  *test_accept_block() {
+  blockchain_init_leveldb();
   _fill_mempool();
   unsigned int prev_height = chain_height;
   Block *good_block = mine_block();
@@ -182,11 +189,13 @@ static char  *test_accept_block() {
     prev_mapping_size-1 == HASH_COUNT(utxo_to_tx)
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_db(&blockchain_db, blockchain_path);
   return NULL;
 }
 
 
 static char  *test_handle_block() {
+  blockchain_init_leveldb();
   _fill_mempool();
   unsigned int prev_height = chain_height;
   Block *good_block = mine_block();
@@ -236,11 +245,11 @@ static char  *test_handle_block() {
     prev_mapping_size-1 == HASH_COUNT(utxo_to_tx)
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_db(&blockchain_db, blockchain_path);
   return NULL;
 }
 
 static char *all_tests() {
-  blockchain_init_leveldb(); // Set the prev Header Hash
   wallet_init();
   mu_run_test(test_update_local_blockchain);
   mu_run_test(test_update_utxo_pool);
