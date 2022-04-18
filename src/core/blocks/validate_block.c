@@ -86,7 +86,8 @@ int validate_incoming_block_txs(Transaction **txs, unsigned int num_txs){
 int validate_block_double_spend(Block *block){
   UTXOPool *double_spend_set;
 
-  double_spend_set_init(double_spend_set);
+  /* double_spend_set_init(double_spend_set); */
+  double_spend_set = NULL;
   for (unsigned int i = 0; i < block->num_txs; i++) {
     for (unsigned int j = 0; j < block->txs[i]->num_inputs; j++) {
       if (double_spend_add(

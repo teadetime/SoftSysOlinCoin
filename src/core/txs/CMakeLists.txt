@@ -5,7 +5,7 @@ target_include_directories(core_tx PUBLIC ${INCLUDE_ALL})
 target_link_libraries(core_tx
   crypto)
 
-add_library(wallet_pool STATIC wallet_pool.c)
+add_library(wallet_pool STATIC wallet_pool.c ser_wallet.c)
 target_include_directories(wallet_pool PUBLIC ${INCLUDE_ALL})
 target_link_libraries(wallet_pool
   core_tx)
