@@ -79,31 +79,6 @@ int validate_sig(
  */
 void build_ctx_from_public(mbedtls_ecdsa_context *ctx, mbedtls_ecp_point *pub_key);
 
-/* PUB KEY HANDLING */
-
-/**
- * @brief Serialize a public key
- *
- * @param dest Destination buffer to serialize to
- * @param point Public key to serialize. Can be accessed from key pair as
- *   key_pair->MBEDTLS_PRIVATE(Q)
- * @param grp Public key group. Can be accessed from key pair as
- *   key_pair->MBEDTLS_PRIVATE(grp)
- * @return Number of bytes written
- */
-size_t ser_pub_key(unsigned char *dest, mbedtls_ecp_point *point, mbedtls_ecp_group *grp);
-
-/**
- * @brief Deserialize a public key
- *
- * Deserializes a public key serialized with ser_pub_key()
- *
- * @param dest Destination key to write to
- * @param grp Group of key we are reading
- * @param data Source buffer containing serialized key
- */
-void deser_pub_key(mbedtls_ecp_point *dest, mbedtls_ecp_group *grp, unsigned char *data);
-
 /* HASHING */
 
 /**

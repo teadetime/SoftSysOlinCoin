@@ -1,5 +1,6 @@
 #include "crypto.h"
 #include "base_tx.h"
+#include "ser_key.h"
 #include "mbedtls/ecdsa.h"
 #include "mbedtls/sha256.h"
 #include "mbedtls/error.h"
@@ -113,39 +114,6 @@ void build_ctx_from_public(mbedtls_ecdsa_context *ctx, mbedtls_ecp_point *pub_ke
   ctx->private_Q = *pub_key;
 }
 
-size_t ser_pub_key(
-    unsigned char *dest, mbedtls_ecp_point *point, mbedtls_ecp_group *grp
-) {
-  size_t num_bytes;
-  char buf[ERR_BUF];
-  int err;
-
-  err = mbedtls_ecp_point_write_binary(
-    grp, point,
-    MBEDTLS_ECP_PF_UNCOMPRESSED,
-    &num_bytes, dest, PUB_KEY_SER_LEN
-  );
-  if (err != 0) {
-    mbedtls_strerror(err, buf, ERR_BUF);
-    printf("Serialize pub key error! %s\n", buf);
-    exit(1);
-  }
-
-  return num_bytes;
-}
-
-void deser_pub_key(mbedtls_ecp_point *dest, mbedtls_ecp_group *grp, unsigned char *data) {
-  char buf[ERR_BUF];
-  int err;
-
-  err = mbedtls_ecp_point_read_binary(grp, dest, data, PUB_KEY_SER_LEN);
-  if (err != 0) {
-    mbedtls_strerror(err, buf, ERR_BUF);
-    printf("Deserialize pub key error! %s\n", buf);
-    exit(1);
-  }
-}
-
 int hash_sha256(unsigned char * output_hash, unsigned char * input_data, size_t input_sz) {
   int ret = 0;
   if ((ret = mbedtls_sha256(input_data, input_sz, output_hash, 0)) != 0) {
@@ -157,12 +125,7 @@ int hash_sha256(unsigned char * output_hash, unsigned char * input_data, size_t 
 void hash_pub_key(unsigned char *dest, mbedtls_ecdsa_context *key_pair) {
   unsigned char ser_key[PUB_KEY_SER_LEN];
   size_t num_bytes;
-
-  num_bytes = ser_pub_key(
-    ser_key,
-    &(key_pair->MBEDTLS_PRIVATE(Q)),
-    &(key_pair->MBEDTLS_PRIVATE(grp))
-  );
+  num_bytes = ser_pub_key(ser_key, &(key_pair->MBEDTLS_PRIVATE(Q)));
   hash_sha256(dest, ser_key, num_bytes);
 }
 

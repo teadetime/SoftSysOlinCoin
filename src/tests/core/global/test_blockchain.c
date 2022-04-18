@@ -112,6 +112,7 @@ static char  *test_blockchain_add() {
   pretty_print_blockchain_hashmap();
 
   free(block->txs[0]);
+  free(block->txs);
   free(block);
   destroy_db(&blockchain_db, blockchain_path);
   return NULL;
@@ -138,13 +139,14 @@ static char  *test_blockchain_find() {
   );
 
   free(block->txs[0]);
+  free(block->txs);
   free(block);
   destroy_db(&blockchain_db, blockchain_path);
   return NULL;
 }
 
 static char  *test_blockchain_remove() {
-  Block *block, *ret_block;
+  Block *block, *ret_block = NULL;
   unsigned char hash[BLOCK_HASH_LEN];
 
   block = _make_block();
@@ -183,6 +185,7 @@ static char  *test_blockchain_remove() {
   );
 
   free(block->txs[0]);
+  free(block->txs);
   free(block);
   free(ret_block);
   destroy_db(&blockchain_db, blockchain_path);

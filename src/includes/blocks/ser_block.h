@@ -5,6 +5,7 @@
 /******************************************************************************
  * Blockheaders
  ******************************************************************************/
+
 /**
  * @brief Gets size of serialized BlockHeader
  *
@@ -52,6 +53,7 @@ BlockHeader *deser_blockheader_alloc(ssize_t *read, unsigned char *src);
 /******************************************************************************
  * Blocks
  ******************************************************************************/
+
 /**
  * @brief Get size of a Block if serialized
  *
@@ -87,7 +89,6 @@ unsigned char *ser_block_alloc(ssize_t *written, Block *block);
  * @return Number of bytes read if succesfull, -1 otherwise
  */
 ssize_t deser_block(Block *dest, unsigned char *src);
-
 
 /**
  * @brief Allocate memory and deserialize a Block
