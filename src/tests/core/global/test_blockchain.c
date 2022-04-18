@@ -9,7 +9,9 @@ Block *_make_block() {
   Transaction *tx;
 
   block = malloc(sizeof(Block));
-  tx = malloc(sizeof(Transaction));
+  block->txs = malloc(sizeof(Transaction*));
+  block->txs[0] = malloc(sizeof(Transaction));
+  tx = block->txs[0];
 
   tx->num_inputs = 0;
   tx->inputs = NULL;
@@ -91,7 +93,6 @@ static char  *test_blockchain_add() {
     ret_block == block
   );
 
-  free(block->txs[0]);
   free(block);
 
   return NULL;
@@ -112,7 +113,6 @@ static char  *test_blockchain_find() {
     ret_block == block
   );
 
-  free(block->txs[0]);
   free(block);
 
   return NULL;
@@ -138,14 +138,13 @@ static char  *test_blockchain_remove() {
     "Chain Height not decremented",
     chain_height = prev_chain_height-1
   );
-  
+
   ret_block = blockchain_find(hash);
   mu_assert(
     "Block was not removed",
     ret_block == NULL
   );
 
-  free(block->txs[0]);
   free(block);
 
   return NULL;

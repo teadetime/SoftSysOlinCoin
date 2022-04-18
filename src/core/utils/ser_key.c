@@ -6,6 +6,7 @@
 #include "mbedtls/error.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #define INIT_GROUP(group) \
   { \
@@ -85,7 +86,6 @@ mbedtls_ecp_point *deser_pub_key_alloc(ssize_t *read, unsigned char *src) {
  ******************************************************************************/
 
 ssize_t ser_priv_key(unsigned char *dest, mbedtls_mpi *key) {
-  size_t num_bytes;
   char buf[ERR_BUF];
   int err;
   mbedtls_ecp_group group;
@@ -97,7 +97,7 @@ ssize_t ser_priv_key(unsigned char *dest, mbedtls_mpi *key) {
     fprintf(stderr, "priv key serialization error: %s\n", buf);
     return -1;
   }
-  return num_bytes;
+  return PRIV_KEY_SER_LEN;
 }
 
 unsigned char *ser_priv_key_alloc(ssize_t *written, mbedtls_mpi *key) {
@@ -138,7 +138,7 @@ mbedtls_mpi *deser_priv_key_alloc(ssize_t *read, unsigned char *src) {
 
 ssize_t ser_keypair(unsigned char *dest, mbedtls_ecdsa_context *keypair) {
   unsigned char *priv_key = dest + ser_pub_key(dest, &keypair->private_Q);
-  unsigned char *end = priv_key + ser_priv_key(dest, &keypair->private_d);
+  unsigned char *end = priv_key + ser_priv_key(priv_key, &keypair->private_d);
   return end - dest;
 }
 

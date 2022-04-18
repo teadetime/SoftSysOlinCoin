@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ser_wallet.h"
 
 #define RETURN_SER(data, ret, ptr) \
@@ -16,6 +14,7 @@
 /******************************************************************************
  * Wallet Entries
  ******************************************************************************/
+
 ssize_t ser_wallet_entry(unsigned char *dest, WalletEntry *wallet_entry) {
   unsigned char *amt = dest + ser_keypair(dest, wallet_entry->key_pair);
 
@@ -42,7 +41,7 @@ ssize_t deser_wallet_entry(WalletEntry *dest, unsigned char *src) {
   dest->key_pair = deser_keypair_alloc(&ser_key_len, src);
   unsigned char *amt = src + ser_key_len;
 
-  memcpy(&(dest->key_pair), amt, sizeof(((WalletEntry*)0)->amt));
+  memcpy(&(dest->amt), amt, sizeof(((WalletEntry*)0)->amt));
   unsigned char *spent = amt + sizeof(((WalletEntry*)0)->amt);
 
   memcpy(&(dest->spent), spent, sizeof(((WalletEntry*)0)->spent));
