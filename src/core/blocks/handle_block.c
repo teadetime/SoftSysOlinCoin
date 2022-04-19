@@ -20,15 +20,15 @@ void update_UTXO_pool_and_wallet_pool(Block *block){
     for(unsigned int j = 0; j < block->txs[i]->num_outputs; j++){
 
       utxo_pool_add_leveldb(block->txs[i], j);
-      mbedtls_ecdsa_context *keypair = check_if_output_unlockable(block->txs[i], j);
+      mbedtls_ecdsa_context *keypair = check_if_output_unlockable_leveldb(block->txs[i], j);
       if(keypair != NULL){
-        wallet_pool_add(block->txs[i], j, keypair);
+        wallet_pool_build_add_leveldb(block->txs[i], j, keypair);
       }
     }
     for(unsigned int k = 0; k < block->txs[i]->num_inputs; k++){
       utxo_pool_remove_leveldb(block->txs[i]->inputs[k].prev_tx_id,
         block->txs[i]->inputs[k].prev_utxo_output);
-      wallet_pool_remove(block->txs[i]->inputs[k].prev_tx_id,
+      wallet_pool_remove_leveldb(block->txs[i]->inputs[k].prev_tx_id,
         block->txs[i]->inputs[k].prev_utxo_output);
     }
   }

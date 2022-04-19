@@ -30,7 +30,7 @@ Transaction *create_coinbase_tx(unsigned long tx_fees){
   miner_output->amt = tx_fees + calc_block_reward(chain_height);
 
   mbedtls_ecdsa_context *key_pair = gen_keys();
-  key_pool_add(key_pair);
+  key_pool_add_leveldb(key_pair);
   hash_pub_key(miner_output->public_key_hash, key_pair);
 
   coinbase_tx->inputs = NULL;

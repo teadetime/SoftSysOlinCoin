@@ -66,6 +66,7 @@ void _fill_mempool(){
 
 static char  *test_update_local_blockchain() {
   blockchain_init_leveldb();
+  wallet_init_leveldb();
   _fill_mempool();
   Block *good_block = mine_block();
   Block *found_block = NULL;
@@ -92,35 +93,43 @@ static char  *test_update_local_blockchain() {
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
   destroy_db(&blockchain_db, blockchain_path);
+  destroy_wallet();
   return NULL;
 }
 
 static char  *test_update_utxo_pool() {
   blockchain_init_leveldb();
+  wallet_init_leveldb();
   _fill_mempool();
   Block *good_block = mine_block();
-  unsigned int prev_utxo_size;
+  unsigned int prev_utxo_size = 99;
   utxo_pool_count(&prev_utxo_size);
-  unsigned int prev_wallet_size = HASH_COUNT(wallet_pool);
+  unsigned int prev_wallet_size = 99;
+  wallet_pool_count(&prev_wallet_size);
   update_UTXO_pool_and_wallet_pool(good_block);
-  unsigned int new_utxo_size;
+
+  unsigned int new_utxo_size = 99;
   utxo_pool_count(&new_utxo_size);
+  unsigned int new_wallet_size = 99;
+  wallet_pool_count(&new_wallet_size);
   mu_assert(
     "UTXO pool didn't change by expected amount",
     prev_utxo_size+1 == new_utxo_size
   );
   mu_assert(
     "Wallet pool didn't change by expected amount",
-    prev_wallet_size+1 == HASH_COUNT(wallet_pool)
+    prev_wallet_size+1 == new_wallet_size
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
   destroy_db(&blockchain_db, blockchain_path);
+  destroy_wallet();
   return NULL;
 }
 
 static char  *test_update_mempool() {
   blockchain_init_leveldb();
   _fill_mempool();
+  wallet_init_leveldb();
   Block *good_block = mine_block();
 
   unsigned int prev_mempool_size = HASH_COUNT(mempool);
@@ -136,25 +145,31 @@ static char  *test_update_mempool() {
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
   destroy_db(&blockchain_db, blockchain_path);
+  destroy_wallet();
   return NULL;
 }
 
 static char  *test_accept_block() {
   blockchain_init_leveldb();
+  wallet_init_leveldb();
   _fill_mempool();
   unsigned int prev_height = chain_height;
   Block *good_block = mine_block();
   Block *found_block = NULL;
   unsigned int prev_utxo_size;
   utxo_pool_count(&prev_utxo_size);
-  unsigned int prev_wallet_size = HASH_COUNT(wallet_pool);
+  unsigned int prev_wallet_size;
+  wallet_pool_count(&prev_wallet_size);
   unsigned int prev_mempool_size = HASH_COUNT(mempool);
   unsigned int prev_mapping_size = HASH_COUNT(utxo_to_tx);
   unsigned char block_hash[BLOCK_HASH_LEN];
   hash_blockheader(block_hash, &(good_block->header));
   accept_block(good_block);
-  unsigned int new_utxo_size;
+
+  unsigned int new_utxo_size = 99;
   utxo_pool_count(&new_utxo_size);
+  unsigned int new_wallet_size = 99;
+  wallet_pool_count(&new_wallet_size);
   int ret_find = blockchain_find_leveldb(&found_block, block_hash);
   mu_assert(
     "Accept: Top Block Hash not set",
@@ -178,7 +193,7 @@ static char  *test_accept_block() {
   );
   mu_assert(
     "Accept: Wallet pool didn't change by expected amount",
-    prev_wallet_size+1 == HASH_COUNT(wallet_pool)
+    prev_wallet_size+1 == new_wallet_size
   );
   mu_assert(
     "Accept: Mempool didn't change by expected amount",
@@ -190,27 +205,33 @@ static char  *test_accept_block() {
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
   destroy_db(&blockchain_db, blockchain_path);
+  destroy_wallet();
   return NULL;
 }
 
 
 static char  *test_handle_block() {
   blockchain_init_leveldb();
+  wallet_init_leveldb();
   _fill_mempool();
   unsigned int prev_height = chain_height;
   Block *good_block = mine_block();
   Block *found_block = NULL;
   unsigned int prev_utxo_size;
   utxo_pool_count(&prev_utxo_size);
-  unsigned int prev_wallet_size = HASH_COUNT(wallet_pool);
+  unsigned int prev_wallet_size;
+  wallet_pool_count(&prev_wallet_size);
   unsigned int prev_mempool_size = HASH_COUNT(mempool);
   unsigned int prev_mapping_size = HASH_COUNT(utxo_to_tx);
   unsigned char block_hash[BLOCK_HASH_LEN];
   hash_blockheader(block_hash, &(good_block->header));
   handle_new_block(good_block);
   int ret_find = blockchain_find_leveldb(&found_block, block_hash);
-  unsigned int new_utxo_size;
+
+  unsigned int new_utxo_size = 99;
   utxo_pool_count(&new_utxo_size); 
+  unsigned int new_wallet_size = 99;
+  wallet_pool_count(&new_wallet_size);
   // Accept tests because accept only runs if validation pasts
   mu_assert(
     "Handle: Top Block Hash not set",
@@ -234,7 +255,7 @@ static char  *test_handle_block() {
   );
   mu_assert(
     "Handle: Wallet pool didn't change by expected amount",
-    prev_wallet_size+1 == HASH_COUNT(wallet_pool)
+    prev_wallet_size+1 == new_wallet_size
   );
   mu_assert(
     "Handle: Mempool didn't change by expected amount",
@@ -245,12 +266,13 @@ static char  *test_handle_block() {
     prev_mapping_size-1 == HASH_COUNT(utxo_to_tx)
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_wallet();
   destroy_db(&blockchain_db, blockchain_path);
   return NULL;
 }
 
 static char *all_tests() {
-  wallet_init();
+  //wallet_init();
   mu_run_test(test_update_local_blockchain);
   mu_run_test(test_update_utxo_pool);
   mu_run_test(test_update_mempool);

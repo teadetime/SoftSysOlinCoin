@@ -37,13 +37,12 @@ int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout){
     return 2;
   }
   // Make Value (Build new UTXO)
-  UTXO *utxo = malloc(sizeof(UTXO));
-  utxo->amt = tx->outputs[vout].amt;
-  memcpy(utxo->public_key_hash, tx->outputs[vout].public_key_hash, PUB_KEY_HASH_LEN);
+  UTXO utxo;
+  utxo.amt = tx->outputs[vout].amt;
+  memcpy(utxo.public_key_hash, tx->outputs[vout].public_key_hash, PUB_KEY_HASH_LEN);
   
   size_t utxo_size;
-  unsigned char *serialized_utxo = ser_utxo_alloc(&utxo_size, utxo);
-  free(utxo);
+  unsigned char *serialized_utxo = ser_utxo_alloc(&utxo_size, &utxo);
   if(!serialized_utxo){
     return 3;
   }
@@ -86,7 +85,6 @@ int utxo_pool_find_leveldb(UTXO **found_utxo, unsigned char *tx_hash, unsigned i
     leveldb_free(err);
     return 3;
   }
-  leveldb_free(err);
   if(read == NULL){
     return 1;
   }

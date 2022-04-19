@@ -51,6 +51,20 @@ WalletPool *wallet_pool;
  */
 KeyPool *key_pool;
 
+int wallet_init_leveldb();
+void destroy_wallet();
+int wallet_pool_build_add_leveldb(Transaction *tx, unsigned int vout, mbedtls_ecdsa_context *key_pair);
+int wallet_pool_add_wallet_entry_leveldb(unsigned char *db_key, WalletEntry *entry);
+int wallet_pool_find_leveldb(WalletEntry **found_entry, unsigned char *tx_hash, unsigned int vout);
+int wallet_pool_remove_leveldb(unsigned char *tx_hash, unsigned int vout);
+int wallet_pool_count(unsigned int *num_entries);
+
+int key_pool_add_leveldb(mbedtls_ecp_keypair *key_pair);
+int key_pool_find_leveldb(mbedtls_ecdsa_context **keypair, unsigned char *public_key_hash);
+int key_pool_remove_leveldb(unsigned char *public_key_hash);
+int key_pool_count(unsigned int *num_entries);
+mbedtls_ecdsa_context *check_if_output_unlockable_leveldb(Transaction *tx, unsigned int vout);
+
 /**
  * @brief Initializes wallet
  *

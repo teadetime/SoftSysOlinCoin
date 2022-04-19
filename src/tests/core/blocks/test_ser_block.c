@@ -6,7 +6,7 @@
 #include "time.h"
 #include "ser_block.h"
 #include "crypto.h"
-#include "init_db.h"
+#include "wallet_pool.h"
 
 int tests_run = 0;
 
@@ -47,7 +47,7 @@ static void _fill_mempool(){
   input_tx->outputs[0].amt = 100;
   utxo_pool_init_leveldb();
 
-  int ret = utxo_pool_add_leveldb(input_tx, 0);
+  utxo_pool_add_leveldb(input_tx, 0);
 
   tx1 = _make_tx();
   hash_tx(tx1->inputs[0].prev_tx_id, input_tx);
@@ -124,6 +124,7 @@ static char *test_ser_block(){
   ssize_t written_ser_block, read_ser_block;
 
   _fill_mempool();
+  wallet_init_leveldb();
   block = create_block_alloc();
   sered_block = ser_block_alloc(&written_ser_block, block);
   desered_block = deser_block_alloc(&read_ser_block, sered_block);
@@ -191,6 +192,7 @@ static char *test_ser_block(){
   free(sered_block);
   free(desered_block);
   destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_wallet();
   return NULL;
 }
 

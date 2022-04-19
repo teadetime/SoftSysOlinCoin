@@ -282,7 +282,8 @@ void shell_loop() {
 void shell_init_globals() {
   node_init();
   miner_init();
-  wallet_init();
+  //wallet_init();
+  wallet_init_leveldb();
 }
 
 void shell_init_commands() {

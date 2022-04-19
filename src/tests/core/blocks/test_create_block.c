@@ -6,8 +6,7 @@
 #include "time.h"
 #include "ser_block.h"
 #include "crypto.h"
-#include "init_db.h"
-
+#include "wallet_pool.h"
 int tests_run = 0;
 
 Transaction *_make_tx() {
@@ -50,6 +49,7 @@ void _fill_mempool(){
 }
 
 static char *test_create_coinbase_tx(){
+  wallet_init_leveldb();
   unsigned long test = 10;
   Transaction *tx = create_coinbase_tx(test);
   mu_assert(
@@ -68,12 +68,13 @@ static char *test_create_coinbase_tx(){
     "Coinbase output amount is not what is expected",
     tx->outputs[0].amt == test+BLOCK_REWARD
   );
+  destroy_wallet();
   return NULL;
 }
 
 static char *test_get_txs_from_mempool(){
   _fill_mempool();
-
+  wallet_init_leveldb();
   Transaction **test_ptr = NULL;
   unsigned int num_tx = get_txs_from_mempool(&test_ptr);
   mu_assert(
@@ -105,11 +106,13 @@ static char *test_get_txs_from_mempool(){
     test_ptr[1]->outputs[0].amt == 90
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_wallet();
   return NULL;
 }
 
 static char *test_hash_all(){
   _fill_mempool();
+  wallet_init_leveldb();
   Transaction **test_ptr = NULL;
   unsigned int num_tx = get_txs_from_mempool(&test_ptr);
 
@@ -123,11 +126,13 @@ static char *test_hash_all(){
     memcmp(total_hash, total_hash2, ALL_TX_HASH_LEN) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_wallet();
   return NULL;
 }
 
 static char *test_create_header(){
   _fill_mempool();
+  wallet_init_leveldb();
   Transaction **test_ptr = NULL;
   unsigned int num_tx = get_txs_from_mempool(&test_ptr);
   BlockHeader *test_header = create_block_header_alloc(test_ptr, 2);
@@ -146,11 +151,13 @@ static char *test_create_header(){
     test_header->timestamp > 1647573975
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_wallet();
   return NULL;
 }
 
 static char *test_create_block(){
   _fill_mempool();
+  wallet_init_leveldb();
   Block *test_block = create_block_alloc();
   mu_assert(
     "Block txs coinbase is bad",
@@ -179,11 +186,13 @@ static char *test_create_block(){
   );
 
   destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_wallet();
   return NULL;
 }
 
 static char *test_mine_block(){
   _fill_mempool();
+  wallet_init_leveldb();
   unsigned long start = time(NULL);
   Block *mined_block = mine_block();
   unsigned long end = time(NULL);
@@ -199,6 +208,7 @@ static char *test_mine_block(){
   free(mined_block);
   // Really need to free all the internal structures...
   destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_wallet();
   return NULL;
 }
 

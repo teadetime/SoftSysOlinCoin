@@ -6,7 +6,7 @@
 #include "utxo_pool.h"
 #include "blockchain.h"
 #include "crypto.h"
-#include "init_db.h"
+#include "wallet_pool.h"
 
 int tests_run = 0;
 
@@ -62,6 +62,7 @@ void _fill_mempool(){
 
 static char  *test_coinbase_tx() {
   blockchain_init_leveldb();
+  wallet_init_leveldb();
   _fill_mempool();
   Block *test_block = create_block_alloc(); // Note this creates a valid block
 
@@ -71,11 +72,13 @@ static char  *test_coinbase_tx() {
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
   destroy_db(&blockchain_db, blockchain_path);
+  destroy_wallet();
   return NULL;
 }
 
 static char  *test_validate_txs() {
   blockchain_init_leveldb();
+  wallet_init_leveldb();
   _fill_mempool();
   Block *test_block = create_block_alloc();
 
@@ -85,12 +88,14 @@ static char  *test_validate_txs() {
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
   destroy_db(&blockchain_db, blockchain_path);
+  destroy_wallet();
   return NULL;
 }
 
 
 static char  *test_validate_prev_block() {
   blockchain_init_leveldb();
+  wallet_init_leveldb();
   _fill_mempool();
   Block *test_block = create_block_alloc();
   mu_assert(
@@ -99,11 +104,13 @@ static char  *test_validate_prev_block() {
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
   destroy_db(&blockchain_db, blockchain_path);
+  destroy_wallet();
   return NULL;
 }
 
 static char  *test_validate_all_tx() {
   blockchain_init_leveldb();
+  wallet_init_leveldb();
   _fill_mempool();
   Block *test_block = create_block_alloc();
   mu_assert(
@@ -112,12 +119,14 @@ static char  *test_validate_all_tx() {
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
   destroy_db(&blockchain_db, blockchain_path);
+  destroy_wallet();
   return NULL;
 }
 
 static char  *test_validate_block_double_spend() {
   blockchain_init_leveldb();
   _fill_mempool();
+  wallet_init_leveldb();
   Block *test_block = create_block_alloc();
   mu_assert(
     "Detecting double spend in valid block",
@@ -125,11 +134,13 @@ static char  *test_validate_block_double_spend() {
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
   destroy_db(&blockchain_db, blockchain_path);
+  destroy_wallet();
   return NULL;
 }
 
 static char  *test_validate_whole_block() {
   blockchain_init_leveldb();
+  wallet_init_leveldb();
   _fill_mempool();
   Block *test_block = create_block_alloc();
   mu_assert(
@@ -144,6 +155,7 @@ static char  *test_validate_whole_block() {
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
   destroy_db(&blockchain_db, blockchain_path);
+  destroy_wallet();
   return NULL;
 }
 
