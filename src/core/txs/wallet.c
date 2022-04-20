@@ -72,11 +72,12 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
     unsigned const char *value_ptr = (unsigned const char*) leveldb_iter_value(iter, &value_len);
 
     WalletEntry *read_wallet_entry = deser_wallet_entry_alloc(NULL, (unsigned char*)value_ptr);
-    if (read_wallet_entry->spent)
+    if (read_wallet_entry->spent) {
       free(read_wallet_entry);
       // free(key_ptr);
       // free(value_ptr);
       continue;
+    }
 
     tx->inputs[i].pub_key = malloc(sizeof(mbedtls_ecp_point));
     mbedtls_ecp_point_init(tx->inputs[i].pub_key);
@@ -96,7 +97,7 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
       free(key_cpy);
     }
     read_wallet_entry->spent = 1;
-    
+
     wallet_pool_add_wallet_entry_leveldb(key_ptr, read_wallet_entry);
 
     free(read_wallet_entry);
