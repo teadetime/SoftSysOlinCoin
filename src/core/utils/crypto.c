@@ -102,9 +102,9 @@ int validate_sig(
   else if (err == MBEDTLS_ERR_ECP_BAD_INPUT_DATA)
     return 1;
   else {
-    mbedtls_strerror(err, buf, ERR_BUF);
-    printf("Validate signature error! %s\n", buf);
-    exit(1);
+    //mbedtls_strerror(err, buf, ERR_BUF);
+    // printf("Validate signature error! %s\n", buf);
+    // exit(1);
     return 1;
   }
 }

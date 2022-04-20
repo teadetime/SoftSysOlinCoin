@@ -299,11 +299,6 @@ static char *test_build_tx() {
   options = _make_options();
   tx = build_tx(options);
 
-  mu_assert(
-      "Key not added to pool",
-      wallet_pool != NULL
-  );
-
   // Only light tests here, as more detailed value-checking is performed in the
   // build_inputs and build_outputs tests.
   mu_assert(
