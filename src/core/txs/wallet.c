@@ -55,7 +55,7 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
   i = 0;
   leveldb_readoptions_t *roptions2 = leveldb_readoptions_create();
   leveldb_iterator_t *iter2 = leveldb_create_iterator(wallet_pool_db, roptions2);
-  for (leveldb_iter_seek_to_first(iter2); leveldb_iter_valid(iter2); leveldb_iter_prev(iter2))
+  for (leveldb_iter_seek_to_first(iter2); leveldb_iter_valid(iter2); leveldb_iter_next(iter2))
   {
     size_t key_len, value_len;
     unsigned const char *key_ptr = (unsigned const char*) leveldb_iter_key(iter2, &key_len);
@@ -80,8 +80,8 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
     tx->inputs[i].prev_utxo_output = *(int *)(key_ptr+TX_HASH_LEN);
 
     //TODO THIS NEESS TO COPY SO IT CAN BE FREED
-    unsigned char *key_cpy = ser_keypair_alloc(NULL, read_wallet_entry->key_pair);
-    keys[i] = deser_keypair_alloc(NULL, key_cpy);
+    // unsigned char *key_cpy = ser_keypair_alloc(NULL, read_wallet_entry->key_pair);
+    keys[i] = read_wallet_entry->key_pair;// deser_keypair_alloc(NULL, key_cpy);
     // if(key_cpy != NULL){
     //   free(key_cpy);
     // }

@@ -1,6 +1,7 @@
 #include "minunit.h"
 #include "wallet.h"
 #include "crypto.h"
+#include "ser_wallet.h"
 
 int tests_run = 0;
 
@@ -104,6 +105,54 @@ static char *test_build_inputs() {
       tx->num_inputs == 2
   );
 
+  i = 0;
+  leveldb_readoptions_t *roptions2 = leveldb_readoptions_create();
+  leveldb_iterator_t *iter2 = leveldb_create_iterator(wallet_pool_db, roptions2);
+  for (leveldb_iter_seek_to_first(iter2); leveldb_iter_valid(iter2); leveldb_iter_next(iter2))
+  {
+    if(i >= tx->num_inputs){
+      break;
+    }
+
+    size_t key_len, value_len;
+    unsigned const char *key_ptr = (unsigned const char*) leveldb_iter_key(iter2, &key_len);
+    unsigned const char *value_ptr = (unsigned const char*) leveldb_iter_value(iter2, &value_len);
+    WalletEntry *read_wallet_entry = deser_wallet_entry_alloc(NULL, (unsigned char*)value_ptr);
+    mu_assert(
+        "Input has wrong vout",
+        *(int *)(key_ptr+TX_HASH_LEN) == tx->inputs[i].prev_utxo_output
+    );
+    mu_assert(
+        "Input has wrong tx hash",
+        memcmp(key_ptr, tx->inputs[i].prev_tx_id, TX_HASH_LEN) == 0
+    );
+    mu_assert(
+        "Input has wrong tx pub_key",
+        mbedtls_ecp_point_cmp(
+          &(read_wallet_entry->key_pair->private_Q),
+          tx->inputs[i].pub_key
+        ) == 0
+    );
+    // mu_assert(
+    //     "Input has wrong tx signature",
+    //     memcmp(tx->inputs[i].signature, empty_sig, SIGNATURE_LEN) == 0
+    // );
+
+    // mu_assert(
+    //     "Wrong input key pair returned",
+    //     map_value->entry->key_pair == ret_keys[i]
+    // );
+    // mu_assert(
+    //     "Hash map entry spent not set",
+    //     map_value->entry->spent == 1
+    // );
+
+
+    i++;
+    free(read_wallet_entry);
+  }
+  leveldb_iter_destroy(iter2);
+  leveldb_readoptions_destroy(roptions2);
   // i = 0;
   // for (map_value = wallet_pool; map_value != NULL; map_value = map_value->hh.next) {
   //   mu_assert(
@@ -268,10 +317,10 @@ static char *test_build_tx() {
 }
 
 static char *all_tests() {
-  //mu_run_test(test_build_inputs);
-  //mu_run_test(test_build_outputs);
+  mu_run_test(test_build_inputs);
+  mu_run_test(test_build_outputs);
   mu_run_test(test_sign_tx);
-  //mu_run_test(test_build_tx);
+  mu_run_test(test_build_tx);
   return NULL;
 }
 
