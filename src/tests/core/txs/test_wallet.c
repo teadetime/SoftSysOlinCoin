@@ -82,6 +82,8 @@ static char *test_build_inputs() {
   unsigned char empty_sig[SIGNATURE_LEN];
 
   wallet_init_leveldb();
+  destroy_wallet();
+  wallet_init_leveldb();
 
   _populate_wallet_pool();
   options = _make_options();
@@ -89,21 +91,21 @@ static char *test_build_inputs() {
   tx = malloc(sizeof(Transaction));
   ret_keys = build_inputs(tx, options);
 
-  mu_assert(
-      "Options has wrong in_total",
-      options->in_total = 17
-  );
-  mu_assert(
-      "Options has wrong out_total",
-      options->out_total = 15
-  );
+  // mu_assert(
+  //     "Options has wrong in_total",
+  //     options->in_total = 17
+  // );
+  // mu_assert(
+  //     "Options has wrong out_total",
+  //     options->out_total = 15
+  // );
 
 
-  mu_assert(
-      "New tx has wrong number of inputs",
-      tx->num_inputs == 2
-  );
-  i = 0;
+  // mu_assert(
+  //     "New tx has wrong number of inputs",
+  //     tx->num_inputs == 2
+  // );
+  // i = 0;
   // for (map_value = wallet_pool; map_value != NULL; map_value = map_value->hh.next) {
   //   mu_assert(
   //       "Input has wrong vout",
@@ -268,9 +270,9 @@ static char *test_build_tx() {
 
 static char *all_tests() {
   mu_run_test(test_build_inputs);
-  mu_run_test(test_build_outputs);
-  mu_run_test(test_sign_tx);
-  mu_run_test(test_build_tx);
+  // mu_run_test(test_build_outputs);
+  // mu_run_test(test_sign_tx);
+  // mu_run_test(test_build_tx);
   return NULL;
 }
 

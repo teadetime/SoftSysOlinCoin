@@ -8,8 +8,7 @@
 mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
   size_t i, num_entries;
   mbedtls_ecdsa_context **keys;
-  WalletPool *map_value, *end_value;
-  unsigned char last_key[UTXO_POOL_KEY_LEN];
+  //WalletPool *map_value, *end_value;
   options->out_total = options->tx_fee;
   for (i = 0; i < options->num_dests; i++)
     options->out_total += options->dests[i].amt;
@@ -18,9 +17,7 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
   num_entries = 0;
   options->in_total = 0;
 
-  int count = 0;
-  leveldb_readoptions_t *roptions;
-  roptions = leveldb_readoptions_create();
+  leveldb_readoptions_t *roptions = leveldb_readoptions_create();
   leveldb_iterator_t *iter = leveldb_create_iterator(wallet_pool_db, roptions);
 
   for (leveldb_iter_seek_to_first(iter); leveldb_iter_valid(iter); leveldb_iter_next(iter))
@@ -38,11 +35,11 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
     // free(key_ptr);
     // free(value_ptr);
     if(options->in_total >= options->out_total){
-      memcpy(last_key, key_ptr, UTXO_POOL_KEY_LEN);
       break;
     }
   }
-
+  leveldb_iter_destroy(iter);
+  leveldb_readoptions_destroy(roptions);
 
   // map_value = wallet_pool;
   // while (map_value != NULL && options->in_total < options->out_total) {
@@ -65,19 +62,22 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
   tx->inputs = malloc(sizeof(Input) * num_entries);
   keys = malloc(sizeof(mbedtls_ecdsa_context*) * num_entries);
 
-  for (; leveldb_iter_valid(iter); leveldb_iter_prev(iter))
+  unsigned int entries_to_get = num_entries;
+  //i = 0;
+  leveldb_readoptions_t *roptions2 = leveldb_readoptions_create();
+  leveldb_iterator_t *iter2 = leveldb_create_iterator(wallet_pool_db, roptions2);
+  for (leveldb_iter_seek_to_first(iter2); leveldb_iter_valid(iter2); leveldb_iter_prev(iter2))
   {
     size_t key_len, value_len;
-    unsigned const char *key_ptr = (unsigned const char*) leveldb_iter_key(iter, &key_len);
-    unsigned const char *value_ptr = (unsigned const char*) leveldb_iter_value(iter, &value_len);
+    unsigned const char *key_ptr = (unsigned const char*) leveldb_iter_key(iter2, &key_len);
+    unsigned const char *value_ptr = (unsigned const char*) leveldb_iter_value(iter2, &value_len);
 
     WalletEntry *read_wallet_entry = deser_wallet_entry_alloc(NULL, (unsigned char*)value_ptr);
     if (read_wallet_entry->spent) {
       free(read_wallet_entry);
-      // free(key_ptr);
-      // free(value_ptr);
       continue;
     }
+    
 
     tx->inputs[i].pub_key = malloc(sizeof(mbedtls_ecp_point));
     mbedtls_ecp_point_init(tx->inputs[i].pub_key);
@@ -93,19 +93,21 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
     //TODO THIS NEESS TO COPY SO IT CAN BE FREED
     unsigned char *key_cpy = ser_keypair_alloc(NULL, read_wallet_entry->key_pair);
     keys[i] = deser_keypair_alloc(NULL, key_cpy);
-    if(key_cpy){
-      free(key_cpy);
-    }
+    // if(key_cpy != NULL){
+    //   free(key_cpy);
+    // }
     read_wallet_entry->spent = 1;
 
-    wallet_pool_add_wallet_entry_leveldb(key_ptr, read_wallet_entry);
-
+    wallet_pool_add_wallet_entry_leveldb((unsigned char *)key_ptr, read_wallet_entry);
     free(read_wallet_entry);
-    // free(key_ptr);
-    // free(value_ptr);
+    entries_to_get--;
+    //i++;
+    if(entries_to_get <= 0){
+      break;
+    }
   }
-  leveldb_iter_destroy(iter);
-  leveldb_readoptions_destroy(roptions);
+  leveldb_iter_destroy(iter2);
+  leveldb_readoptions_destroy(roptions2);
 
 
 
