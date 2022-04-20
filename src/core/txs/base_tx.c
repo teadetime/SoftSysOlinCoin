@@ -14,6 +14,7 @@ void hash_tx(unsigned char *dest, Transaction *tx) {
   tx_buf = malloc(size_ser_tx(tx));
   ser_tx(tx_buf, tx);
   hash_sha256(dest, tx_buf, tx_buf_size);
+  free(tx_buf);
 }
 
 void free_tx(Transaction *tx){

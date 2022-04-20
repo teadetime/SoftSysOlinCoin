@@ -1,5 +1,6 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tests/")
 message(STATUS "Test Output set to: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+add_subdirectory(includes)
 add_subdirectory(core)
 
 
