@@ -112,14 +112,10 @@ static char  *test_wallet_pool_find() {
     "Wallet key pair private Q incorrect",
     mbedtls_ecp_point_cmp(&ret_entry->key_pair->private_Q, &key_pair->private_Q) == 0
   );
-  // mu_assert(
-  //   "Wallet key pair private grp incorrect",
-  //   memcmp(ret_entry->key_pair, key_pair, sizeof(mbedtls_ecp_keypair)) == 0
-  // );
-  // mu_assert(
-  //   "Wallet key pair private d incorrect",
-  //   mbedtls_ecp_point_cmp(&ret_entry->key_pair->private_d, &key_pair->private_d) == 0
-  // );
+  mu_assert(
+    "Wallet key pair private d incorrect",
+    mbedtls_mpi_cmp_mpi(&ret_entry->key_pair->private_d, &key_pair->private_d) == 0
+  );
   mu_assert(
     "Wallet entry spent incorrect",
     ret_entry->spent == 0
