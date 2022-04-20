@@ -273,7 +273,7 @@ static char *test_sign_tx() {
     mu_assert(
         "Input signature invalid",
         validate_sig(
-          tx->inputs[i].signature, SIGNATURE_LEN,
+          tx->inputs[i].signature, tx->inputs[i].sig_len,
           tx_hash, TX_HASH_LEN,
           ret_keys[i]
         ) == 0
