@@ -91,20 +91,19 @@ static char *test_build_inputs() {
   tx = malloc(sizeof(Transaction));
   ret_keys = build_inputs(tx, options);
 
-  // mu_assert(
-  //     "Options has wrong in_total",
-  //     options->in_total = 17
-  // );
-  // mu_assert(
-  //     "Options has wrong out_total",
-  //     options->out_total = 15
-  // );
+  mu_assert(
+      "Options has wrong in_total",
+      options->in_total = 17
+  );
+  mu_assert(
+      "Options has wrong out_total",
+      options->out_total = 15
+  );
+  mu_assert(
+      "New tx has wrong number of inputs",
+      tx->num_inputs == 2
+  );
 
-
-  // mu_assert(
-  //     "New tx has wrong number of inputs",
-  //     tx->num_inputs == 2
-  // );
   // i = 0;
   // for (map_value = wallet_pool; map_value != NULL; map_value = map_value->hh.next) {
   //   mu_assert(
@@ -218,7 +217,7 @@ static char *test_sign_tx() {
     mu_assert(
         "Input signature invalid",
         validate_sig(
-          tx->inputs[i].signature, tx->inputs[i].sig_len,
+          tx->inputs[i].signature, SIGNATURE_LEN,
           tx_hash, TX_HASH_LEN,
           ret_keys[i]
         ) == 0
@@ -269,10 +268,10 @@ static char *test_build_tx() {
 }
 
 static char *all_tests() {
-  mu_run_test(test_build_inputs);
-  // mu_run_test(test_build_outputs);
-  // mu_run_test(test_sign_tx);
-  // mu_run_test(test_build_tx);
+  //mu_run_test(test_build_inputs);
+  //mu_run_test(test_build_outputs);
+  mu_run_test(test_sign_tx);
+  //mu_run_test(test_build_tx);
   return NULL;
 }
 

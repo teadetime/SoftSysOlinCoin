@@ -41,17 +41,6 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
   leveldb_iter_destroy(iter);
   leveldb_readoptions_destroy(roptions);
 
-  // map_value = wallet_pool;
-  // while (map_value != NULL && options->in_total < options->out_total) {
-  //   if (map_value->entry->spent == 0) {
-  //     num_entries++;
-  //     options->in_total += map_value->entry->amt;
-  //   }
-  //   map_value = map_value->hh.next;
-  // }
-  // end_value = map_value;
-
-
   if (options->in_total < options->out_total) {
     printf("Not enough in wallet to build transaction!");
     exit(EXIT_FAILURE);
@@ -63,7 +52,7 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
   keys = malloc(sizeof(mbedtls_ecdsa_context*) * num_entries);
 
   unsigned int entries_to_get = num_entries;
-  //i = 0;
+  i = 0;
   leveldb_readoptions_t *roptions2 = leveldb_readoptions_create();
   leveldb_iterator_t *iter2 = leveldb_create_iterator(wallet_pool_db, roptions2);
   for (leveldb_iter_seek_to_first(iter2); leveldb_iter_valid(iter2); leveldb_iter_prev(iter2))
@@ -101,7 +90,7 @@ mbedtls_ecdsa_context **build_inputs(Transaction *tx, TxOptions *options) {
     wallet_pool_add_wallet_entry_leveldb((unsigned char *)key_ptr, read_wallet_entry);
     free(read_wallet_entry);
     entries_to_get--;
-    //i++;
+    i++;
     if(entries_to_get <= 0){
       break;
     }
