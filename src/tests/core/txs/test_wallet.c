@@ -79,7 +79,6 @@ static char *test_build_inputs() {
   Transaction *tx;
   mbedtls_ecdsa_context **ret_keys;
   size_t i;
-  WalletPool *map_value;
   unsigned char empty_sig[SIGNATURE_LEN];
 
   wallet_init_leveldb();
@@ -119,33 +118,41 @@ static char *test_build_inputs() {
     unsigned const char *value_ptr = (unsigned const char*) leveldb_iter_value(iter2, &value_len);
     WalletEntry *read_wallet_entry = deser_wallet_entry_alloc(NULL, (unsigned char*)value_ptr);
     mu_assert(
-        "Input has wrong vout",
-        *(int *)(key_ptr+TX_HASH_LEN) == tx->inputs[i].prev_utxo_output
+      "Input has wrong vout",
+      *(unsigned int *)(key_ptr+TX_HASH_LEN) == tx->inputs[i].prev_utxo_output
     );
     mu_assert(
-        "Input has wrong tx hash",
-        memcmp(key_ptr, tx->inputs[i].prev_tx_id, TX_HASH_LEN) == 0
+      "Input has wrong tx hash",
+      memcmp(key_ptr, tx->inputs[i].prev_tx_id, TX_HASH_LEN) == 0
     );
     mu_assert(
-        "Input has wrong tx pub_key",
-        mbedtls_ecp_point_cmp(
-          &(read_wallet_entry->key_pair->private_Q),
-          tx->inputs[i].pub_key
-        ) == 0
+      "Input has wrong tx pub_key",
+      mbedtls_ecp_point_cmp(
+        &(read_wallet_entry->key_pair->private_Q),
+        tx->inputs[i].pub_key
+      ) == 0
     );
-    // mu_assert(
-    //     "Input has wrong tx signature",
-    //     memcmp(tx->inputs[i].signature, empty_sig, SIGNATURE_LEN) == 0
-    // );
+    mu_assert(
+      "Input has wrong tx signature",
+      memcmp(tx->inputs[i].signature, empty_sig, SIGNATURE_LEN) == 0
+    );
 
     // mu_assert(
     //     "Wrong input key pair returned",
     //     map_value->entry->key_pair == ret_keys[i]
     // );
-    // mu_assert(
-    //     "Hash map entry spent not set",
-    //     map_value->entry->spent == 1
-    // );
+    mu_assert(
+      "Returned key pair private Q incorrect",
+      mbedtls_ecp_point_cmp(&read_wallet_entry->key_pair->private_Q, &ret_keys[i]->private_Q) == 0
+    );
+    mu_assert(
+      "Returned key pair private d incorrect",
+      mbedtls_mpi_cmp_mpi(&read_wallet_entry->key_pair->private_d, &ret_keys[i]->private_d) == 0
+    );
+    mu_assert(
+      "Hash map entry spent not set",
+      read_wallet_entry->spent == 1
+    );
 
 
     i++;
