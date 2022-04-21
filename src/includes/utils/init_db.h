@@ -2,6 +2,8 @@
 #include "leveldb/c.h"
 #define PROD_DB_LOC "/prod"
 #define TEST_DB_LOC "/test"
+#define CHAIN_HEIGHT_FILE "/chain_height.dat"
+#define TOP_BLOCK_HASH_FILE "/top_block_hash.dat"
 
 int create_proj_folders();
 

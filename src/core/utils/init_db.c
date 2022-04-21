@@ -18,6 +18,14 @@ int create_folder(char *path){
   return 0;
 }
 
+int read_chain(){
+  // use "r"
+}
+
+int write_chain(){
+  // use "w"
+}
+
 int create_proj_folders(){
   if(!getenv("HOME")){
     exit(1);
@@ -40,12 +48,46 @@ int create_proj_folders(){
   strcat(test, TEST_DB_LOC);
 
   int ret_prod = create_folder(prod);
+  // Create PROD Chain height and top_block 
+  char *prod_chain_path = malloc(strlen(prod) + strlen(CHAIN_HEIGHT_FILE) + 1);
+  strcpy(prod_chain_path, prod);
+  strcat(prod_chain_path, CHAIN_HEIGHT_FILE);
+
+  char *prod_top_block_hash = malloc(strlen(prod) + strlen(TOP_BLOCK_HASH_FILE) + 1);
+  strcpy(prod_top_block_hash, prod);
+  strcat(prod_top_block_hash, TOP_BLOCK_HASH_FILE);  
+
+  FILE *fp_chain = fopen(prod_chain_path, "ab+");
+  fclose(fp_chain);
+  FILE *fp_top_block_hash = fopen(prod_top_block_hash, "ab+");
+  fclose(fp_top_block_hash);
+
   free(prod);
+  free(prod_top_block_hash);
+  free(prod_chain_path);
   if(ret_prod != 0){
     return 1;
   }
+
+  // Create Test Chainheihgt and top block
   int ret_test = create_folder(test);
+
+  char *test_chain_path = malloc(strlen(test) + strlen(CHAIN_HEIGHT_FILE) + 1);
+  strcpy(test_chain_path, test);
+  strcat(test_chain_path, CHAIN_HEIGHT_FILE);
+
+  char *test_top_block_hash = malloc(strlen(test) + strlen(TOP_BLOCK_HASH_FILE) + 1);
+  strcpy(test_top_block_hash, test);
+  strcat(test_top_block_hash, TOP_BLOCK_HASH_FILE);
+
+  FILE *fp_test_chain = fopen(test_chain_path, "ab+");
+  fclose(fp_test_chain);
+  FILE *fp_test_top_block_hash = fopen(test_top_block_hash, "ab+");
+  fclose(fp_test_top_block_hash);
+
   free(test);
+  free(test_top_block_hash);
+  free(test_chain_path);
   if(ret_test != 0){
     return 1;
   }
@@ -101,7 +143,6 @@ int check_if_db_loaded(leveldb_t **db, char *path){
   }
   return 0;
 }
-
 
 int destroy_db(leveldb_t **db, char *name){
   /**Note this could be weird, maybe we don't care about closing the database */
