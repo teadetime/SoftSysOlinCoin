@@ -20,7 +20,7 @@ char *blockchain_path;
 leveldb_t *blockchain_db;  // Level DB Database
 
 /* Initializes the global blockchain variables */
-int blockchain_init_leveldb();
+int blockchain_init_leveldb(char *db_env);
 
 /**
  * @brief Creates a new block in the blockchain

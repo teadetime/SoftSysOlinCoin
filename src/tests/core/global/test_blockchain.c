@@ -31,9 +31,9 @@ Block *_make_block() {
 }
 
 static char *test_blockchain_init_exists() {
-  int init_ret = blockchain_init_leveldb();
+  int init_ret = blockchain_init_leveldb(TEST_DB_LOC);
   destroy_db(&blockchain_db, blockchain_path);
-  init_ret = blockchain_init_leveldb();
+  init_ret = blockchain_init_leveldb(TEST_DB_LOC);
   mu_assert(
       "Init return indicates fialure",
       init_ret == 0
@@ -55,7 +55,7 @@ static char *test_blockchain_init_correct() {
   memset(empty_tx_hash, 0, TX_HASH_LEN);
   memset(empty_block_hash, 0, BLOCK_HASH_LEN);
 
-  blockchain_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
   mu_assert(
     "Chain Height Incorrect",
     chain_height == 1
@@ -94,7 +94,7 @@ static char *test_blockchain_init_correct() {
 
 static char  *test_blockchain_add() {
 
-  blockchain_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
   //ret_block = blockchain_add(block);
   Block *block;
   block = _make_block();
@@ -125,7 +125,7 @@ static char  *test_blockchain_find() {
   block = _make_block();
   hash_blockheader(hash, &(block->header));
 
-  blockchain_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
   blockchain_add_leveldb(block);
   //ret_block = blockchain_find(hash);
   int ret_find = blockchain_find_leveldb(&ret_block, hash);
@@ -152,7 +152,7 @@ static char  *test_blockchain_remove() {
   block = _make_block();
   hash_blockheader(hash, &(block->header));
 
-  blockchain_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
   blockchain_add_leveldb(block);
   unsigned long prev_chain_height = chain_height;
   //ret_block = blockchain_remove(hash);
@@ -202,6 +202,7 @@ static char *all_tests() {
 }
 
 int main() {
+  create_proj_folders();
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);

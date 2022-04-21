@@ -54,51 +54,7 @@ Block *_make_block() {
 }
 
 int main() {
-
-  // blockchain_init_leveldb();
-  // unsigned int count;
-  // blockchain_count(&count);
-  // printf("After Blockchain init: %i", count);
-
-  Block* block = _make_block();
-  //print_block(block, "");
-  ssize_t sz ;//= size_ser_block(block);
-  unsigned char* test = ser_block_alloc(&sz, block);
-  free(test);
-  //blockchain_add_leveldb(block);
-  // blockchain_count(&count);
-
-  // printf("After Blockchain init: %i", count);
-  //destroy_db(&blockchain_db, blockchain_path);
-  // int ret;
-  // UTXO *found = NULL;
-  // utxo_pool_init_leveldb();
-  // // leveldb_t *db1 = NULL;
-  // // int success = open_or_create_db(&db1, utxo_pool_path);
-
-  // Transaction *tx;
-  // tx = _make_tx();
-  // ret = utxo_pool_add_leveldb(tx, 0);
-
-
-  // printf("Add Return Value: %i\n", ret);
-  // unsigned char tx_hash[TX_HASH_LEN];
-  // hash_tx(tx_hash, tx);
-  // ret = utxo_pool_find_leveldb(&found, tx_hash, 0);
-
-  // printf("Find Return Value: %i\n", ret);
-  // if(ret == 0){
-  //   print_utxo(found, "");
-  //   free(found);
-  // }
-
-
-  // print_utxo_hashmap("");
-
-  // ret = utxo_pool_remove_leveldb(tx_hash, 0);
-
-  // unsigned int entries;
-  // int count_ret = utxo_pool_count(&entries);
-  // printf("count Return Value: %i, counted: %i\n", count_ret, entries);
-  return(0);
+  create_proj_folders();
+  utxo_pool_init_leveldb(TEST_DB_LOC);
+  blockchain_init_leveldb(PROD_DB_LOC);
 }

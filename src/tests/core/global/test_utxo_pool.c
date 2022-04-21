@@ -31,7 +31,7 @@ Transaction *_make_tx() {
 }
 
 static char *test_utxo_pool_init() {
-  utxo_pool_init_leveldb();
+  utxo_pool_init_leveldb(TEST_DB_LOC);
   mu_assert(
     "UTXO DB is still null",
     utxo_pool_db != NULL
@@ -48,7 +48,7 @@ static char  *test_utxo_pool_add() {
   Transaction *tx;
 
   tx = _make_tx();
-  utxo_pool_init_leveldb();
+  utxo_pool_init_leveldb(TEST_DB_LOC);
   int ret = utxo_pool_add_leveldb(tx,0);
   mu_assert(
     "Return Value indicates a failure",
@@ -71,7 +71,7 @@ static char  *test_utxo_pool_find() {
   tx = _make_tx();
   hash_tx(hash, tx);
 
-  utxo_pool_init_leveldb();
+  utxo_pool_init_leveldb(TEST_DB_LOC);
   utxo_pool_add_leveldb(tx, 0);
   int ret_found = utxo_pool_find_leveldb(&ret_utxo, hash, 0);
   mu_assert(
@@ -107,7 +107,7 @@ static char  *test_utxo_pool_remove() {
   tx = _make_tx();
   hash_tx(hash, tx);
 
-  utxo_pool_init_leveldb();
+  utxo_pool_init_leveldb(TEST_DB_LOC);
   utxo_pool_add_leveldb(tx, 0);
   int ret_remove = utxo_pool_remove_leveldb(hash, 0);
   
@@ -141,6 +141,7 @@ static char *all_tests() {
 }
 
 int main() {
+  create_proj_folders();
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);

@@ -36,9 +36,9 @@ void _free_tx(Transaction *tx) {
 }
 
 static char *test_wallet_init() {
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
   destroy_wallet();
-  int init_ret = wallet_init_leveldb();
+  int init_ret = wallet_init_leveldb(TEST_DB_LOC);
   unsigned int wallet_count;
   wallet_pool_count(&wallet_count);
   unsigned int key_count;
@@ -66,7 +66,7 @@ static char  *test_wallet_pool_add() {
   tx = _make_tx();
   key_pair = gen_keys();
 
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
 
   int ret_add = wallet_pool_build_add_leveldb(tx, 0, key_pair);
   unsigned int wallet_pool_sz;
@@ -96,7 +96,7 @@ static char  *test_wallet_pool_find() {
   hash_tx(hash, tx);
   key_pair = gen_keys();
 
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
 
   wallet_pool_build_add_leveldb(tx, 0, key_pair);
   int ret_find = wallet_pool_find_leveldb(&ret_entry, hash, 0);
@@ -136,7 +136,7 @@ static char  *test_wallet_pool_remove() {
   hash_tx(hash, tx);
   key_pair = gen_keys();
 
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
 
   wallet_pool_build_add_leveldb(tx, 0, key_pair);
   int ret_rem = wallet_pool_remove_leveldb(hash, 0);
@@ -164,7 +164,7 @@ static char  *test_key_pool_add() {
 
   key_pair = gen_keys();
 
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
 
   int ret_add = key_pool_add_leveldb(key_pair);
   mu_assert(
@@ -184,7 +184,7 @@ static char  *test_key_pool_find() {
   key_pair = gen_keys();
   hash_pub_key(hash, key_pair);
 
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
 
   key_pool_add_leveldb(key_pair);
   int ret_find = key_pool_find_leveldb(&ret_pair, hash);
@@ -210,7 +210,7 @@ static char  *test_output_unlockable() {
   key_pair = gen_keys();
   hash_pub_key(tx->outputs[0].public_key_hash, key_pair);
 
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
 
   key_pool_add_leveldb(key_pair);
   ret_pair = check_if_output_unlockable_leveldb(tx, 0);
@@ -234,7 +234,7 @@ static char  *test_key_pool_remove() {
   key_pair = gen_keys();
   hash_pub_key(hash, key_pair);
 
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
 
   key_pool_add_leveldb(key_pair);
   int ret_rem = key_pool_remove_leveldb(hash);
@@ -270,6 +270,7 @@ static char *all_tests() {
 }
 
 int main() {
+  create_proj_folders();
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);

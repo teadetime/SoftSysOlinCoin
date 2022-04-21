@@ -45,7 +45,7 @@ static void _fill_mempool(){
   Transaction *input_tx, *tx1;
   input_tx = _make_tx();
   input_tx->outputs[0].amt = 100;
-  utxo_pool_init_leveldb();
+  utxo_pool_init_leveldb(TEST_DB_LOC);
 
   utxo_pool_add_leveldb(input_tx, 0);
 
@@ -124,7 +124,7 @@ static char *test_ser_block(){
   ssize_t written_ser_block, read_ser_block;
 
   _fill_mempool();
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
   block = create_block_alloc();
   sered_block = ser_block_alloc(&written_ser_block, block);
   desered_block = deser_block_alloc(&read_ser_block, sered_block);
@@ -203,6 +203,7 @@ static char *all_tests() {
 }
 
 int main() {
+  create_proj_folders();
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);

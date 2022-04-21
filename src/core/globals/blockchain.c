@@ -4,8 +4,8 @@
 #include "init_db.h"
 #include "ser_block.h"
 
-int blockchain_init_leveldb(){
-  int init_ret = init_db(&blockchain_db, &blockchain_path, "/blockchain");
+int blockchain_init_leveldb(char *db_env){
+  int init_ret = init_db(&blockchain_db, &blockchain_path, db_env, "/blockchain");
   if(init_ret != 0){
     return 5;
   }

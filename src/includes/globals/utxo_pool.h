@@ -25,7 +25,7 @@ leveldb_t *utxo_pool_db;  // Level DB Database
  * 
  * @return int 0 if successful
  */
-int utxo_pool_init_leveldb();
+int utxo_pool_init_leveldb(char *db_env);
 
 /**
  * @brief Creates key for utxopool 

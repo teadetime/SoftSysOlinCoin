@@ -3,16 +3,53 @@
 #include <stdio.h>
 #include "string.h"
 #include "init_db.h"
+#include "constants.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <errno.h>
 
-int set_db_path(char **dest, char *name){
+int create_folder(char *path){
+  int mkdir_res = mkdir(path, 0777);
+  if(mkdir_res != 0 && errno != EEXIST){
+    //errors here
+    return 1;   
+  }
+  return 0;
+}
+
+int create_proj_folders(){
   if(!getenv("HOME")){
     exit(1);
   }
   char* home_path = getenv("HOME");
-  *dest = malloc(strlen(home_path)+strlen(name)+1);
-  strcpy(*dest, home_path);
-  strcat(*dest, name);
-  return 1;
+  char *newPath = malloc(strlen(home_path) + strlen(LOCAL_LOCATION) + 1);
+  strcpy(newPath, home_path);
+  strcat(newPath, LOCAL_LOCATION);
+  int ret_base = create_folder(newPath);
+  if(ret_base != 0){
+    return 1;
+  }
+  //Now create the test and Local
+  char *prod = malloc(strlen(newPath) + strlen(PROD_DB_LOC) + 1);
+  char *test = malloc(strlen(newPath) + strlen(TEST_DB_LOC) + 1);
+  strcpy(prod, newPath);
+  strcpy(test, newPath);
+  free(newPath);
+  strcat(prod, PROD_DB_LOC);
+  strcat(test, TEST_DB_LOC);
+
+  int ret_prod = create_folder(prod);
+  free(prod);
+  if(ret_prod != 0){
+    return 1;
+  }
+  int ret_test = create_folder(test);
+  free(test);
+  if(ret_test != 0){
+    return 1;
+  }
+  return 0;
 }
 
 int open_or_create_db(leveldb_t **db, char *path){
@@ -38,8 +75,17 @@ int open_or_create_db(leveldb_t **db, char *path){
   return ret;
 }
 
-int init_db(leveldb_t **db, char **dest, char *name){
-  set_db_path(dest, name);
+int init_db(leveldb_t **db, char **dest, char *db_env, char *name){
+  if(!getenv("HOME")){
+    exit(1);
+  }
+  char* home_path = getenv("HOME");
+  *dest = malloc(strlen(home_path) + strlen(LOCAL_LOCATION) + strlen(db_env) + strlen(name) + 1);
+  strcpy(*dest, home_path);
+  strcat(*dest, LOCAL_LOCATION);
+  strcat(*dest, db_env);
+  strcat(*dest, name);
+
   if(open_or_create_db(db, *dest) != 0){
     return 1;
   }

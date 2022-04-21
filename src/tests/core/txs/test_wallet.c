@@ -81,9 +81,9 @@ static char *test_build_inputs() {
   size_t i;
   unsigned char empty_sig[SIGNATURE_LEN];
 
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
   destroy_wallet();
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
 
   _populate_wallet_pool();
   options = _make_options();
@@ -258,7 +258,7 @@ static char *test_sign_tx() {
   mbedtls_ecdsa_context **ret_keys;
   unsigned char tx_hash[TX_HASH_LEN];
 
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
 
   _populate_wallet_pool();
   options = _make_options();
@@ -293,7 +293,7 @@ static char *test_build_tx() {
   TxOptions *options;
   Transaction *tx;
 
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
 
   _populate_wallet_pool();
   options = _make_options();
@@ -327,6 +327,7 @@ static char *all_tests() {
 }
 
 int main() {
+  create_proj_folders();
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);

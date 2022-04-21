@@ -51,7 +51,7 @@ WalletPool *wallet_pool;
  */
 KeyPool *key_pool;
 
-int wallet_init_leveldb();
+int wallet_init_leveldb(char *db_env);
 void destroy_wallet();
 int wallet_pool_build_add_leveldb(Transaction *tx, unsigned int vout, mbedtls_ecdsa_context *key_pair);
 int wallet_pool_add_wallet_entry_leveldb(unsigned char *db_key, WalletEntry *entry);

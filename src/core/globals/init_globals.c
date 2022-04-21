@@ -3,10 +3,11 @@
 #include "blockchain.h"
 #include "utxo_pool.h"
 #include "mempool.h"
+#include "init_db.h"
 
 void node_init() {
-  blockchain_init_leveldb();
-  utxo_pool_init_leveldb();
+  blockchain_init_leveldb(PROD_DB_LOC);
+  utxo_pool_init_leveldb(PROD_DB_LOC);
 }
 
 void miner_init() {

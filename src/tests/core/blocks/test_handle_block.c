@@ -45,7 +45,7 @@ void _fill_mempool(){
   Transaction *input_tx, *tx1;
   input_tx = _make_tx();
   input_tx->outputs[0].amt = 100;
-  utxo_pool_init_leveldb();
+  utxo_pool_init_leveldb(TEST_DB_LOC);
   utxo_pool_add_leveldb(input_tx, 0);
 
   mbedtls_ecdsa_context *input_tx_context = malloc(sizeof(mbedtls_ecdsa_context));
@@ -65,8 +65,8 @@ void _fill_mempool(){
 }
 
 static char  *test_update_local_blockchain() {
-  blockchain_init_leveldb();
-  wallet_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   Block *good_block = mine_block();
   Block *found_block = NULL;
@@ -98,8 +98,8 @@ static char  *test_update_local_blockchain() {
 }
 
 static char  *test_update_utxo_pool() {
-  blockchain_init_leveldb();
-  wallet_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   Block *good_block = mine_block();
   unsigned int prev_utxo_size = 99;
@@ -127,9 +127,9 @@ static char  *test_update_utxo_pool() {
 }
 
 static char  *test_update_mempool() {
-  blockchain_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
   Block *good_block = mine_block();
 
   unsigned int prev_mempool_size = HASH_COUNT(mempool);
@@ -150,8 +150,8 @@ static char  *test_update_mempool() {
 }
 
 static char  *test_accept_block() {
-  blockchain_init_leveldb();
-  wallet_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   unsigned int prev_height = chain_height;
   Block *good_block = mine_block();
@@ -211,8 +211,8 @@ static char  *test_accept_block() {
 
 
 static char  *test_handle_block() {
-  blockchain_init_leveldb();
-  wallet_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   unsigned int prev_height = chain_height;
   Block *good_block = mine_block();
@@ -283,6 +283,7 @@ static char *all_tests() {
 }
 
 int main() {
+  create_proj_folders();
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);

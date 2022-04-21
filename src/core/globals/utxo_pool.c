@@ -20,8 +20,8 @@ int make_utxo_pool_key(unsigned char *dest, size_t *len, Transaction *tx, unsign
   return make_utxo_pool_key_with_hash(dest, len, temp_hash, vout);
 }
 
-int utxo_pool_init_leveldb(){
-  return init_db(&utxo_pool_db, &utxo_pool_path, "/utxo_pool");
+int utxo_pool_init_leveldb(char *db_env){
+  return init_db(&utxo_pool_db, &utxo_pool_path, db_env, "/utxo_pool");
 }
 
 int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout){

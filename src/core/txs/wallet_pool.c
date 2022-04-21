@@ -9,9 +9,9 @@ void wallet_init() {
   key_pool = NULL;
 }
 
-int wallet_init_leveldb(){
-  int init_wallet_pool = init_db(&wallet_pool_db, &wallet_pool_path, "/wallet_pool");
-  int init_key_pool = init_db(&key_pool_db, &key_pool_path, "/key_pool");
+int wallet_init_leveldb(char *db_env){
+  int init_wallet_pool = init_db(&wallet_pool_db, &wallet_pool_path, db_env, "/wallet_pool");
+  int init_key_pool = init_db(&key_pool_db, &key_pool_path, db_env, "/key_pool");
   if(init_wallet_pool != 0){
     return 5;
   }

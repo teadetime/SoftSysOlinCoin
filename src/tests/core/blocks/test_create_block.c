@@ -37,7 +37,7 @@ void _fill_mempool(){
   Transaction *input_tx, *tx1;
   input_tx = _make_tx();
   input_tx->outputs[0].amt = 100;
-  utxo_pool_init_leveldb();
+  utxo_pool_init_leveldb(TEST_DB_LOC);
   utxo_pool_add_leveldb(input_tx, 0);
 
   tx1 = _make_tx();
@@ -49,7 +49,7 @@ void _fill_mempool(){
 }
 
 static char *test_create_coinbase_tx(){
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
   unsigned long test = 10;
   Transaction *tx = create_coinbase_tx(test);
   mu_assert(
@@ -74,7 +74,7 @@ static char *test_create_coinbase_tx(){
 
 static char *test_get_txs_from_mempool(){
   _fill_mempool();
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
   Transaction **test_ptr = NULL;
   unsigned int num_tx = get_txs_from_mempool(&test_ptr);
   mu_assert(
@@ -112,7 +112,7 @@ static char *test_get_txs_from_mempool(){
 
 static char *test_hash_all(){
   _fill_mempool();
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
   Transaction **test_ptr = NULL;
   unsigned int num_tx = get_txs_from_mempool(&test_ptr);
 
@@ -132,7 +132,7 @@ static char *test_hash_all(){
 
 static char *test_create_header(){
   _fill_mempool();
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
   Transaction **test_ptr = NULL;
   unsigned int num_tx = get_txs_from_mempool(&test_ptr);
   BlockHeader *test_header = create_block_header_alloc(test_ptr, 2);
@@ -157,7 +157,7 @@ static char *test_create_header(){
 
 static char *test_create_block(){
   _fill_mempool();
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
   Block *test_block = create_block_alloc();
   mu_assert(
     "Block txs coinbase is bad",
@@ -192,7 +192,7 @@ static char *test_create_block(){
 
 static char *test_mine_block(){
   _fill_mempool();
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
   unsigned long start = time(NULL);
   Block *mined_block = mine_block();
   unsigned long end = time(NULL);
@@ -250,6 +250,7 @@ static char *all_tests() {
 }
 
 int main() {
+  create_proj_folders();
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);
