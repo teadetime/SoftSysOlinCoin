@@ -32,10 +32,6 @@ int blockchain_init_leveldb(char *db_env){
 }
 
 int blockchain_add_leveldb(Block *block){
-  /* if(check_if_db_loaded(&blockchain_db, blockchain_path) != 0){ */
-  /*   return 5; */
-  /* } */
-
   unsigned char db_key[BLOCK_HASH_LEN];
   hash_blockheader(db_key, &(block->header));
 
@@ -65,9 +61,6 @@ int blockchain_add_leveldb(Block *block){
 }
 
 int blockchain_find_leveldb(Block **found_block, unsigned char *block_hash){
-  if(check_if_db_loaded(&blockchain_db, blockchain_path) != 0){
-    return 5;
-  }
   char *err = NULL;
   size_t read_len;
   char *read = NULL;
@@ -95,9 +88,6 @@ int blockchain_find_leveldb(Block **found_block, unsigned char *block_hash){
 }
 
 int blockchain_remove_leveldb(unsigned char *block_hash){
-  if(check_if_db_loaded(&blockchain_db, blockchain_path) != 0){
-    return 5;
-  }
   char *err = NULL;
   leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
   leveldb_delete(blockchain_db, woptions, block_hash, BLOCK_HASH_LEN, &err);

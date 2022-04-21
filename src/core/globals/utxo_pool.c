@@ -25,10 +25,6 @@ int utxo_pool_init_leveldb(char *db_env){
 }
 
 int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout){
-  if(check_if_db_loaded(&utxo_pool_db, utxo_pool_path) != 0){
-    return 5;
-  }
-
   unsigned char db_key[UTXO_POOL_KEY_LEN];
   size_t key_len;
   char *err = NULL;
@@ -62,10 +58,6 @@ int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout){
 }
 
 int utxo_pool_find_leveldb(UTXO **found_utxo, unsigned char *tx_hash, unsigned int vout){
-  if(check_if_db_loaded(&utxo_pool_db, utxo_pool_path) != 0){
-    return 5;
-  }
-
   unsigned char db_key[UTXO_POOL_KEY_LEN];
   size_t key_len;
   char *err = NULL;
@@ -88,9 +80,8 @@ int utxo_pool_find_leveldb(UTXO **found_utxo, unsigned char *tx_hash, unsigned i
   if(read == NULL){
     return 1;
   }
-  
-  size_t read_bytes;
-  *found_utxo = deser_utxo_alloc(&read_bytes, (unsigned char*) read);
+
+  *found_utxo = deser_utxo_alloc(NULL, (unsigned char*) read);
   free(read);
   if(!*found_utxo){
     return 4;
@@ -99,9 +90,6 @@ int utxo_pool_find_leveldb(UTXO **found_utxo, unsigned char *tx_hash, unsigned i
 }
 
 int utxo_pool_remove_leveldb(unsigned char *tx_hash, unsigned int vout){
-  if(check_if_db_loaded(&utxo_pool_db, utxo_pool_path) != 0){
-    return 5;
-  }
   unsigned char db_key[UTXO_POOL_KEY_LEN];
   size_t key_len;
   char *err = NULL;
@@ -117,7 +105,6 @@ int utxo_pool_remove_leveldb(unsigned char *tx_hash, unsigned int vout){
     leveldb_free(err);
     return(3);
   }
-  leveldb_free(err);
   return 0;
 }
 
@@ -140,10 +127,6 @@ void print_utxo_hashmap(char *prefix){
   strcpy(sub_prefix, prefix);
   strcat(sub_prefix, PRINT_TAB);
 
-  if(check_if_db_loaded(&utxo_pool_db, utxo_pool_path) != 0){
-    printf("Unable to Open UTXO_Pool");
-    return;
-  }
   unsigned int num_items;
   utxo_pool_count(&num_items);
   printf("%sUTXO Hashmap items(%i):\n", prefix, num_items);

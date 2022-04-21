@@ -134,16 +134,6 @@ int init_db(leveldb_t **db, char **dest, char *db_env, char *name){
   return 0;
 }
 
-int check_if_db_loaded(leveldb_t **db, char *path){
-  if(*db == NULL){
-    // Try to open it again and see if that works
-    if(open_or_create_db(db, path) != 0){
-      return 1;
-    }
-  }
-  return 0;
-}
-
 int destroy_db(leveldb_t **db, char *name){
   /**Note this could be weird, maybe we don't care about closing the database */
   leveldb_close(*db);
