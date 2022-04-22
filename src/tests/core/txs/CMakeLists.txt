@@ -7,9 +7,13 @@ target_link_libraries(test_base_tx
 
 add_executable(test_ser_tx test_ser_tx.c)
 target_compile_options(test_ser_tx PRIVATE ${COMPILE_OPTIONS_STD})
-target_include_directories(test_ser_tx PUBLIC ${INCLUDE_ALL})
+target_include_directories(test_ser_tx 
+  PUBLIC ${INCLUDE_ALL}
+  PUBLIC ${INCLUDE_FIXTURES})
 target_link_libraries(test_ser_tx  
-  core_tx)
+  core_tx
+  cmocka-static
+  fixtures)
 
 add_executable(test_wallet_pool test_wallet_pool.c)
 target_compile_options(test_wallet_pool PRIVATE ${COMPILE_OPTIONS_STD})
