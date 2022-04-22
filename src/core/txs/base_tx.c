@@ -41,7 +41,6 @@ Transaction *copy_tx(Transaction *tx){
     return NULL;
 
   // Copy inputs
-  // Harder since we need to also copy pub keys
   copy = malloc(sizeof(Transaction));
   copy->num_inputs = tx->num_inputs;
   copy->inputs = malloc(tx->num_inputs * sizeof(Input));
