@@ -55,6 +55,14 @@ Block *_make_block() {
 
 int main() {
   create_proj_folders();
-  utxo_pool_init_leveldb(TEST_DB_LOC);
   blockchain_init_leveldb(PROD_DB_LOC);
+  // destroy_db(&blockchain_db, blockchain_path);
+  // blockchain_init_leveldb(PROD_DB_LOC);
+  // unsigned int num_blocks;
+  // // blockchain_count(&num_blocks);
+  // int test = read_chain();
+  // unsigned char *hash = read_top_hash();
+  //printf("Chain height: %i, Numblocks: %i\n", test, num_blocks);
+  //dump_buf("", "KEY: ", hash, BLOCK_HASH_LEN);
+
 }

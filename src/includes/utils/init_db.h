@@ -8,10 +8,6 @@
 
 int create_folder(char *path);
 
-int read_chain();
-
-int write_chain();
-
 int create_proj_folders();
 
 int set_db_path(char *dest[], char *name);

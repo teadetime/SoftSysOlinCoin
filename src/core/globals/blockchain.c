@@ -4,29 +4,106 @@
 #include "init_db.h"
 #include "ser_block.h"
 
+int read_top_hash(unsigned char *dest){
+  char path[strlen(blockchain_path) + strlen(TOP_BLOCK_HASH_FILE) + 1];
+  strcpy(path, blockchain_path);
+  strcat(path, TOP_BLOCK_HASH_FILE);
+  printf("%s\n", path);
+  FILE *fp_hash = fopen(path, "r");
+  if(!fp_hash){
+    return 1;
+  }
+  fgets(dest, BLOCK_HASH_LEN+1, fp_hash); // Add for null character
+  fclose(fp_hash);
+  return 0;
+}
+
+int write_top_hash(){
+  char path[strlen(blockchain_path) + strlen(TOP_BLOCK_HASH_FILE) + 1];
+  strcpy(path, blockchain_path);
+  strcat(path, TOP_BLOCK_HASH_FILE);
+  FILE *fp_hash = fopen(path, "w+");
+  if(!fp_hash){
+    exit(0);
+  }
+  fwrite(top_block_header_hash, sizeof(unsigned char), BLOCK_HASH_LEN, fp_hash);
+  fclose(fp_hash);
+  return 0;
+}
+
+int read_chain(){
+  int i = -1;
+  char path[strlen(blockchain_path) + strlen(CHAIN_HEIGHT_FILE) + 1];
+  strcpy(path, blockchain_path);
+  strcat(path, CHAIN_HEIGHT_FILE);
+  printf("%s\n", path);
+  FILE *fp_chain = fopen(path, "r");
+  if(!fp_chain){
+    return i;
+  }  
+  fscanf(fp_chain, "%d", &i);
+  fclose(fp_chain);
+  return i;
+}
+
+int write_chain(){
+  char path[strlen(blockchain_path) + strlen(CHAIN_HEIGHT_FILE) + 1];
+  strcpy(path, blockchain_path);
+  strcat(path, CHAIN_HEIGHT_FILE);
+  FILE *fp_chain = fopen(path, "w+");
+  if(!fp_chain){
+    exit(0);
+  }
+  fprintf(fp_chain,"%li", chain_height);
+  fclose(fp_chain);
+  return 0;
+}
+
+
 int blockchain_init_leveldb(char *db_env){
   int init_ret = init_db(&blockchain_db, &blockchain_path, db_env, "/blockchain");
   if(init_ret != 0){
     return 5;
   }
-  Block* genesis_block;
-  chain_height = 0;
+  int use_existing_db = 0;
+  // Check if we are using an existing DB
+  unsigned char file_top_block_hash[BLOCK_HASH_LEN];
+  int read_hash = read_top_hash(file_top_block_hash);
+  int file_chain_height = read_chain();
+  
+  if(read_hash == 0 && file_chain_height != -1){
+    Block *test_top_block;
+    int found_top = blockchain_find_leveldb(&test_top_block, file_top_block_hash);
+    if(found_top == 0){
+      free(test_top_block);
+    }
+    unsigned int num_entries;
+    blockchain_count(&num_entries);
+    if(found_top == 0 && num_entries >= file_chain_height){
+      use_existing_db = 1;
+    }
+  }
 
-  genesis_block = malloc(sizeof(Block));
+  if(use_existing_db){
+    chain_height = file_chain_height;
+    memcpy(top_block_header_hash, file_top_block_hash, BLOCK_HASH_LEN);
+  }
+  else{
+    Block genesis_block;
+    chain_height = 0;
+    // Initialize with a totally empty block
+    genesis_block.num_txs = 0;
+    genesis_block.txs = NULL;
 
-  // Initialize with a totally empty block
-  genesis_block->num_txs = 0;
-  genesis_block->txs = NULL;
+    genesis_block.header.timestamp = 0;
+    genesis_block.header.nonce = 0;
+    memset(genesis_block.header.all_tx, 0, TX_HASH_LEN);
+    memset(genesis_block.header.prev_header_hash, 0, BLOCK_HASH_LEN);
 
-  genesis_block->header.timestamp = 0;
-  genesis_block->header.nonce = 0;
-  memset(genesis_block->header.all_tx, 0, TX_HASH_LEN);
-  memset(genesis_block->header.prev_header_hash, 0, BLOCK_HASH_LEN);
-
-  int ret = blockchain_add_leveldb(genesis_block);
-  if(ret != 0){
-    free(genesis_block);
-    return 3;
+    int ret = blockchain_add_leveldb(&genesis_block);
+    if(ret != 0){
+      return 3;
+    }
   }
   return 0;
 }
@@ -55,7 +132,9 @@ int blockchain_add_leveldb(Block *block){
   }
 
   chain_height += 1;
+  write_chain("");
   memcpy(top_block_header_hash, db_key, BLOCK_HASH_LEN);
+  write_top_hash("");
   leveldb_free(err);
   return 0;
 }
@@ -72,10 +151,12 @@ int blockchain_find_leveldb(Block **found_block, unsigned char *block_hash){
   if (err != NULL) {
     fprintf(stderr, "Read fail: %s\n", err);
     leveldb_free(err);
+    *found_block = NULL;
     return 3;
   }
   leveldb_free(err);
   if(read == NULL){
+    *found_block = NULL;
     return 1;
   }
 

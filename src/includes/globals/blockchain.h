@@ -64,3 +64,34 @@ prefix: string to put in front of all print commands used for tabbing structure
 void print_blockchain_hashmap(char *prefix);
 void pretty_print_blockchain_hashmap();
 
+/**
+ * @brief Reads the top hash from the local file
+ * NOTE: requires blockchain to be initialized
+ * 
+ * @param dest destination buffer to read the data into, allocateed 
+ * by the caller of BLOCK_HASH_LEN
+ * @return int 0 if success, otherwise not zero
+ */
+int read_top_hash(unsigned char *dest);
+
+/**
+ * @brief Write the top block hash to local file
+ * NOTE: requires blockchain to be initialized
+ * @return int 0 if success, otherwise not zero
+ */
+int write_top_hash();
+
+/**
+ * @brief Read the chain height from local file
+ * NOTE: requires blockchain to be initialized
+ * @return int chainheight if successfully read, -1 if failure reading
+ */
+int read_chain();
+
+/**
+ * @brief Write the chainheight to local file
+ * NOTE: requires blockchain to be initialized
+ * 
+ * @return int 0 if write successful, not zero if failure
+ */
+int write_chain();
