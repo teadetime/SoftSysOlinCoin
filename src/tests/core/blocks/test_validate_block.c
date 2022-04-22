@@ -71,7 +71,7 @@ static char  *test_coinbase_tx() {
     validate_coinbase_tx(test_block->txs, test_block->num_txs) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
@@ -87,7 +87,7 @@ static char  *test_validate_txs() {
     validate_incoming_block_txs(test_block->txs, test_block->num_txs) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
@@ -103,7 +103,7 @@ static char  *test_validate_prev_block() {
     validate_prev_block_exists(test_block) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
@@ -118,7 +118,7 @@ static char  *test_validate_all_tx() {
     validate_all_tx_hash(test_block) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
@@ -133,7 +133,7 @@ static char  *test_validate_block_double_spend() {
     validate_block_double_spend(test_block) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
@@ -154,7 +154,7 @@ static char  *test_validate_whole_block() {
     validate_block(good_block) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }

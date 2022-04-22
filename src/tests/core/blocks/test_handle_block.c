@@ -92,7 +92,7 @@ static char  *test_update_local_blockchain() {
     memcmp(&found_block->header, &good_block->header, sizeof(BlockHeader)) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
@@ -121,7 +121,7 @@ static char  *test_update_utxo_pool() {
     prev_wallet_size+1 == new_wallet_size
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
@@ -144,7 +144,7 @@ static char  *test_update_mempool() {
     prev_mapping_size-1 == HASH_COUNT(utxo_to_tx)
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
@@ -204,7 +204,7 @@ static char  *test_accept_block() {
     prev_mapping_size-1 == HASH_COUNT(utxo_to_tx)
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
@@ -267,7 +267,7 @@ static char  *test_handle_block() {
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
   destroy_wallet();
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   return NULL;
 }
 

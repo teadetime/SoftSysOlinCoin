@@ -23,6 +23,13 @@ leveldb_t *blockchain_db;  // Level DB Database
 int blockchain_init_leveldb(char *db_env);
 
 /**
+ * @brief Destroys Blockchain database and chain/top_hash files
+ * 
+ * @return int 0 if success, not zero otherwise
+ */
+int destroy_blockchain();
+
+/**
  * @brief Creates a new block in the blockchain
  * 
  * @param block block to add
@@ -82,6 +89,13 @@ int read_top_hash(unsigned char *dest);
 int write_top_hash();
 
 /**
+ * @brief Deltes TOP_HASH_FILE
+ * 
+ * @return int 0 if success, not zero otherwise
+ */
+int delete_top_hash();
+
+/**
  * @brief Read the chain height from local file
  * NOTE: requires blockchain to be initialized
  * @return int chainheight if successfully read, -1 if failure reading
@@ -95,3 +109,10 @@ int read_chain();
  * @return int 0 if write successful, not zero if failure
  */
 int write_chain();
+
+/**
+ * @brief Deltes the Chain height file
+ * 
+ * @return int 0 if success, not zero if failure
+ */
+int delete_chain();

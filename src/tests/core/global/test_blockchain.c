@@ -32,7 +32,7 @@ Block *_make_block() {
 
 static char *test_blockchain_init_exists() {
   int init_ret = blockchain_init_leveldb(TEST_DB_LOC);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   init_ret = blockchain_init_leveldb(TEST_DB_LOC);
   mu_assert(
       "Init return indicates fialure",
@@ -44,7 +44,7 @@ static char *test_blockchain_init_exists() {
       "Genesis block was not created",
       count == 1
   );
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   return NULL;
 }
 
@@ -88,7 +88,7 @@ static char *test_blockchain_init_correct() {
   //     BLOCK_HASH_LEN
   //   ) == 0
   // );
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   return NULL;
 }
 
@@ -114,7 +114,7 @@ static char  *test_blockchain_add() {
   free(block->txs[0]);
   free(block->txs);
   free(block);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   return NULL;
 }
 
@@ -141,7 +141,7 @@ static char  *test_blockchain_find() {
   free(block->txs[0]);
   free(block->txs);
   free(block);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   return NULL;
 }
 
@@ -188,7 +188,7 @@ static char  *test_blockchain_remove() {
   free(block->txs);
   free(block);
   free(ret_block);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   return NULL;
 }
 

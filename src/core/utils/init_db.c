@@ -28,9 +28,9 @@ int create_proj_folders(){
   strcat(newPath, LOCAL_LOCATION);
   int ret_base = create_folder(newPath);
   if(ret_base != 0){
+    free(newPath);
     return 1;
   }
-
   // Create prod and test folders
   char *prod = malloc(strlen(newPath) + strlen(PROD_DB_LOC) + 1);
   char *test = malloc(strlen(newPath) + strlen(TEST_DB_LOC) + 1);
@@ -41,24 +41,19 @@ int create_proj_folders(){
   strcat(test, TEST_DB_LOC);
 
   int ret_prod = create_folder(prod);
+  int ret_test = create_folder(test);
   free(prod);
+  free(test);
   if(ret_prod != 0){
     return 1;
   }
-
-  int ret_test = create_folder(test);
-  free(test);
   if(ret_test != 0){
-    return 1;
+    return 2;
   }
   return 0;
 }
 
 int open_or_create_db(leveldb_t **db, char *path){
-  if(*db != NULL){
-    fprintf(stderr, "Database Already Open\n");
-    return 0;
-  }
   leveldb_options_t *options;
   char *err = NULL;
   int ret = 0;
@@ -111,7 +106,7 @@ int destroy_db(leveldb_t **db, char *name){
   }
   /* reset error var */
   leveldb_options_destroy(options);
-  leveldb_free(err); err = NULL;
+  leveldb_free(err);
   return ret;
 }
 

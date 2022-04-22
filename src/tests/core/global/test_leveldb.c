@@ -55,7 +55,8 @@ Block *_make_block() {
 
 int main() {
   create_proj_folders();
-  blockchain_init_leveldb(PROD_DB_LOC);
+  blockchain_init_leveldb(TEST_DB_LOC);
+  destroy_blockchain();
   // destroy_db(&blockchain_db, blockchain_path);
   // blockchain_init_leveldb(PROD_DB_LOC);
   // unsigned int num_blocks;

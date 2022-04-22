@@ -5,11 +5,11 @@
 #include "ser_block.h"
 
 int read_top_hash(unsigned char *dest){
-  char path[strlen(blockchain_path) + strlen(TOP_BLOCK_HASH_FILE) + 1];
+  char *path = malloc(strlen(blockchain_path) + strlen(TOP_BLOCK_HASH_FILE) + 1);
   strcpy(path, blockchain_path);
   strcat(path, TOP_BLOCK_HASH_FILE);
-  printf("%s\n", path);
   FILE *fp_hash = fopen(path, "r");
+  free(path);
   if(!fp_hash){
     return 1;
   }
@@ -19,10 +19,11 @@ int read_top_hash(unsigned char *dest){
 }
 
 int write_top_hash(){
-  char path[strlen(blockchain_path) + strlen(TOP_BLOCK_HASH_FILE) + 1];
+  char *path = malloc(strlen(blockchain_path) + strlen(TOP_BLOCK_HASH_FILE) + 1);
   strcpy(path, blockchain_path);
   strcat(path, TOP_BLOCK_HASH_FILE);
   FILE *fp_hash = fopen(path, "w+");
+  free(path);
   if(!fp_hash){
     exit(0);
   }
@@ -31,13 +32,22 @@ int write_top_hash(){
   return 0;
 }
 
+int delete_top_hash(){
+  char *path = malloc(strlen(blockchain_path) + strlen(TOP_BLOCK_HASH_FILE) + 1);
+  strcpy(path, blockchain_path);
+  strcat(path, TOP_BLOCK_HASH_FILE);
+  int ret = remove(path);
+  free(path);
+  return ret;
+}
+
 int read_chain(){
   int i = -1;
-  char path[strlen(blockchain_path) + strlen(CHAIN_HEIGHT_FILE) + 1];
+  char *path = malloc(strlen(blockchain_path) + strlen(CHAIN_HEIGHT_FILE) + 1);
   strcpy(path, blockchain_path);
   strcat(path, CHAIN_HEIGHT_FILE);
-  printf("%s\n", path);
   FILE *fp_chain = fopen(path, "r");
+  free(path);
   if(!fp_chain){
     return i;
   }  
@@ -47,10 +57,11 @@ int read_chain(){
 }
 
 int write_chain(){
-  char path[strlen(blockchain_path) + strlen(CHAIN_HEIGHT_FILE) + 1];
+  char *path = malloc(strlen(blockchain_path) + strlen(CHAIN_HEIGHT_FILE) + 1);
   strcpy(path, blockchain_path);
   strcat(path, CHAIN_HEIGHT_FILE);
   FILE *fp_chain = fopen(path, "w+");
+  free(path);
   if(!fp_chain){
     exit(0);
   }
@@ -59,12 +70,36 @@ int write_chain(){
   return 0;
 }
 
+int delete_chain(){
+  char *path = malloc(strlen(blockchain_path) + strlen(CHAIN_HEIGHT_FILE) + 1);
+  strcpy(path, blockchain_path);
+  strcat(path, CHAIN_HEIGHT_FILE);
+  int ret = remove(path);
+  free(path);
+  return ret;
+}
 
 int blockchain_init_leveldb(char *db_env){
   int init_ret = init_db(&blockchain_db, &blockchain_path, db_env, "/blockchain");
   if(init_ret != 0){
     return 5;
   }
+  // Make the genesis Block
+  Block genesis_block;
+  chain_height = 0;
+  // Initialize with a totally empty block
+  genesis_block.num_txs = 0;
+  genesis_block.txs = NULL;
+
+  genesis_block.header.timestamp = 0;
+  genesis_block.header.nonce = 0;
+  memset(genesis_block.header.all_tx, 0, TX_HASH_LEN);
+  memset(genesis_block.header.prev_header_hash, 0, BLOCK_HASH_LEN);
+  unsigned char genesis_hash[BLOCK_HASH_LEN];
+  hash_blockheader(genesis_hash, &genesis_block.header);
+  Block *test_genesis_block;
+  int found_genesis = blockchain_find_leveldb(&test_genesis_block, genesis_hash);
+
   int use_existing_db = 0;
   // Check if we are using an existing DB
   unsigned char file_top_block_hash[BLOCK_HASH_LEN];
@@ -79,8 +114,12 @@ int blockchain_init_leveldb(char *db_env){
     }
     unsigned int num_entries;
     blockchain_count(&num_entries);
-    if(found_top == 0 && num_entries >= file_chain_height){
+    if(found_top == 0 && num_entries >= file_chain_height && found_genesis == 0){
       use_existing_db = 1;
+    }
+    else{
+      fprintf(stderr, "Database fiels conflict with data in the DB\n");
+      exit(1);
     }
   }
 
@@ -89,23 +128,20 @@ int blockchain_init_leveldb(char *db_env){
     memcpy(top_block_header_hash, file_top_block_hash, BLOCK_HASH_LEN);
   }
   else{
-    Block genesis_block;
-    chain_height = 0;
-    // Initialize with a totally empty block
-    genesis_block.num_txs = 0;
-    genesis_block.txs = NULL;
-
-    genesis_block.header.timestamp = 0;
-    genesis_block.header.nonce = 0;
-    memset(genesis_block.header.all_tx, 0, TX_HASH_LEN);
-    memset(genesis_block.header.prev_header_hash, 0, BLOCK_HASH_LEN);
-
+    
     int ret = blockchain_add_leveldb(&genesis_block);
     if(ret != 0){
       return 3;
     }
   }
   return 0;
+}
+
+int destroy_blockchain(){
+  destroy_db(&blockchain_db, blockchain_path);
+  int chain = delete_chain();
+  int top_hash = delete_top_hash();
+  return (chain || top_hash);
 }
 
 int blockchain_add_leveldb(Block *block){

@@ -5,9 +5,20 @@
 #define CHAIN_HEIGHT_FILE "/chain_height.dat"
 #define TOP_BLOCK_HASH_FILE "/top_block_hash.dat"
 
-
+/**
+ * @brief Create a folder at path location
+ * 
+ * @param path path to create a folder at
+ * @return int 0 if success, otherwise 1
+ */
 int create_folder(char *path);
 
+/**
+ * @brief Creates required project folders @ 
+ * $HOME/LOCAL_LOCATION/(PROD_db_LOC or TEST_db_loc)
+ * 
+ * @return int 0 if success, not zero otherwise
+ */
 int create_proj_folders();
 
 int set_db_path(char *dest[], char *name);
