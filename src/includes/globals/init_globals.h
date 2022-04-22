@@ -3,9 +3,9 @@
 /**
  * @brief Initializes node data structures
  *
- * Initializes blockchain and utxo pool
+ * @param db_env TEST_DB_LOC or PROD_DB_LOC to initialize node
  */
-void node_init();
+void node_init(char *db_env);
 
 /**
  * @brief Initializes miner data structures

@@ -13,6 +13,7 @@ int wallet_init_leveldb(char *db_env){
   if(init_key_pool != 0){
     return 6;
   }
+  return 0;
 }
 
 void destroy_wallet(){
@@ -76,12 +77,14 @@ int wallet_pool_find_leveldb(WalletEntry **found_entry, unsigned char *tx_hash, 
   if (err != NULL) {
     fprintf(stderr, "Read fail: %s\n", err);
     leveldb_free(err);
+    if(read != NULL){
+      free(read);
+    }
     return 3;
   }
   if(read == NULL){
     return 1;
   }
-  
   size_t read_bytes;
   *found_entry = deser_wallet_entry_alloc(&read_bytes, (unsigned char*) read);
   free(read);
@@ -107,12 +110,11 @@ int wallet_pool_remove_leveldb(unsigned char *tx_hash, unsigned int vout){
     leveldb_free(err);
     return(3);
   }
-  leveldb_free(err);
   return 0;
 }
 
 int wallet_pool_count(unsigned int *num_entries){
-  return db_count(wallet_pool_db, wallet_pool_path, num_entries);
+  return db_count(wallet_pool_db, num_entries);
 }
 
 /* KEY POOL FUNCS */
@@ -151,6 +153,9 @@ int key_pool_find_leveldb(mbedtls_ecdsa_context **keypair, unsigned char *public
   if (err != NULL) {
     fprintf(stderr, "Read fail: %s\n", err);
     leveldb_free(err);
+    if(read != NULL){
+      free(read);
+    }
     return 3;
   }
   if(read == NULL){
@@ -176,12 +181,11 @@ int key_pool_remove_leveldb(unsigned char *public_key_hash) {
     leveldb_free(err);
     return(3);
   }
-  leveldb_free(err);
   return 0;
 }
 
 int key_pool_count(unsigned int *num_entries){
-  return db_count(key_pool_db, key_pool_path, num_entries);
+  return db_count(key_pool_db, num_entries);
 }
 
 mbedtls_ecdsa_context *check_if_output_unlockable_leveldb(Transaction *tx, unsigned int vout){

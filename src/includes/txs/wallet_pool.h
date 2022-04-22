@@ -29,28 +29,6 @@ char *wallet_pool_path;
 leveldb_t *wallet_pool_db;  // Level DB Database
 
 
-/* The wallet pool tracks all outputs the wallet controls
- *
- * Entries should be added whenever the wallet receives a new block and finds an
- * output with a public key hash that corresponds to a keypair in the key pool.
- *
- * Entires should be removed whenever the wallet receives a new block and finds
- * an input with an UTXOPoolKey (tx hash + vout) that corresponds to an existing
- * entry.
- */
-WalletPool *wallet_pool;
-
-/* The key pool tracks all keys the wallet controls
- *
- * Entries should be added whenever a new key is generated - whether for use in
- * a transaction with an output back to the wallet, or for use as an address to
- * give to another member of the network.
- *
- * Entries in the key pool should almost NEVER be removed. Old keys can always
- * be reused, and outputs to a key pair that we no longer control are un-usable
- */
-KeyPool *key_pool;
-
 /**
  * @brief Initializes wallet
 
@@ -69,8 +47,7 @@ void destroy_wallet();
  * @brief Adds an entry to the wallet pool
  *
  * Creates a new WalletEntry using passed data, then adds new entry to the
- * wallet pool. NOTE: Does not copy the passed key but it is serialized so it should be safe to free
- *
+ * wallet pool. 
  * @param tx Transaction the new entry is a part of
  * @param vout Output index of the new entry within the source transaction
  * @param key_pair Key pair associated with the new entry

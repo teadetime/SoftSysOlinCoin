@@ -60,20 +60,6 @@ void _populate_wallet_pool() {
   wallet_pool_build_add_leveldb(_make_single_out_tx(10), 0, gen_keys());
 }
 
-void _free_wallet_pool() {
-  WalletPool *s, *current, *tmp;
-
-  s = wallet_pool;
-  while (s != NULL) {
-    tmp = s->hh.next;
-    current = s;
-    HASH_DEL(s, wallet_pool);
-    mbedtls_ecp_keypair_free(current->entry->key_pair);
-    free(current);
-    s = tmp;
-  }
-}
-
 static char *test_build_inputs() {
   TxOptions *options;
   Transaction *tx;
@@ -136,11 +122,6 @@ static char *test_build_inputs() {
       "Input has wrong tx signature",
       memcmp(tx->inputs[i].signature, empty_sig, SIGNATURE_LEN) == 0
     );
-
-    // mu_assert(
-    //     "Wrong input key pair returned",
-    //     map_value->entry->key_pair == ret_keys[i]
-    // );
     mu_assert(
       "Returned key pair private Q incorrect",
       mbedtls_ecp_point_cmp(&read_wallet_entry->key_pair->private_Q, &ret_keys[i]->private_Q) == 0
@@ -160,42 +141,8 @@ static char *test_build_inputs() {
   }
   leveldb_iter_destroy(iter2);
   leveldb_readoptions_destroy(roptions2);
-  // i = 0;
-  // for (map_value = wallet_pool; map_value != NULL; map_value = map_value->hh.next) {
-  //   mu_assert(
-  //       "Input has wrong vout",
-  //       map_value->id.vout == tx->inputs[i].prev_utxo_output
-  //   );
-  //   mu_assert(
-  //       "Input has wrong tx hash",
-  //       memcmp(map_value->id.tx_hash, tx->inputs[i].prev_tx_id, TX_HASH_LEN) == 0
-  //   );
-  //   mu_assert(
-  //       "Input has wrong tx pub_key",
-  //       mbedtls_ecp_point_cmp(
-  //         &(map_value->entry->key_pair->private_Q),
-  //         tx->inputs[i].pub_key
-  //       ) == 0
-  //   );
-  //   mu_assert(
-  //       "Input has wrong tx signature",
-  //       memcmp(tx->inputs[i].signature, empty_sig, SIGNATURE_LEN) == 0
-  //   );
-
-  //   mu_assert(
-  //       "Wrong input key pair returned",
-  //       map_value->entry->key_pair == ret_keys[i]
-  //   );
-  //   mu_assert(
-  //       "Hash map entry spent not set",
-  //       map_value->entry->spent == 1
-  //   );
-
-  //   i++;
-  // }
 
   _free_options(options);
-  //_free_wallet_pool();
   _free_tx(tx);
   free(ret_keys);
   destroy_wallet();
@@ -281,7 +228,6 @@ static char *test_sign_tx() {
   }
 
   _free_options(options);
-  //_free_wallet_pool();
   _free_tx(tx);
   free(*ret_keys);
   destroy_wallet();
@@ -311,7 +257,6 @@ static char *test_build_tx() {
   );
 
   _free_options(options);
-  //_free_wallet_pool();
   _free_tx(tx);
   destroy_wallet();
 

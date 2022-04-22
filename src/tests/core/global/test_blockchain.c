@@ -56,10 +56,13 @@ static char *test_blockchain_init_correct() {
   memset(empty_block_hash, 0, BLOCK_HASH_LEN);
 
   blockchain_init_leveldb(TEST_DB_LOC);
+  
   mu_assert(
     "Chain Height Incorrect",
     chain_height == 1
   );
+
+  // The following tests require to find the genesis block
   // mu_assert(
   //   "Genesis num_txs incorrect",
   //   blockchain->block->num_txs == 0
@@ -95,7 +98,6 @@ static char *test_blockchain_init_correct() {
 static char  *test_blockchain_add() {
 
   blockchain_init_leveldb(TEST_DB_LOC);
-  //ret_block = blockchain_add(block);
   Block *block;
   block = _make_block();
   int ret_add = blockchain_add_leveldb(block);
@@ -109,8 +111,6 @@ static char  *test_blockchain_add() {
     "Add did not return correct block",
     entries == 2
   );
-  pretty_print_blockchain_hashmap();
-
   free(block->txs[0]);
   free(block->txs);
   free(block);
@@ -127,15 +127,16 @@ static char  *test_blockchain_find() {
 
   blockchain_init_leveldb(TEST_DB_LOC);
   blockchain_add_leveldb(block);
-  //ret_block = blockchain_find(hash);
   int ret_find = blockchain_find_leveldb(&ret_block, hash);
   mu_assert(
     "Function returned failure",
     ret_find == 0
   );
+  unsigned char found_hash[BLOCK_HASH_LEN];
+  hash_blockheader(found_hash, &(ret_block->header));
   mu_assert(
     "Find did not return correct block",
-    memcmp(&ret_block->header, &block->header, sizeof(BlockHeader)) == 0
+    memcmp(hash, found_hash, BLOCK_HASH_LEN) == 0
   );
 
   free(block->txs[0]);
@@ -155,7 +156,6 @@ static char  *test_blockchain_remove() {
   blockchain_init_leveldb(TEST_DB_LOC);
   blockchain_add_leveldb(block);
   unsigned long prev_chain_height = chain_height;
-  //ret_block = blockchain_remove(hash);
   unsigned int prev_count;
   blockchain_count(&prev_count);
   int ret_remove = blockchain_remove_leveldb(hash);

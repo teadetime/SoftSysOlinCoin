@@ -280,9 +280,8 @@ void shell_loop() {
 }
 
 void shell_init_globals() {
-  node_init();
+  node_init(PROD_DB_LOC);
   miner_init();
-  //wallet_init();
   wallet_init_leveldb(PROD_DB_LOC);
 }
 

@@ -49,12 +49,19 @@ static char  *test_utxo_pool_add() {
 
   tx = _make_tx();
   utxo_pool_init_leveldb(TEST_DB_LOC);
+  unsigned int num_utxo_prev;
+  utxo_pool_count(&num_utxo_prev);
   int ret = utxo_pool_add_leveldb(tx,0);
+  unsigned int num_utxo_after;
+  utxo_pool_count(&num_utxo_after);
   mu_assert(
     "Return Value indicates a failure",
     ret == 0
   );
-
+  mu_assert(
+    "UTXO pool increased in size incorrectly",
+    num_utxo_after == num_utxo_prev+1
+  );
   free(tx->inputs);
   free(tx->outputs);
   free(tx);

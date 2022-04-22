@@ -108,11 +108,11 @@ int read_chain();
  * 
  * @return int 0 if write successful, not zero if failure
  */
-int write_chain();
+int write_chain_height();
 
 /**
  * @brief Deltes the Chain height file
  * 
  * @return int 0 if success, not zero if failure
  */
-int delete_chain();
+int delete_chain_height();

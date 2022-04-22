@@ -13,8 +13,11 @@ int read_top_hash(unsigned char *dest){
   if(!fp_hash){
     return 1;
   }
-  fgets(dest, BLOCK_HASH_LEN+1, fp_hash); // Add for null character
+  char *ret_fgets = fgets(dest, BLOCK_HASH_LEN+1, fp_hash); // Add for null character
   fclose(fp_hash);
+  if(!ret_fgets){
+    return 1;
+  }
   return 0;
 }
 
@@ -51,12 +54,15 @@ int read_chain(){
   if(!fp_chain){
     return i;
   }  
-  fscanf(fp_chain, "%d", &i);
+  int ret_scanf = fscanf(fp_chain, "%d", &i);
   fclose(fp_chain);
+  if(ret_scanf != 1){
+    return -1;
+  }
   return i;
 }
 
-int write_chain(){
+int write_chain_height(){
   char *path = malloc(strlen(blockchain_path) + strlen(CHAIN_HEIGHT_FILE) + 1);
   strcpy(path, blockchain_path);
   strcat(path, CHAIN_HEIGHT_FILE);
@@ -70,7 +76,7 @@ int write_chain(){
   return 0;
 }
 
-int delete_chain(){
+int delete_chain_height(){
   char *path = malloc(strlen(blockchain_path) + strlen(CHAIN_HEIGHT_FILE) + 1);
   strcpy(path, blockchain_path);
   strcat(path, CHAIN_HEIGHT_FILE);
@@ -82,7 +88,8 @@ int delete_chain(){
 int blockchain_init_leveldb(char *db_env){
   int init_ret = init_db(&blockchain_db, &blockchain_path, db_env, "/blockchain");
   if(init_ret != 0){
-    return 5;
+    fprintf(stderr, "Blockchain initialization failed: %i\n", init_ret);
+    exit(1);
   }
   // Make the genesis Block
   Block genesis_block;
@@ -139,7 +146,7 @@ int blockchain_init_leveldb(char *db_env){
 
 int destroy_blockchain(){
   destroy_db(&blockchain_db, blockchain_path);
-  int chain = delete_chain();
+  int chain = delete_chain_height();
   int top_hash = delete_top_hash();
   return (chain || top_hash);
 }
@@ -160,7 +167,7 @@ int blockchain_add_leveldb(Block *block){
   leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
   leveldb_put(blockchain_db, woptions, db_key, key_len, serialized_block, block_size, &err);
   leveldb_writeoptions_destroy(woptions);
-  dump_buf("", "KEY: ", db_key, key_len);
+  free(serialized_block);
   if (err != NULL) {
     fprintf(stderr, "Write Block fail: %s\n", err);
     leveldb_free(err);
@@ -168,10 +175,9 @@ int blockchain_add_leveldb(Block *block){
   }
 
   chain_height += 1;
-  write_chain("");
+  write_chain_height("");
   memcpy(top_block_header_hash, db_key, BLOCK_HASH_LEN);
   write_top_hash("");
-  leveldb_free(err);
   return 0;
 }
 
@@ -188,9 +194,11 @@ int blockchain_find_leveldb(Block **found_block, unsigned char *block_hash){
     fprintf(stderr, "Read fail: %s\n", err);
     leveldb_free(err);
     *found_block = NULL;
+    if(read != NULL){
+     free(read);
+    }
     return 3;
   }
-  leveldb_free(err);
   if(read == NULL){
     *found_block = NULL;
     return 1;
@@ -214,12 +222,11 @@ int blockchain_remove_leveldb(unsigned char *block_hash){
     leveldb_free(err);
     return(3);
   }
-  leveldb_free(err);
   return 0;
 }
 
 int blockchain_count(unsigned int *num_entries){
-  return db_count(blockchain_db, blockchain_path, num_entries);
+  return db_count(blockchain_db, num_entries);
 }
 
 void print_blockchain_hashmap(char *prefix){
@@ -229,7 +236,7 @@ void print_blockchain_hashmap(char *prefix){
   unsigned int num_items;
   blockchain_count(&num_items);
   printf("%sBlockchain Hashmap items(%i):\n", prefix, num_items);
-
+  printf(LINE_BREAK);
   char *err = NULL;
   leveldb_readoptions_t *roptions;
   roptions = leveldb_readoptions_create();
@@ -247,7 +254,8 @@ void print_blockchain_hashmap(char *prefix){
 
       Block *read_block = deser_block_alloc(NULL, (unsigned char*)value_ptr);
       print_block(read_block, prefix);
-      // /* Prints some binary noise with the data */
+      printf(LINE_BREAK);
+      free(read_block);
   }
   leveldb_iter_destroy(iter);
   leveldb_readoptions_destroy(roptions);
@@ -277,7 +285,9 @@ void pretty_print_blockchain_hashmap(){
 
       Block *read_block = deser_block_alloc(NULL, (unsigned char*)value_ptr);
       pretty_print_block_header(&read_block->header, PRINT_TAB);
-      // /* Prints some binary noise with the data */
+      printf(LINE_BREAK);
+      free(read_block);
+
   }
   leveldb_iter_destroy(iter);
   leveldb_readoptions_destroy(roptions);

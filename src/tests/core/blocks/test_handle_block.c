@@ -87,9 +87,11 @@ static char  *test_update_local_blockchain() {
     "Unable to locate block in blockchain",
     ret_find == 0
   );
+  unsigned char found_hash[BLOCK_HASH_LEN];
+  hash_blockheader(found_hash, &(found_block->header));
   mu_assert(
     "Find did not return correct block",
-    memcmp(&found_block->header, &good_block->header, sizeof(BlockHeader)) == 0
+    memcmp(found_hash, block_hash, sizeof(BLOCK_HASH_LEN)) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
   destroy_blockchain();
@@ -183,9 +185,11 @@ static char  *test_accept_block() {
     "Accept: Unable to locate block in blockchain",
     ret_find == 0
   );
+  unsigned char found_hash[BLOCK_HASH_LEN];
+  hash_blockheader(found_hash, &(found_block->header));
   mu_assert(
     "Find did not return correct block",
-    memcmp(&found_block->header, &good_block->header, sizeof(BlockHeader)) == 0
+    memcmp(found_hash, block_hash, sizeof(BLOCK_HASH_LEN)) == 0
   );
   mu_assert(
     "Accept: UTXO pool didn't change by expected amount",
@@ -245,9 +249,11 @@ static char  *test_handle_block() {
     "Handle: Unable to locate block in blockchain",
     ret_find == 0
   );
+  unsigned char found_hash[BLOCK_HASH_LEN];
+  hash_blockheader(found_hash, &(found_block->header));
   mu_assert(
     "Find did not return correct block",
-    memcmp(&found_block->header, &good_block->header, sizeof(BlockHeader)) == 0
+    memcmp(found_hash, block_hash, sizeof(BLOCK_HASH_LEN)) == 0
   );
   mu_assert(
     "Handle: UTXO pool didn't change by expected amount",
@@ -272,7 +278,6 @@ static char  *test_handle_block() {
 }
 
 static char *all_tests() {
-  //wallet_init();
   mu_run_test(test_update_local_blockchain);
   mu_run_test(test_update_utxo_pool);
   mu_run_test(test_update_mempool);

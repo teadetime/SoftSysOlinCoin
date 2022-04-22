@@ -19,10 +19,11 @@ int create_folder(char *path){
 }
 
 int create_proj_folders(){
-  if(!getenv("HOME")){
+  char* home_path = getenv("HOME");
+  if(!home_path){
+    fprintf(stderr, "$HOME env variable not read\n");
     exit(1);
-  }
-  char *home_path = getenv("HOME");
+  }  
   char *newPath = malloc(strlen(home_path) + strlen(LOCAL_LOCATION) + 1);
   strcpy(newPath, home_path);
   strcat(newPath, LOCAL_LOCATION);
@@ -73,10 +74,11 @@ int open_or_create_db(leveldb_t **db, char *path){
 }
 
 int init_db(leveldb_t **db, char **dest, char *db_env, char *name){
-  if(!getenv("HOME")){
-    exit(1);
-  }
   char* home_path = getenv("HOME");
+  if(!home_path){
+    fprintf(stderr, "$HOME env variable not read\n");
+    exit(1);
+  }  
   *dest = malloc(strlen(home_path) + strlen(LOCAL_LOCATION) + strlen(db_env) + strlen(name) + 1);
   strcpy(*dest, home_path);
   strcat(*dest, LOCAL_LOCATION);
@@ -110,7 +112,7 @@ int destroy_db(leveldb_t **db, char *name){
   return ret;
 }
 
-int db_count(leveldb_t *db, char *db_path, unsigned int *num_entries){
+int db_count(leveldb_t *db, unsigned int *num_entries){
   int count = 0;
   leveldb_readoptions_t *roptions;
   roptions = leveldb_readoptions_create();

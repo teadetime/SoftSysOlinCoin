@@ -34,13 +34,13 @@ int validate_prev_block_exists(Block *block){
 
   Block *prev_block = NULL;
   int ret_find = blockchain_find_leveldb(&prev_block, block->header.prev_header_hash);
-  printf("Find return: %i", ret_find);
   if(prev_block == NULL || ret_find != 0){
+
     add_to_pending_blocks(block->header.prev_header_hash);
     request_prev_block(block->header.prev_header_hash);
     return 1;
   }
-
+  free(prev_block);
   if(memcmp(block->header.prev_header_hash, top_block_header_hash, BLOCK_HASH_LEN) != 0 ){
     // NOTE this means we already have atleast one block ahead
     return 2;

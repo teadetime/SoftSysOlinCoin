@@ -35,17 +35,6 @@ target_link_libraries(test_utxo_to_tx
   utxo_to_tx
   core_tx)
 
-# Test LevelDB
-add_executable(test_leveldb test_leveldb.c)
-target_compile_options(test_leveldb PRIVATE ${COMPILE_OPTIONS_STD})
-target_include_directories(test_leveldb PUBLIC ${INCLUDE_ALL})
-target_link_libraries(test_leveldb
-leveldb
-utxopool
-crypto
-core_tx
-blockchain)
-
 add_test(test_list ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_list)
 add_test(test_utxo_pool ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_utxo_pool)
 add_test(test_mempool ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_mempool)
