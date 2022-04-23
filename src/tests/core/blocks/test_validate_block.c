@@ -6,6 +6,7 @@
 #include "utxo_pool.h"
 #include "blockchain.h"
 #include "crypto.h"
+#include "wallet_pool.h"
 
 int tests_run = 0;
 
@@ -42,8 +43,8 @@ void _fill_mempool(){
   Transaction *input_tx, *tx1;
   input_tx = _make_tx();
   input_tx->outputs[0].amt = 100;
-  utxo_pool_init();
-  utxo_pool_add(input_tx, 0);
+  utxo_pool_init_leveldb(TEST_DB_LOC);
+  utxo_pool_add_leveldb(input_tx, 0);
   mbedtls_ecdsa_context *input_tx_context = malloc(sizeof(mbedtls_ecdsa_context));
   memcpy(input_tx_context, last_key_pair, sizeof(mbedtls_ecdsa_context));
   tx1 = _make_tx();
@@ -60,6 +61,8 @@ void _fill_mempool(){
 }
 
 static char  *test_coinbase_tx() {
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   Block *test_block = create_block_alloc(); // Note this creates a valid block
 
@@ -67,10 +70,15 @@ static char  *test_coinbase_tx() {
     "Coinbase Validation Broken",
     validate_coinbase_tx(test_block->txs, test_block->num_txs) == 0
   );
+  destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_blockchain();
+  destroy_wallet();
   return NULL;
 }
 
 static char  *test_validate_txs() {
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   Block *test_block = create_block_alloc();
 
@@ -78,41 +86,61 @@ static char  *test_validate_txs() {
     "Transaction validation failing on valid txs",
     validate_incoming_block_txs(test_block->txs, test_block->num_txs) == 0
   );
+  destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_blockchain();
+  destroy_wallet();
   return NULL;
 }
 
 
 static char  *test_validate_prev_block() {
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   Block *test_block = create_block_alloc();
   mu_assert(
     "Previous block hash compare error",
     validate_prev_block_exists(test_block) == 0
   );
+  destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_blockchain();
+  destroy_wallet();
   return NULL;
 }
 
 static char  *test_validate_all_tx() {
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   Block *test_block = create_block_alloc();
   mu_assert(
     "Failed Validation of good all_tx_hash",
     validate_all_tx_hash(test_block) == 0
   );
+  destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_blockchain();
+  destroy_wallet();
   return NULL;
 }
 
 static char  *test_validate_block_double_spend() {
+  blockchain_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
+  wallet_init_leveldb(TEST_DB_LOC);
   Block *test_block = create_block_alloc();
   mu_assert(
     "Detecting double spend in valid block",
     validate_block_double_spend(test_block) == 0
   );
+  destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_blockchain();
+  destroy_wallet();
   return NULL;
 }
 
 static char  *test_validate_whole_block() {
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   Block *test_block = create_block_alloc();
   mu_assert(
@@ -125,12 +153,13 @@ static char  *test_validate_whole_block() {
     "Block mined and hash meets difficulty",
     validate_block(good_block) == 0
   );
+  destroy_db(&utxo_pool_db, utxo_pool_path);
+  destroy_blockchain();
+  destroy_wallet();
   return NULL;
 }
 
 static char *all_tests() {
-  blockchain_init();
-  utxo_pool_init();
   mu_run_test(test_coinbase_tx);
   mu_run_test(test_validate_txs);
   mu_run_test(test_validate_prev_block);
@@ -142,6 +171,7 @@ static char *all_tests() {
 }
 
 int main() {
+  create_proj_folders();
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);

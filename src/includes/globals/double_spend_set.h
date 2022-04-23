@@ -5,7 +5,7 @@
  * 
  * @param set UTXOPOOl to intialize
  */
-void double_spend_set_init(UTXOPool *set);
+void double_spend_set_init(UTXOPool **set);
 
 /**
  * @brief Add an entry to a doublespend set

@@ -2,11 +2,11 @@
 #include "utxo_pool.h"
 #include "double_spend_set.h"
 
-void double_spend_set_init(UTXOPool *set) {
-  set = NULL;
+void double_spend_set_init(UTXOPool **set) {
+  *set = NULL;
 }
 
-int double_spend_add(UTXOPool *set, unsigned char tx_id[TX_HASH_LEN], unsigned int vout) {
+int double_spend_add(UTXOPool *set, unsigned char *tx_id, unsigned int vout) {
   UTXOPool *new_entry, *found_entry;
   UTXO *utxo;
 

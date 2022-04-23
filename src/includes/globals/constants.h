@@ -16,3 +16,4 @@
 
 #define LINE_BREAK "================================\n"
 #define SOFT_LINE_BREAK "--------------------------------\n"
+#define LOCAL_LOCATION "/.Olincoin"

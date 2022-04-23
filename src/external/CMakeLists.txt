@@ -20,26 +20,16 @@ message(STATUS "external after Cmake Output: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 FetchContent_Declare(MbedTLS
   GIT_REPOSITORY https://github.com/ARMmbed/mbedtls.git
   GIT_TAG v3.1.0
-  # SOURCE_DIR    ${CMAKE_BINARY_DIR}/../external/src
-  # BINARY_DIR    ${CMAKE_BINARY_DIR}/../external/bin
+  GIT_SHALLOW    1
 )
 FetchContent_MakeAvailable(MbedTLS)
 
-FetchContent_Declare(check
-  GIT_REPOSITORY https://github.com/libcheck/check.git
-  GIT_TAG 0.15.2
-  # SOURCE_DIR    ${CMAKE_BINARY_DIR}/../external/src
-  # BINARY_DIR    ${CMAKE_BINARY_DIR}/../external/bin
+FetchContent_Declare(levelDB
+  GIT_REPOSITORY https://github.com/google/leveldb.git
+  GIT_TAG 1.23
+  GIT_SHALLOW    1
 )
-FetchContent_MakeAvailable(check)
-
-FetchContent_Declare(check
-  GIT_REPOSITORY https://github.com/libcheck/check.git
-  GIT_TAG 0.15.2
-  # SOURCE_DIR    ${CMAKE_BINARY_DIR}/../external/src
-  # BINARY_DIR    ${CMAKE_BINARY_DIR}/../external/bin
-)
-FetchContent_MakeAvailable(check)
+FetchContent_MakeAvailable(levelDB)
 
 # Also specify GIT_SHALLOW to avoid cloning branch we don't care about
 FetchContent_Declare(
@@ -48,7 +38,6 @@ FetchContent_Declare(
   GIT_TAG        cmocka-1.1.5
   GIT_SHALLOW    1
 )
-FetchContent_MakeAvailable(check)
 
 # We want to link to cmocka-static, so we need to set this option before calling the FetchContent_MakeAvailable
 # We also don't care about example and tests

@@ -1,80 +1,116 @@
 #include <stdio.h>
 #include "utxo_pool.h"
 #include "crypto.h"
+#include "init_db.h"
+#include "ser_tx.h"
 
-void utxo_pool_init() {
-  utxo_pool = NULL;
+int make_utxo_pool_key_with_hash(unsigned char *dest, size_t *len, unsigned char *hash, unsigned int vout){
+  *len = TX_HASH_LEN+sizeof(vout);
+  memcpy(dest, hash, TX_HASH_LEN);
+  memcpy(dest+TX_HASH_LEN, &vout, sizeof(vout));
+  return 0;
 }
 
-UTXO *utxo_pool_add(Transaction *tx, unsigned int vout) {
-  UTXOPool *new_entry, *found_entry;
-  UTXO *utxo;
-
-  new_entry = malloc(sizeof(UTXOPool));
-
-  // Build key
-  memset(&(new_entry->id), 0, sizeof(UTXOPoolKey));
-  hash_tx(new_entry->id.tx_hash, tx);
-  new_entry->id.vout = vout;
-
-  // Build new UTXO
-  utxo = malloc(sizeof(UTXO));
-  utxo->amt = tx->outputs[vout].amt;
-  memcpy(utxo->public_key_hash, tx->outputs[vout].public_key_hash, PUB_KEY_HASH_LEN);
-
-  new_entry->utxo = utxo;
-
-  found_entry = utxo_pool_find_node_key(&(new_entry->id));
-  if (found_entry == NULL) {
-    HASH_ADD(hh, utxo_pool, id, sizeof(UTXOPoolKey), new_entry);
-    return utxo;
-  } else {
-    free(new_entry->utxo);
-    free(new_entry);
-    return NULL;
+int make_utxo_pool_key(unsigned char *dest, size_t *len, Transaction *tx, unsigned int vout){
+  if(vout > tx->num_outputs-1){
+    return 1;
   }
+  unsigned char temp_hash[TX_HASH_LEN];
+  hash_tx(temp_hash, tx);
+  return make_utxo_pool_key_with_hash(dest, len, temp_hash, vout);
 }
 
-UTXO *utxo_pool_remove(unsigned char *tx_hash, unsigned int vout) {
-  UTXOPool *entry;
-  UTXO *utxo;
+int utxo_pool_init_leveldb(char *db_env){
+  return init_db(&utxo_pool_db, &utxo_pool_path, db_env, "/utxo_pool");
+}
 
-  entry = utxo_pool_find_node(tx_hash, vout);
-  if (entry != NULL) {
-    utxo = entry->utxo;
-    HASH_DEL(utxo_pool, entry);
-    free(entry);
-    return utxo;
+int utxo_pool_add_leveldb(Transaction *tx, unsigned int vout){
+  unsigned char db_key[UTXO_POOL_KEY_LEN];
+  size_t key_len;
+  char *err = NULL;
+  //Make Key
+  if(make_utxo_pool_key(db_key, &key_len, tx, vout) != 0){
+    return 2;
   }
-
-  return NULL;
-}
-
-UTXO *utxo_pool_find(unsigned char *tx_hash, unsigned int vout) {
-  UTXOPool *found_entry;
-
-  found_entry = utxo_pool_find_node(tx_hash, vout);
-  if (found_entry != NULL) {
-    return found_entry->utxo;
+  // Make Value (Build new UTXO)
+  UTXO utxo;
+  utxo.amt = tx->outputs[vout].amt;
+  memcpy(utxo.public_key_hash, tx->outputs[vout].public_key_hash, PUB_KEY_HASH_LEN);
+  
+  size_t utxo_size;
+  unsigned char *serialized_utxo = ser_utxo_alloc(&utxo_size, &utxo);
+  if(!serialized_utxo){
+    return 3;
+  }
+  leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
+  leveldb_put(utxo_pool_db, woptions, db_key, key_len, serialized_utxo, utxo_size, &err);
+  leveldb_writeoptions_destroy(woptions);
+  free(serialized_utxo);
+  if (err != NULL) {
+    fprintf(stderr, "Write fail: %s\n", err);
+    leveldb_free(err);
+    return(1);
   }
 
-  return NULL;
+  return 0;
 }
 
-UTXOPool *utxo_pool_find_node(unsigned char *tx_hash, unsigned int vout) {
-  UTXOPoolKey key;
+int utxo_pool_find_leveldb(UTXO **found_utxo, unsigned char *tx_hash, unsigned int vout){
+  unsigned char db_key[UTXO_POOL_KEY_LEN];
+  size_t key_len;
+  char *err = NULL;
+  size_t read_len;
+  char *read = NULL;
+  //Make Key
+  if(make_utxo_pool_key_with_hash(db_key, &key_len, tx_hash, vout) != 0){
+    return 2;
+  }
 
-  memset(&key, 0, sizeof(UTXOPoolKey));
-  memcpy(key.tx_hash, tx_hash, TX_HASH_LEN);
-  key.vout = vout;
+  leveldb_readoptions_t *roptions = leveldb_readoptions_create();
+  read = leveldb_get(utxo_pool_db, roptions, db_key, key_len, &read_len, &err);
+  leveldb_readoptions_destroy(roptions);
 
-  return utxo_pool_find_node_key(&key);
+  if (err != NULL) {
+    fprintf(stderr, "Read fail: %s\n", err);
+    leveldb_free(err);
+    if(read != NULL){
+     free(read);
+    }
+    return 3;
+  }
+  if(read == NULL){
+    return 1;
+  }
+
+  *found_utxo = deser_utxo_alloc(NULL, (unsigned char*) read);
+  free(read);
+  if(!*found_utxo){
+    return 4;
+  }
+  return 0;
 }
 
-UTXOPool *utxo_pool_find_node_key(UTXOPoolKey *key) {
-  UTXOPool *found_entry;
-  HASH_FIND(hh, utxo_pool, key, sizeof(UTXOPoolKey), found_entry);
-  return found_entry;
+int utxo_pool_remove_leveldb(unsigned char *tx_hash, unsigned int vout){
+  unsigned char db_key[UTXO_POOL_KEY_LEN];
+  size_t key_len;
+  char *err = NULL;
+  //Make Key
+  if(make_utxo_pool_key_with_hash(db_key, &key_len, tx_hash, vout) != 0){
+    return 2;
+  }
+  leveldb_writeoptions_t *woptions = leveldb_writeoptions_create();
+  leveldb_delete(utxo_pool_db, woptions, db_key, key_len, &err);
+  leveldb_writeoptions_destroy(woptions);
+  if (err != NULL) {
+    fprintf(stderr, "Delete fail: %s\n", err);
+    leveldb_free(err);
+    return(3);
+  }
+  return 0;
+}
+
+int utxo_pool_count(unsigned int *num_entries){
+  return db_count(utxo_pool_db, num_entries);
 }
 
 void print_utxo(UTXO *utxo, char *prefix){
@@ -91,22 +127,35 @@ void print_utxo_hashmap(char *prefix){
   char *sub_prefix = malloc(strlen(prefix)+strlen(PRINT_TAB)+1);
   strcpy(sub_prefix, prefix);
   strcat(sub_prefix, PRINT_TAB);
-  UTXOPool *s;
-  printf("%sUTXO Hashmap items(%i):\n", prefix, HASH_COUNT(utxo_pool));
-  for (s = utxo_pool; s != NULL; s = s->hh.next) {
-    print_UTXOPOOL(s, prefix);
+
+  unsigned int num_items;
+  utxo_pool_count(&num_items);
+  printf("%sUTXO Hashmap items(%i):\n", prefix, num_items);
+  printf(LINE_BREAK);
+
+  char *err = NULL;
+  leveldb_readoptions_t *roptions;
+  roptions = leveldb_readoptions_create();
+  leveldb_iterator_t *iter = leveldb_create_iterator(utxo_pool_db, roptions);
+
+  for (leveldb_iter_seek_to_first(iter); leveldb_iter_valid(iter); leveldb_iter_next(iter))
+  {
+      size_t key_len, value_len;
+      unsigned const char *key_ptr = (unsigned const char*) leveldb_iter_key(iter, &key_len);
+      unsigned const char *value_ptr = (unsigned const char*) leveldb_iter_value(iter, &value_len);
+
+      printf("%shashmap_id:\n", prefix);
+      dump_buf(sub_prefix, "tx_hash:", key_ptr, TX_HASH_LEN);
+      printf("%svout: %d\n", sub_prefix, *(unsigned int *) (key_ptr+TX_HASH_LEN));
+      
+
+      UTXO *read_utxo = deser_utxo_alloc(NULL, (unsigned char*)value_ptr);
+      print_utxo(read_utxo, prefix);
+      printf(LINE_BREAK);
+      free(read_utxo);
   }
-  free(sub_prefix);
-}
-
-void print_UTXOPOOL(UTXOPool *utxo_pool_node, char *prefix){
-  char *sub_prefix = malloc(strlen(prefix)+strlen(PRINT_TAB)+1);
-  strcpy(sub_prefix, prefix);
-  strcat(sub_prefix, PRINT_TAB);
-
-  printf("%shashmap_id:\n", prefix);
-  dump_buf(sub_prefix, "hashmap_id:", utxo_pool_node->id.tx_hash, TX_HASH_LEN);
-  printf("%svout: %i\n", sub_prefix, utxo_pool_node->id.vout);
-  print_utxo(utxo_pool_node->utxo, prefix);
+  leveldb_iter_destroy(iter);
+  leveldb_readoptions_destroy(roptions);
+  leveldb_free(err); 
   free(sub_prefix);
 }

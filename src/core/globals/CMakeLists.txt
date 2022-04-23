@@ -14,7 +14,8 @@ target_link_libraries(mempool
 add_library(utxopool STATIC utxo_pool.c)
 target_include_directories(utxopool PUBLIC ${INCLUDE_ALL})
 target_link_libraries(utxopool
-  core_tx)
+  core_tx
+  init_db)
 
 add_library(lists STATIC list.c)
 target_include_directories(lists PUBLIC ${INCLUDE_ALL})
@@ -22,7 +23,8 @@ target_include_directories(lists PUBLIC ${INCLUDE_ALL})
 add_library(blockchain STATIC blockchain.c)
 target_include_directories(blockchain PUBLIC ${INCLUDE_ALL})
 target_link_libraries(blockchain
-  core_block)
+  core_block
+  init_db)
 
 add_library(double_spend STATIC double_spend_set.c)
 target_include_directories(double_spend PUBLIC ${INCLUDE_ALL})

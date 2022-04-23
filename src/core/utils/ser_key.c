@@ -162,5 +162,6 @@ mbedtls_ecdsa_context *deser_keypair_alloc(ssize_t *read, unsigned char *src) {
   keypair = malloc(sizeof(mbedtls_ecdsa_context));
   mbedtls_ecdsa_init(keypair);
   ret = deser_keypair(keypair, src);
+  INIT_GROUP(keypair->private_grp)
   RETURN_SER(keypair, ret, read)
 }

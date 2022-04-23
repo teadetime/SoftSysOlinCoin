@@ -1,6 +1,7 @@
 #include "minunit.h"
 #include "wallet.h"
 #include "crypto.h"
+#include "ser_wallet.h"
 
 int tests_run = 0;
 
@@ -55,22 +56,8 @@ void _free_tx(Transaction *tx) {
 
 void _populate_wallet_pool() {
   // These txs leak..
-  wallet_pool_add(_make_single_out_tx(7), 0, gen_keys());
-  wallet_pool_add(_make_single_out_tx(10), 0, gen_keys());
-}
-
-void _free_wallet_pool() {
-  WalletPool *s, *current, *tmp;
-
-  s = wallet_pool;
-  while (s != NULL) {
-    tmp = s->hh.next;
-    current = s;
-    HASH_DEL(s, wallet_pool);
-    mbedtls_ecp_keypair_free(current->entry->key_pair);
-    free(current);
-    s = tmp;
-  }
+  wallet_pool_build_add_leveldb(_make_single_out_tx(7), 0, gen_keys());
+  wallet_pool_build_add_leveldb(_make_single_out_tx(10), 0, gen_keys());
 }
 
 static char *test_build_inputs() {
@@ -78,10 +65,11 @@ static char *test_build_inputs() {
   Transaction *tx;
   mbedtls_ecdsa_context **ret_keys;
   size_t i;
-  WalletPool *map_value;
   unsigned char empty_sig[SIGNATURE_LEN];
 
-  wallet_init();
+  wallet_init_leveldb(TEST_DB_LOC);
+  destroy_wallet();
+  wallet_init_leveldb(TEST_DB_LOC);
 
   _populate_wallet_pool();
   options = _make_options();
@@ -97,50 +85,67 @@ static char *test_build_inputs() {
       "Options has wrong out_total",
       options->out_total = 15
   );
-
-
   mu_assert(
       "New tx has wrong number of inputs",
       tx->num_inputs == 2
   );
+
   i = 0;
-  for (map_value = wallet_pool; map_value != NULL; map_value = map_value->hh.next) {
+  leveldb_readoptions_t *roptions2 = leveldb_readoptions_create();
+  leveldb_iterator_t *iter2 = leveldb_create_iterator(wallet_pool_db, roptions2);
+  for (leveldb_iter_seek_to_first(iter2); leveldb_iter_valid(iter2); leveldb_iter_next(iter2))
+  {
+    if(i >= tx->num_inputs){
+      break;
+    }
+
+    size_t key_len, value_len;
+    unsigned const char *key_ptr = (unsigned const char*) leveldb_iter_key(iter2, &key_len);
+    unsigned const char *value_ptr = (unsigned const char*) leveldb_iter_value(iter2, &value_len);
+    WalletEntry *read_wallet_entry = deser_wallet_entry_alloc(NULL, (unsigned char*)value_ptr);
     mu_assert(
-        "Input has wrong vout",
-        map_value->id.vout == tx->inputs[i].prev_utxo_output
+      "Input has wrong vout",
+      *(unsigned int *)(key_ptr+TX_HASH_LEN) == tx->inputs[i].prev_utxo_output
     );
     mu_assert(
-        "Input has wrong tx hash",
-        memcmp(map_value->id.tx_hash, tx->inputs[i].prev_tx_id, TX_HASH_LEN) == 0
+      "Input has wrong tx hash",
+      memcmp(key_ptr, tx->inputs[i].prev_tx_id, TX_HASH_LEN) == 0
     );
     mu_assert(
-        "Input has wrong tx pub_key",
-        mbedtls_ecp_point_cmp(
-          &(map_value->entry->key_pair->private_Q),
-          tx->inputs[i].pub_key
-        ) == 0
+      "Input has wrong tx pub_key",
+      mbedtls_ecp_point_cmp(
+        &(read_wallet_entry->key_pair->private_Q),
+        tx->inputs[i].pub_key
+      ) == 0
     );
     mu_assert(
-        "Input has wrong tx signature",
-        memcmp(tx->inputs[i].signature, empty_sig, SIGNATURE_LEN) == 0
+      "Input has wrong tx signature",
+      memcmp(tx->inputs[i].signature, empty_sig, SIGNATURE_LEN) == 0
+    );
+    mu_assert(
+      "Returned key pair private Q incorrect",
+      mbedtls_ecp_point_cmp(&read_wallet_entry->key_pair->private_Q, &ret_keys[i]->private_Q) == 0
+    );
+    mu_assert(
+      "Returned key pair private d incorrect",
+      mbedtls_mpi_cmp_mpi(&read_wallet_entry->key_pair->private_d, &ret_keys[i]->private_d) == 0
+    );
+    mu_assert(
+      "Hash map entry spent not set",
+      read_wallet_entry->spent == 1
     );
 
-    mu_assert(
-        "Wrong input key pair returned",
-        map_value->entry->key_pair == ret_keys[i]
-    );
-    mu_assert(
-        "Hash map entry spent not set",
-        map_value->entry->spent == 1
-    );
 
     i++;
+    free(read_wallet_entry);
   }
+  leveldb_iter_destroy(iter2);
+  leveldb_readoptions_destroy(roptions2);
 
   _free_options(options);
-  _free_wallet_pool();
   _free_tx(tx);
   free(ret_keys);
+  destroy_wallet();
 
   return NULL;
 }
@@ -200,7 +205,7 @@ static char *test_sign_tx() {
   mbedtls_ecdsa_context **ret_keys;
   unsigned char tx_hash[TX_HASH_LEN];
 
-  wallet_init();
+  wallet_init_leveldb(TEST_DB_LOC);
 
   _populate_wallet_pool();
   options = _make_options();
@@ -223,9 +228,9 @@ static char *test_sign_tx() {
   }
 
   _free_options(options);
-  _free_wallet_pool();
   _free_tx(tx);
   free(*ret_keys);
+  destroy_wallet();
 
   return NULL;
 }
@@ -234,16 +239,11 @@ static char *test_build_tx() {
   TxOptions *options;
   Transaction *tx;
 
-  wallet_init();
+  wallet_init_leveldb(TEST_DB_LOC);
 
   _populate_wallet_pool();
   options = _make_options();
   tx = build_tx(options);
-
-  mu_assert(
-      "Key not added to pool",
-      wallet_pool != NULL
-  );
 
   // Only light tests here, as more detailed value-checking is performed in the
   // build_inputs and build_outputs tests.
@@ -257,8 +257,8 @@ static char *test_build_tx() {
   );
 
   _free_options(options);
-  _free_wallet_pool();
   _free_tx(tx);
+  destroy_wallet();
 
   return NULL;
 }
@@ -272,6 +272,7 @@ static char *all_tests() {
 }
 
 int main() {
+  create_proj_folders();
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);

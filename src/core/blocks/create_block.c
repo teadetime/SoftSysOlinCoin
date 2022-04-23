@@ -30,7 +30,7 @@ Transaction *create_coinbase_tx(unsigned long tx_fees){
   miner_output->amt = tx_fees + calc_block_reward(chain_height);
 
   mbedtls_ecdsa_context *key_pair = gen_keys();
-  key_pool_add(key_pair);
+  key_pool_add_leveldb(key_pair);
   hash_pub_key(miner_output->public_key_hash, key_pair);
 
   coinbase_tx->inputs = NULL;
@@ -49,8 +49,14 @@ unsigned int calc_tx_fees(Transaction *tx){
   unsigned long total_out = 0;
 
   for(unsigned int i = 0; i < tx->num_inputs; i++){
-    UTXO* input_utxo = utxo_pool_find(tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
+    UTXO *input_utxo = NULL;// = utxo_pool_find(tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
+    int utxo_found = utxo_pool_find_leveldb(&input_utxo, tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
+    if(utxo_found != 0){
+      fprintf(stderr, "UTXO Found failed calculaiting tx fees: %i\n", utxo_found);
+      exit(1);
+    }
     total_in += input_utxo->amt;  // This could be null if no uxto found so make sure to confirm tx has all valid inputs
+    free(input_utxo);
   }
   for(unsigned int i = 0; i < tx->num_outputs; i++){
     total_out += tx->outputs->amt;

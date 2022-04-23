@@ -6,6 +6,7 @@
 #include "mempool.h"
 #include "minunit.h"
 #include "validate_tx.h"
+#include "init_db.h"
 
 int tests_run = 0;
 
@@ -42,8 +43,8 @@ Transaction *build_complex_tx(){
   Transaction *input_tx, *tx1;
   input_tx = _make_tx();
   input_tx->outputs[0].amt = 100;
-  utxo_pool_init();
-  utxo_pool_add(input_tx, 0);
+  utxo_pool_init_leveldb(TEST_DB_LOC);
+  utxo_pool_add_leveldb(input_tx, 0);
   utxo_to_tx_add_tx(input_tx);
   mbedtls_ecdsa_context *input_tx_context = last_key_pair;
   
@@ -100,6 +101,7 @@ static char  *test_check_input_unlockable() {
     "Signature modification did not break validation",
     check_input_unlockable(&tx1->inputs[0], bad_hash) != 0
   );
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 
@@ -118,6 +120,7 @@ static char *test_validate_input_matches_utxo_pool() {
       validate_input_matches_utxopool(&tx1->inputs[i]) == 0
     );
   }
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 
@@ -138,6 +141,7 @@ static char *test_validate_input() {
       validate_input(&tx1->inputs[i], tx1_blank) == 0
     );
   }
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 
@@ -202,6 +206,7 @@ static char *test_validate_shared_tx(){
     "Shared Transaction Validation Failed",
     validate_tx_shared(tx1) == 0
   );
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 
@@ -217,6 +222,7 @@ static char *test_check_tx_double_spent(){
     "Double spend detected when there isn't one",
     check_tx_double_spent(tx1) == 0
   );
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 
@@ -239,6 +245,7 @@ static char *test_inputs_not_in_mempool(){
     "Tx not rejected when inputs in utxo_to_tx mapping",
     check_inputs_not_in_mempool(tx1) != 0
   );
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 
@@ -254,6 +261,7 @@ static char *test_validate_incoming_tx(){
     "Valid Transaction rejected by incoming validation",
     validate_tx_incoming(tx1) == 0
   );
+  destroy_db(&utxo_pool_db, utxo_pool_path);
   return NULL;
 }
 
@@ -261,7 +269,6 @@ static char *test_validate_incoming_tx(){
 
 
 static char *all_tests(){
-  utxo_pool_init();
   utxo_to_tx_init();
   mu_run_test(test_create_blank_sig_tx_hash);
   mu_run_test(test_check_input_unlockable);
@@ -278,6 +285,7 @@ static char *all_tests(){
 }
 
 int main() {
+  create_proj_folders();
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);

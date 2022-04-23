@@ -32,13 +32,15 @@ int validate_prev_block_exists(Block *block){
   // Also check if it's in blockchain already....
   // Check if prev block is our latest top block
 
-  Block *prev_block = blockchain_find(block->header.prev_header_hash);
-  if(prev_block == NULL){
+  Block *prev_block = NULL;
+  int ret_find = blockchain_find_leveldb(&prev_block, block->header.prev_header_hash);
+  if(prev_block == NULL || ret_find != 0){
+
     add_to_pending_blocks(block->header.prev_header_hash);
     request_prev_block(block->header.prev_header_hash);
     return 1;
   }
-
+  free(prev_block);
   if(memcmp(block->header.prev_header_hash, top_block_header_hash, BLOCK_HASH_LEN) != 0 ){
     // NOTE this means we already have atleast one block ahead
     return 2;
@@ -86,14 +88,13 @@ int validate_incoming_block_txs(Transaction **txs, unsigned int num_txs){
 int validate_block_double_spend(Block *block){
   UTXOPool *double_spend_set;
 
-  /* double_spend_set_init(double_spend_set); */
-  double_spend_set = NULL;
+  double_spend_set_init(&double_spend_set);
   for (unsigned int i = 0; i < block->num_txs; i++) {
     for (unsigned int j = 0; j < block->txs[i]->num_inputs; j++) {
       if (double_spend_add(
             double_spend_set,
-            block->txs[i]->inputs[i].prev_tx_id,
-            block->txs[i]->inputs[i].prev_utxo_output
+            block->txs[i]->inputs[j].prev_tx_id,
+            block->txs[i]->inputs[j].prev_utxo_output
       ) != 0) {
         delete_double_spend_set(double_spend_set);
         return 1;
