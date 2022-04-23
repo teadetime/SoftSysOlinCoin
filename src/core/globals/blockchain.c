@@ -106,29 +106,33 @@ int blockchain_init_leveldb(char *db_env){
   hash_blockheader(genesis_hash, &genesis_block.header);
   Block *test_genesis_block;
   int found_genesis = blockchain_find_leveldb(&test_genesis_block, genesis_hash);
-
   int use_existing_db = 0;
-  // Check if we are using an existing DB
   unsigned char file_top_block_hash[BLOCK_HASH_LEN];
   int read_hash = read_top_hash(file_top_block_hash);
   int file_chain_height = read_chain();
-  
-  if(read_hash == 0 && file_chain_height != -1){
-    Block *test_top_block;
-    int found_top = blockchain_find_leveldb(&test_top_block, file_top_block_hash);
-    if(found_top == 0){
-      free(test_top_block);
-    }
-    unsigned int num_entries;
-    blockchain_count(&num_entries);
-    if(found_top == 0 && num_entries >= file_chain_height && found_genesis == 0){
-      use_existing_db = 1;
-    }
-    else{
-      fprintf(stderr, "Database fiels conflict with data in the DB\n");
-      exit(1);
+
+  // Check if we are using an existing DB
+  if(found_genesis == 0){
+    free(test_genesis_block);
+     
+    if(read_hash == 0 && file_chain_height != -1){
+      Block *test_top_block;
+      int found_top = blockchain_find_leveldb(&test_top_block, file_top_block_hash);
+      if(found_top == 0){
+        free(test_top_block);
+      }
+      unsigned int num_entries;
+      blockchain_count(&num_entries);
+      if(found_top == 0 && num_entries >= file_chain_height){
+        use_existing_db = 1;
+      }
+      else{
+        fprintf(stderr, "Database fiels conflict with data in the DB\n");
+        exit(1);
+      }
     }
   }
+  
 
   if(use_existing_db){
     chain_height = file_chain_height;
@@ -175,9 +179,9 @@ int blockchain_add_leveldb(Block *block){
   }
 
   chain_height += 1;
-  write_chain_height("");
+  write_chain_height();
   memcpy(top_block_header_hash, db_key, BLOCK_HASH_LEN);
-  write_top_hash("");
+  write_top_hash();
   return 0;
 }
 
