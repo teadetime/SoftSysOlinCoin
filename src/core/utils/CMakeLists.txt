@@ -9,3 +9,9 @@ add_library(init_db STATIC init_db.c)
 target_include_directories(init_db PUBLIC ${INCLUDE_ALL})
 target_link_libraries(init_db
   leveldb)
+
+add_library(queue STATIC queue.c)
+target_include_directories(queue PUBLIC ${INCLUDE_ALL})
+target_link_libraries(init_db
+  core_tx
+  core_block)
