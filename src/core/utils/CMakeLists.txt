@@ -12,6 +12,6 @@ target_link_libraries(init_db
 
 add_library(queue STATIC queue.c)
 target_include_directories(queue PUBLIC ${INCLUDE_ALL})
-target_link_libraries(init_db
+target_link_libraries(queue
   core_tx
   core_block)

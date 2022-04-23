@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include "base_tx.h"
+#include "base_block.h"
 
 typedef struct QueueItem{
   void *item;
@@ -31,6 +33,6 @@ int queue_add_tx(Queue *existing_q, Transaction *tx);
 
 Transaction *queue_pop_tx(Queue *existing_q);
 
-int queue_add_block(Queue *existing_q, Transaction *tx);
+int queue_add_block(Queue *existing_q, Block *block);
 
 Block *queue_pop_block(Queue *existing_q);
