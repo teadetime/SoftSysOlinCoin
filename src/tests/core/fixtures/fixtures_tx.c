@@ -1,5 +1,6 @@
 #include "fixtures_tx.h"
 #include "crypto.h"
+#include "base_tx.h"
 
 #include <stdlib.h>
 #include <string.h>

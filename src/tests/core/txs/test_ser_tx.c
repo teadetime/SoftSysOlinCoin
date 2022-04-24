@@ -10,8 +10,6 @@
 #include "crypto.h"
 #include "fixtures_tx.h"
 
-int tests_run = 0;
-
 static void test_ser_tx(void **state) {
   ssize_t written_ser_tx, read_ser_tx;
   Transaction *tx, *desered_tx;

@@ -12,7 +12,6 @@ target_include_directories(test_ser_tx
   PUBLIC ${INCLUDE_FIXTURES})
 target_link_libraries(test_ser_tx  
   core_tx
-  cmocka-static
   fixtures)
 
 add_executable(test_wallet_pool test_wallet_pool.c)
@@ -23,9 +22,12 @@ target_link_libraries(test_wallet_pool
 
 add_executable(test_ser_wallet test_ser_wallet.c)
 target_compile_options(test_ser_wallet PRIVATE ${COMPILE_OPTIONS_STD})
-target_include_directories(test_ser_wallet PUBLIC ${INCLUDE_ALL})
+target_include_directories(test_ser_wallet
+  PUBLIC ${INCLUDE_ALL}
+  PUBLIC ${INCLUDE_FIXTURES})
 target_link_libraries(test_ser_wallet  
-  wallet_pool)
+  wallet_pool
+  fixtures)
 
 add_executable(test_wallet test_wallet.c)
 target_compile_options(test_wallet PRIVATE ${COMPILE_OPTIONS_STD})
