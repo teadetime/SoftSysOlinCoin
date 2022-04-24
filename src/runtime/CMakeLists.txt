@@ -14,3 +14,10 @@ target_link_libraries(shell
   wallet
   handle_block
   init_globals)
+
+add_executable(runtime runtime.c)
+target_compile_options(runtime PRIVATE ${COMPILE_OPTIONS_STD})
+target_include_directories(runtime PUBLIC ${INCLUDE_ALL})
+target_link_libraries(runtime
+  queue
+  Threads::Threads)
