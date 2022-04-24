@@ -10,7 +10,7 @@
 #include "crypto.h"
 #include "fixtures_tx.h"
 
-static void test_ser_tx(void **state) {
+static void test_ser_tx_equal(void **state) {
   ssize_t written_ser_tx, read_ser_tx;
   Transaction *tx, *desered_tx;
   unsigned char *sered_tx;
@@ -21,14 +21,14 @@ static void test_ser_tx(void **state) {
   sered_tx = ser_tx_alloc(&read_ser_tx, tx);
   desered_tx = deser_tx_alloc(&written_ser_tx, sered_tx);
 
-  assert_true(read_ser_tx == (ssize_t)size_ser_tx(tx));
-  assert_true(read_ser_tx == written_ser_tx);
-  assert_true(tx->num_inputs == desered_tx->num_inputs);
-  assert_true(tx->num_outputs == desered_tx->num_outputs);
+  assert_int_equal(read_ser_tx, (ssize_t)size_ser_tx(tx));
+  assert_int_equal(read_ser_tx, written_ser_tx);
+  assert_int_equal(tx->num_inputs, desered_tx->num_inputs);
+  assert_int_equal(tx->num_outputs, desered_tx->num_outputs);
 
   for (size_t i = 0; i < tx->num_inputs; i++) {
-    assert_true(
-      tx->inputs[i].prev_utxo_output == desered_tx->inputs[i].prev_utxo_output
+    assert_int_equal(
+      tx->inputs[i].prev_utxo_output, desered_tx->inputs[i].prev_utxo_output
     );
     assert_memory_equal(
       tx->inputs[i].prev_tx_id,
@@ -40,7 +40,7 @@ static void test_ser_tx(void **state) {
       desered_tx->inputs[i].signature,
       SIGNATURE_LEN
     );
-    assert_true(tx->inputs[i].sig_len == desered_tx->inputs[i].sig_len);
+    assert_int_equal(tx->inputs[i].sig_len, desered_tx->inputs[i].sig_len);
 
     ser_pub_key(buf_1, tx->inputs[i].pub_key);
     ser_pub_key(buf_2, desered_tx->inputs[i].pub_key);
@@ -48,7 +48,7 @@ static void test_ser_tx(void **state) {
   }
 
   for (size_t i = 0; i < tx->num_outputs; i++) {
-    assert_true(tx->outputs[i].amt == desered_tx->outputs[i].amt);
+    assert_int_equal(tx->outputs[i].amt, desered_tx->outputs[i].amt);
     assert_memory_equal(
       tx->outputs[i].public_key_hash,
       desered_tx->outputs[i].public_key_hash,
@@ -64,24 +64,37 @@ static void test_ser_tx(void **state) {
   free(desered_tx);
 }
 
-static void test_ser_tx_pad(void **state) {
-  ssize_t read_ser_tx;
-  Transaction *tx, *pad_tx;
-  unsigned char *sered_tx, *sered_tx_2;
+static void test_ser_tx_fill_buf(void **state) {
+  Transaction *tx;
+  unsigned char *sered_tx, *sered_fill_tx;
   size_t tx_ser_size;
 
   tx = *state;
-  sered_tx = ser_tx_alloc(&read_ser_tx, tx);
+  sered_tx = ser_tx_alloc(NULL, tx);
 
   // Ensure that we fill the entire buffer
   tx_ser_size = size_ser_tx(tx);
-  sered_tx_2 = malloc(tx_ser_size);
+  sered_fill_tx = malloc(tx_ser_size);
   for (int i = 0; i < 5; i++) {
-    memset(sered_tx_2, i, tx_ser_size);
-    ser_tx(sered_tx_2, tx);
-    assert_memory_equal(sered_tx, sered_tx_2, UTXO_SER_LEN);
+    memset(sered_fill_tx, i, tx_ser_size);
+    ser_tx(sered_fill_tx, tx);
+    assert_memory_equal(sered_tx, sered_fill_tx, tx_ser_size);
   }
 
+  free(sered_tx);
+  free(sered_fill_tx);
+}
+
+static void test_ser_tx_pad_bytes(void **state) {
+  Transaction *tx, *pad_tx;
+  unsigned char *sered_tx, *sered_pad_tx;
+  size_t tx_ser_size;
+
+  tx = *state;
+  sered_tx = ser_tx_alloc(NULL, tx);
+
+  tx_ser_size = size_ser_tx(tx);
+  sered_pad_tx = malloc(tx_ser_size);
   pad_tx = malloc(sizeof(Transaction));
   for (int i = 0; i < 5; i++) {
     memset(pad_tx, i, sizeof(Transaction));
@@ -127,16 +140,16 @@ static void test_ser_tx_pad(void **state) {
       );
     }
 
-    ser_tx(sered_tx_2, pad_tx);
-    assert_memory_equal(sered_tx, sered_tx_2, tx_ser_size);
+    ser_tx(sered_pad_tx, pad_tx);
+    assert_memory_equal(sered_tx, sered_pad_tx, tx_ser_size);
   }
 
   free(pad_tx);
   free(sered_tx);
-  free(sered_tx_2);
+  free(sered_pad_tx);
 }
 
-static void test_ser_utxo(void **state) {
+static void test_ser_utxo_equal(void **state) {
   UTXO *utxo, *desered_utxo;
   unsigned char *sered_utxo;
   ssize_t read_ser_utxo, written_ser_utxo;
@@ -145,9 +158,9 @@ static void test_ser_utxo(void **state) {
   sered_utxo = ser_utxo_alloc(&read_ser_utxo, utxo);
   desered_utxo = deser_utxo_alloc(&written_ser_utxo, sered_utxo);
 
-  assert_true(read_ser_utxo == UTXO_SER_LEN);
-  assert_true(read_ser_utxo == written_ser_utxo);
-  assert_true(utxo->amt == desered_utxo->amt);
+  assert_int_equal(read_ser_utxo, UTXO_SER_LEN);
+  assert_int_equal(read_ser_utxo, written_ser_utxo);
+  assert_int_equal(utxo->amt, desered_utxo->amt);
   assert_memory_equal(
     utxo->public_key_hash,
     desered_utxo->public_key_hash,
@@ -158,21 +171,31 @@ static void test_ser_utxo(void **state) {
   free(desered_utxo);
 }
 
-static void test_ser_utxo_pad(void **state) {
-  UTXO *utxo, *pad_utxo;
+static void test_ser_utxo_fill_buf(void **state) {
+  UTXO *utxo;
   unsigned char *sered_utxo;
-  unsigned char sered_utxo_2[UTXO_SER_LEN];
-  ssize_t read_ser_utxo;
+  unsigned char sered_fill_utxo[UTXO_SER_LEN];
 
   utxo = *state;
-  sered_utxo = ser_utxo_alloc(&read_ser_utxo, utxo);
+  sered_utxo = ser_utxo_alloc(NULL, utxo);
 
   // Ensure that we fill the entire buffer
   for (int i = 0; i < 5; i++) {
-    memset(sered_utxo_2, i, UTXO_SER_LEN);
-    ser_utxo(sered_utxo_2, utxo);
-    assert_memory_equal(sered_utxo, sered_utxo_2, UTXO_SER_LEN);
+    memset(sered_fill_utxo, i, UTXO_SER_LEN);
+    ser_utxo(sered_fill_utxo, utxo);
+    assert_memory_equal(sered_utxo, sered_fill_utxo, UTXO_SER_LEN);
   }
+
+  free(sered_utxo);
+}
+
+static void test_ser_utxo_pad_bytes(void **state) {
+  UTXO *utxo, *pad_utxo;
+  unsigned char *sered_utxo;
+  unsigned char sered_pad_utxo[UTXO_SER_LEN];
+
+  utxo = *state;
+  sered_utxo = ser_utxo_alloc(NULL, utxo);
 
   // Ensure we don't serialize padding bytes
   pad_utxo = malloc(sizeof(UTXO));
@@ -180,8 +203,8 @@ static void test_ser_utxo_pad(void **state) {
     memset(pad_utxo, i, sizeof(UTXO));
     pad_utxo->amt = utxo->amt;
     memcpy(pad_utxo->public_key_hash, utxo->public_key_hash, PUB_KEY_HASH_LEN);
-    ser_utxo(sered_utxo_2, pad_utxo);
-    assert_memory_equal(sered_utxo, sered_utxo_2, UTXO_SER_LEN);
+    ser_utxo(sered_pad_utxo, pad_utxo);
+    assert_memory_equal(sered_utxo, sered_pad_utxo, UTXO_SER_LEN);
   }
 
   free(pad_utxo);
@@ -191,22 +214,32 @@ static void test_ser_utxo_pad(void **state) {
 int main() {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test_setup_teardown(
-      test_ser_tx,
+      test_ser_tx_equal,
       fixture_setup_unlinked_tx,
       fixture_teardown_unlinked_tx
     ),
     cmocka_unit_test_setup_teardown(
-      test_ser_tx_pad,
+      test_ser_tx_fill_buf,
       fixture_setup_unlinked_tx,
       fixture_teardown_unlinked_tx
     ),
     cmocka_unit_test_setup_teardown(
-      test_ser_utxo,
+      test_ser_tx_pad_bytes,
+      fixture_setup_unlinked_tx,
+      fixture_teardown_unlinked_tx
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_utxo_equal,
       fixture_setup_unlinked_utxo,
       fixture_teardown_unlinked_utxo
     ),
     cmocka_unit_test_setup_teardown(
-      test_ser_utxo_pad,
+      test_ser_utxo_fill_buf,
+      fixture_setup_unlinked_utxo,
+      fixture_teardown_unlinked_utxo
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_utxo_pad_bytes,
       fixture_setup_unlinked_utxo,
       fixture_teardown_unlinked_utxo
     )

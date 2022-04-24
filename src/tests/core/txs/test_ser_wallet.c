@@ -8,7 +8,7 @@
 #include "ser_wallet.h"
 #include "fixtures_wallet.h"
 
-static void test_ser_wallet(void **state) {
+static void test_ser_wallet_equal(void **state) {
   WalletEntry *entry, *desered_entry;
   unsigned char *sered_entry;
   ssize_t read_ser_entry, written_ser_entry;
@@ -40,20 +40,30 @@ static void test_ser_wallet(void **state) {
   free(desered_entry);
 }
 
-static void test_ser_wallet_pad(void **state) {
-  WalletEntry *entry, *pad_entry;
+static void test_ser_wallet_fill_buf(void **state) {
+  WalletEntry *entry;
   unsigned char *sered_entry;
-  unsigned char sered_entry_2[WALLET_ENTRY_SER_LEN];
-  ssize_t read_ser_entry;
+  unsigned char sered_fill_entry[WALLET_ENTRY_SER_LEN];
 
   entry = *state;
-  sered_entry = ser_wallet_entry_alloc(&read_ser_entry, entry);
+  sered_entry = ser_wallet_entry_alloc(NULL, entry);
   // Ensure that we are actually filling the serialization buffer
   for (int i = 0; i < 5; i++) {
-    memset(sered_entry_2, i, WALLET_ENTRY_SER_LEN);
-    ser_wallet_entry(sered_entry_2, entry);
-    assert_memory_equal(sered_entry, sered_entry_2, WALLET_ENTRY_SER_LEN);
+    memset(sered_fill_entry, i, WALLET_ENTRY_SER_LEN);
+    ser_wallet_entry(sered_fill_entry, entry);
+    assert_memory_equal(sered_entry, sered_fill_entry, WALLET_ENTRY_SER_LEN);
   }
+
+  free(sered_entry);
+}
+
+static void test_ser_wallet_pad_bytes(void **state) {
+  WalletEntry *entry, *pad_entry;
+  unsigned char *sered_entry;
+  unsigned char sered_pad_entry[WALLET_ENTRY_SER_LEN];
+
+  entry = *state;
+  sered_entry = ser_wallet_entry_alloc(NULL, entry);
 
   // Ensure that we don't have padding bytes
   pad_entry = malloc(sizeof(WalletEntry));
@@ -62,8 +72,8 @@ static void test_ser_wallet_pad(void **state) {
     pad_entry->amt = entry->amt;
     pad_entry->spent = entry->spent;
     pad_entry->key_pair = entry->key_pair;
-    ser_wallet_entry(sered_entry_2, pad_entry);
-    assert_memory_equal(sered_entry, sered_entry_2, WALLET_ENTRY_SER_LEN);
+    ser_wallet_entry(sered_pad_entry, pad_entry);
+    assert_memory_equal(sered_entry, sered_pad_entry, WALLET_ENTRY_SER_LEN);
   }
 
   free(pad_entry);
@@ -73,12 +83,17 @@ static void test_ser_wallet_pad(void **state) {
 int main() {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test_setup_teardown(
-      test_ser_wallet,
+      test_ser_wallet_equal,
       fixture_setup_unlinked_wallet_entry,
       fixture_teardown_unlinked_wallet_entry
     ),
     cmocka_unit_test_setup_teardown(
-      test_ser_wallet_pad,
+      test_ser_wallet_fill_buf,
+      fixture_setup_unlinked_wallet_entry,
+      fixture_teardown_unlinked_wallet_entry
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_wallet_pad_bytes,
       fixture_setup_unlinked_wallet_entry,
       fixture_teardown_unlinked_wallet_entry
     )

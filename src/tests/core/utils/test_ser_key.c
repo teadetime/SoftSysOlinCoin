@@ -8,7 +8,7 @@
 #include "ser_key.h"
 #include "fixtures_wallet.h"
 
-static void test_ser_pub_key(void **state) {
+static void test_ser_pub_key_equal(void **state) {
   mbedtls_ecdsa_context *keypair;
   mbedtls_ecp_point *pub_key, *desered_pub_key;
   unsigned char *sered_pub_key;
@@ -27,11 +27,11 @@ static void test_ser_pub_key(void **state) {
   free(desered_pub_key);
 }
 
-static void test_ser_pub_key_fill(void **state) {
+static void test_ser_pub_key_fill_buff(void **state) {
   mbedtls_ecdsa_context *keypair;
   mbedtls_ecp_point *pub_key;
   unsigned char *sered_pub_key;
-  unsigned char sered_pub_key_2[PUB_KEY_SER_LEN];
+  unsigned char sered_fill_pub_key[PUB_KEY_SER_LEN];
 
   keypair = *state;
   pub_key = &keypair->private_Q;
@@ -39,15 +39,15 @@ static void test_ser_pub_key_fill(void **state) {
 
   // Ensure that we are actually filling the serialization buffer
   for (int i = 0; i < 5; i++) {
-    memset(sered_pub_key_2, i, PUB_KEY_SER_LEN);
-    ser_pub_key(sered_pub_key_2, pub_key);
-    assert_memory_equal(sered_pub_key, sered_pub_key_2, PUB_KEY_SER_LEN);
+    memset(sered_fill_pub_key, i, PUB_KEY_SER_LEN);
+    ser_pub_key(sered_fill_pub_key, pub_key);
+    assert_memory_equal(sered_pub_key, sered_fill_pub_key, PUB_KEY_SER_LEN);
   }
 
   free(sered_pub_key);
 }
 
-static void test_ser_priv_key(void **state) {
+static void test_ser_priv_key_equal(void **state) {
   mbedtls_ecdsa_context *keypair;
   mbedtls_mpi *priv_key, *desered_priv_key;
   unsigned char *sered_priv_key;
@@ -66,11 +66,11 @@ static void test_ser_priv_key(void **state) {
   free(desered_priv_key);
 }
 
-static void test_ser_priv_key_fill(void **state) {
+static void test_ser_priv_key_fill_buf(void **state) {
   mbedtls_ecdsa_context *keypair;
   mbedtls_mpi *priv_key;
   unsigned char *sered_priv_key;
-  unsigned char sered_priv_key_2[PRIV_KEY_SER_LEN];
+  unsigned char sered_fill_priv_key[PRIV_KEY_SER_LEN];
 
   keypair = *state;
   priv_key = &keypair->private_d;
@@ -78,15 +78,15 @@ static void test_ser_priv_key_fill(void **state) {
 
   // Ensure that we are actually filling the serialization buffer
   for (int i = 0; i < 5; i++) {
-    memset(sered_priv_key_2, i, PRIV_KEY_SER_LEN);
-    ser_priv_key(sered_priv_key_2, priv_key);
-    assert_memory_equal(sered_priv_key, sered_priv_key_2, PRIV_KEY_SER_LEN);
+    memset(sered_fill_priv_key, i, PRIV_KEY_SER_LEN);
+    ser_priv_key(sered_fill_priv_key, priv_key);
+    assert_memory_equal(sered_priv_key, sered_fill_priv_key, PRIV_KEY_SER_LEN);
   }
 
   free(sered_priv_key);
 }
 
-static void test_ser_keypair(void **state) {
+static void test_ser_keypair_equal(void **state) {
   mbedtls_ecdsa_context *keypair, *desered_keypair;
   unsigned char *sered_keypair;
   ssize_t read, written;
@@ -118,19 +118,19 @@ static void test_ser_keypair(void **state) {
   free(desered_keypair);
 }
 
-static void test_ser_keypair_fill(void **state) {
+static void test_ser_keypair_fill_buf(void **state) {
   mbedtls_ecdsa_context *keypair;
   unsigned char *sered_keypair;
-  unsigned char sered_keypair_2[KEYPAIR_SER_LEN];
+  unsigned char sered_fill_keypair[KEYPAIR_SER_LEN];
 
   keypair = *state;
   sered_keypair = ser_keypair_alloc(NULL, keypair);
 
   // Ensure that we are actually filling the serialization buffer
   for (int i = 0; i < 5; i++) {
-    memset(sered_keypair_2, i, KEYPAIR_SER_LEN);
-    ser_keypair(sered_keypair_2, keypair);
-    assert_memory_equal(sered_keypair, sered_keypair_2, KEYPAIR_SER_LEN);
+    memset(sered_fill_keypair, i, KEYPAIR_SER_LEN);
+    ser_keypair(sered_fill_keypair, keypair);
+    assert_memory_equal(sered_keypair, sered_fill_keypair, KEYPAIR_SER_LEN);
   }
 
   free(sered_keypair);
@@ -139,32 +139,32 @@ static void test_ser_keypair_fill(void **state) {
 int main() {
   const struct CMUnitTest tests[] = {
     cmocka_unit_test_setup_teardown(
-      test_ser_pub_key,
+      test_ser_pub_key_equal,
       fixture_setup_unlinked_keypair,
       fixture_teardown_unlinked_keypair
     ),
     cmocka_unit_test_setup_teardown(
-      test_ser_pub_key_fill,
+      test_ser_pub_key_fill_buff,
       fixture_setup_unlinked_keypair,
       fixture_teardown_unlinked_keypair
     ),
     cmocka_unit_test_setup_teardown(
-      test_ser_priv_key,
+      test_ser_priv_key_equal,
       fixture_setup_unlinked_keypair,
       fixture_teardown_unlinked_keypair
     ),
     cmocka_unit_test_setup_teardown(
-      test_ser_priv_key_fill,
+      test_ser_priv_key_fill_buf,
       fixture_setup_unlinked_keypair,
       fixture_teardown_unlinked_keypair
     ),
     cmocka_unit_test_setup_teardown(
-      test_ser_keypair,
+      test_ser_keypair_equal,
       fixture_setup_unlinked_keypair,
       fixture_teardown_unlinked_keypair
     ),
     cmocka_unit_test_setup_teardown(
-      test_ser_keypair_fill,
+      test_ser_keypair_fill_buf,
       fixture_setup_unlinked_keypair,
       fixture_teardown_unlinked_keypair
     ),
