@@ -192,10 +192,26 @@ static void test_ser_utxo_pad(void **state) {
 
 int main() {
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test_setup(test_ser_tx, fixture_unlinked_tx),
-    cmocka_unit_test_setup(test_ser_tx_pad, fixture_unlinked_tx),
-    cmocka_unit_test_setup(test_ser_utxo, fixture_unlinked_utxo),
-    cmocka_unit_test_setup(test_ser_utxo_pad, fixture_unlinked_utxo)
+    cmocka_unit_test_setup_teardown(
+      test_ser_tx,
+      fixture_setup_unlinked_tx,
+      fixture_teardown_unlinked_tx
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_tx_pad,
+      fixture_setup_unlinked_tx,
+      fixture_teardown_unlinked_tx
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_utxo,
+      fixture_setup_unlinked_utxo,
+      fixture_teardown_unlinked_utxo
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_utxo_pad,
+      fixture_setup_unlinked_utxo,
+      fixture_teardown_unlinked_utxo
+    )
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);

@@ -41,7 +41,7 @@ static void sign_input(
   );
 }
 
-int fixture_unlinked_tx(void **state) {
+int fixture_setup_unlinked_tx(void **state) {
   Transaction *tx;
   unsigned char tx_hash[TX_HASH_LEN];
   mbedtls_ecdsa_context *keys[NUM_INPUTS];
@@ -71,19 +71,29 @@ int fixture_unlinked_tx(void **state) {
   for (int i = 0; i < NUM_INPUTS; i++)
     mbedtls_ecdsa_free(keys[i]);
 
-  *state = (void*)tx;
+  *state = tx;
 
   return 0;
 }
 
-int fixture_unlinked_utxo(void **state) {
+int fixture_teardown_unlinked_tx(void **state) {
+  free_tx(*state);
+  return 0;
+}
+
+int fixture_setup_unlinked_utxo(void **state) {
   UTXO *utxo;
 
   utxo = malloc(sizeof(UTXO));
   utxo->amt = 100;
   memset(utxo->public_key_hash, 0xAA, PUB_KEY_HASH_LEN);
 
-  *state = (void*)utxo;
+  *state = utxo;
 
+  return 0;
+}
+
+int fixture_teardown_unlinked_utxo(void **state) {
+  free(*state);
   return 0;
 }
