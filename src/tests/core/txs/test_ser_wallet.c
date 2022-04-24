@@ -17,11 +17,11 @@ static void test_ser_wallet(void **state) {
   sered_entry = ser_wallet_entry_alloc(&read_ser_entry, entry);
   desered_entry = deser_wallet_entry_alloc(&written_ser_entry, sered_entry);
 
-  assert_true(read_ser_entry == WALLET_ENTRY_SER_LEN);
-  assert_true(read_ser_entry == written_ser_entry);
+  assert_int_equal(read_ser_entry, WALLET_ENTRY_SER_LEN);
+  assert_int_equal(read_ser_entry, written_ser_entry);
 
-  assert_true(entry->amt == desered_entry->amt);
-  assert_true(entry->spent == desered_entry->spent);
+  assert_int_equal(entry->amt, desered_entry->amt);
+  assert_int_equal(entry->spent, desered_entry->spent);
 
   assert_true(mbedtls_ecp_point_cmp(
     &entry->key_pair->private_Q,
