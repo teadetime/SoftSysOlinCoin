@@ -2,7 +2,8 @@ add_executable(test_crypto test_crypto.c)
 target_compile_options(test_crypto PRIVATE ${COMPILE_OPTIONS_STD})
 target_include_directories(test_crypto PUBLIC ${INCLUDE_ALL})
 target_link_libraries(test_crypto 
-  crypto)
+  crypto
+  cmocka-static)
 
 add_executable(test_ser_key test_ser_key.c)
 target_compile_options(test_ser_key PRIVATE ${COMPILE_OPTIONS_STD})

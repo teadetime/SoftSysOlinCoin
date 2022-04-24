@@ -83,7 +83,7 @@ static char  *test_utxo_pool_find() {
   int ret_found = utxo_pool_find_leveldb(&ret_utxo, hash, 0);
   mu_assert(
     "Found did not return proper error code",
-    ret_found == 0 
+    ret_found == 0
   );
   mu_assert(
     "Returned utxo not different",
@@ -117,15 +117,15 @@ static char  *test_utxo_pool_remove() {
   utxo_pool_init_leveldb(TEST_DB_LOC);
   utxo_pool_add_leveldb(tx, 0);
   int ret_remove = utxo_pool_remove_leveldb(hash, 0);
-  
+
   mu_assert(
     "Remove returned failed code",
-    ret_remove == 0 
+    ret_remove == 0
   );
   int ret_found = utxo_pool_find_leveldb(&ret_utxo, hash, 0);
   mu_assert(
     "utxo was found after it was deleted?",
-    ret_found != 0 
+    ret_found != 0
   );
   mu_assert(
     "utxo find value not null after delete",
