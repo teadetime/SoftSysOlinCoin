@@ -1,9 +1,12 @@
 # Test base Tx
 add_executable(test_base_tx test_base_tx.c)
 target_compile_options(test_base_tx PRIVATE ${COMPILE_OPTIONS_STD})
-target_include_directories(test_base_tx PUBLIC ${INCLUDE_ALL})
+target_include_directories(test_base_tx
+  PUBLIC ${INCLUDE_ALL}
+  PUBLIC ${INCLUDE_FIXTURES})
 target_link_libraries(test_base_tx  
-  core_tx)
+  core_tx
+  fixtures)
 
 add_executable(test_ser_tx test_ser_tx.c)
 target_compile_options(test_ser_tx PRIVATE ${COMPILE_OPTIONS_STD})
