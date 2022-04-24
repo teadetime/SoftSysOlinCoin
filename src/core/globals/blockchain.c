@@ -53,7 +53,7 @@ int read_chain(){
   free(path);
   if(!fp_chain){
     return i;
-  }  
+  }
   int ret_scanf = fscanf(fp_chain, "%d", &i);
   fclose(fp_chain);
   if(ret_scanf != 1){
@@ -114,7 +114,7 @@ int blockchain_init_leveldb(char *db_env){
   // Check if we are using an existing DB
   if(found_genesis == 0){
     free(test_genesis_block);
-     
+
     if(read_hash == 0 && file_chain_height != -1){
       Block *test_top_block;
       int found_top = blockchain_find_leveldb(&test_top_block, file_top_block_hash);
@@ -132,14 +132,14 @@ int blockchain_init_leveldb(char *db_env){
       }
     }
   }
-  
+
 
   if(use_existing_db){
     chain_height = file_chain_height;
     memcpy(top_block_header_hash, file_top_block_hash, BLOCK_HASH_LEN);
   }
   else{
-    
+
     int ret = blockchain_add_leveldb(&genesis_block);
     if(ret != 0){
       return 3;
@@ -254,7 +254,7 @@ void print_blockchain_hashmap(char *prefix){
 
       printf("%shashmap_id:\n", prefix);
       dump_buf(sub_prefix, "block_hash:", key_ptr, BLOCK_HASH_LEN);
-      
+
 
       Block *read_block = deser_block_alloc(NULL, (unsigned char*)value_ptr);
       print_block(read_block, prefix);
@@ -263,7 +263,7 @@ void print_blockchain_hashmap(char *prefix){
   }
   leveldb_iter_destroy(iter);
   leveldb_readoptions_destroy(roptions);
-  leveldb_free(err); 
+  leveldb_free(err);
   free(sub_prefix);
 }
 
@@ -285,7 +285,7 @@ void pretty_print_blockchain_hashmap(){
       unsigned const char *value_ptr = (unsigned const char*) leveldb_iter_value(iter, &value_len);
 
       dump_buf("", "Block_Hash:", key_ptr, BLOCK_HASH_LEN);
-      
+
 
       Block *read_block = deser_block_alloc(NULL, (unsigned char*)value_ptr);
       pretty_print_block_header(&read_block->header, PRINT_TAB);
@@ -295,5 +295,5 @@ void pretty_print_blockchain_hashmap(){
   }
   leveldb_iter_destroy(iter);
   leveldb_readoptions_destroy(roptions);
-  leveldb_free(err); 
+  leveldb_free(err);
 }

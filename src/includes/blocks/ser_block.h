@@ -6,12 +6,13 @@
  * Blockheaders
  ******************************************************************************/
 
-/**
- * @brief Gets size of serialized BlockHeader
- *
- * @return Size of serialized BlockHeader
- */
-size_t size_ser_blockheader();
+#define BLOCKHEADER_SER_LEN \
+  ( \
+    sizeof(((BlockHeader*)0)->timestamp) + \
+    sizeof(((BlockHeader*)0)->all_tx) + \
+    sizeof(((BlockHeader*)0)->prev_header_hash) + \
+    sizeof(((BlockHeader*)0)->nonce) \
+  )
 
 /**
  * @brief Serialize a BlockHeader
