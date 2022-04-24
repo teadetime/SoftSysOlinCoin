@@ -50,8 +50,13 @@ unsigned int calc_tx_fees(Transaction *tx){
 
   for(unsigned int i = 0; i < tx->num_inputs; i++){
     UTXO *input_utxo = NULL;// = utxo_pool_find(tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
-    utxo_pool_find_leveldb(&input_utxo, tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
+    int utxo_found = utxo_pool_find_leveldb(&input_utxo, tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
+    if(utxo_found != 0){
+      fprintf(stderr, "UTXO Found failed calculaiting tx fees: %i\n", utxo_found);
+      exit(1);
+    }
     total_in += input_utxo->amt;  // This could be null if no uxto found so make sure to confirm tx has all valid inputs
+    free(input_utxo);
   }
   for(unsigned int i = 0; i < tx->num_outputs; i++){
     total_out += tx->outputs->amt;

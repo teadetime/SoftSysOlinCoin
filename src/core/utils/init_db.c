@@ -3,23 +3,58 @@
 #include <stdio.h>
 #include "string.h"
 #include "init_db.h"
+#include "constants.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <errno.h>
 
-int set_db_path(char **dest, char *name){
-  if(!getenv("HOME")){
-    exit(1);
+int create_folder(char *path){
+  int mkdir_res = mkdir(path, 0777);
+  if(mkdir_res != 0 && errno != EEXIST){
+    //errors here
+    return 1;   
   }
+  return 0;
+}
+
+int create_proj_folders(){
   char* home_path = getenv("HOME");
-  *dest = malloc(strlen(home_path)+strlen(name)+1);
-  strcpy(*dest, home_path);
-  strcat(*dest, name);
-  return 1;
+  if(!home_path){
+    fprintf(stderr, "$HOME env variable not read\n");
+    exit(1);
+  }  
+  char *newPath = malloc(strlen(home_path) + strlen(LOCAL_LOCATION) + 1);
+  strcpy(newPath, home_path);
+  strcat(newPath, LOCAL_LOCATION);
+  int ret_base = create_folder(newPath);
+  if(ret_base != 0){
+    free(newPath);
+    return 1;
+  }
+  // Create prod and test folders
+  char *prod = malloc(strlen(newPath) + strlen(PROD_DB_LOC) + 1);
+  char *test = malloc(strlen(newPath) + strlen(TEST_DB_LOC) + 1);
+  strcpy(prod, newPath);
+  strcpy(test, newPath);
+  free(newPath);
+  strcat(prod, PROD_DB_LOC);
+  strcat(test, TEST_DB_LOC);
+
+  int ret_prod = create_folder(prod);
+  int ret_test = create_folder(test);
+  free(prod);
+  free(test);
+  if(ret_prod != 0){
+    return 1;
+  }
+  if(ret_test != 0){
+    return 2;
+  }
+  return 0;
 }
 
 int open_or_create_db(leveldb_t **db, char *path){
-  if(*db != NULL){
-    fprintf(stderr, "Database Already Open\n");
-    return 0;
-  }
   leveldb_options_t *options;
   char *err = NULL;
   int ret = 0;
@@ -38,24 +73,23 @@ int open_or_create_db(leveldb_t **db, char *path){
   return ret;
 }
 
-int init_db(leveldb_t **db, char **dest, char *name){
-  set_db_path(dest, name);
+int init_db(leveldb_t **db, char **dest, char *db_env, char *name){
+  char* home_path = getenv("HOME");
+  if(!home_path){
+    fprintf(stderr, "$HOME env variable not read\n");
+    exit(1);
+  }  
+  *dest = malloc(strlen(home_path) + strlen(LOCAL_LOCATION) + strlen(db_env) + strlen(name) + 1);
+  strcpy(*dest, home_path);
+  strcat(*dest, LOCAL_LOCATION);
+  strcat(*dest, db_env);
+  strcat(*dest, name);
+
   if(open_or_create_db(db, *dest) != 0){
     return 1;
   }
   return 0;
 }
-
-int check_if_db_loaded(leveldb_t **db, char *path){
-  if(*db == NULL){
-    // Try to open it again and see if that works
-    if(open_or_create_db(db, path) != 0){
-      return 1;
-    }
-  }
-  return 0;
-}
-
 
 int destroy_db(leveldb_t **db, char *name){
   /**Note this could be weird, maybe we don't care about closing the database */
@@ -74,11 +108,11 @@ int destroy_db(leveldb_t **db, char *name){
   }
   /* reset error var */
   leveldb_options_destroy(options);
-  leveldb_free(err); err = NULL;
+  leveldb_free(err);
   return ret;
 }
 
-int db_count(leveldb_t *db, char *db_path, unsigned int *num_entries){
+int db_count(leveldb_t *db, unsigned int *num_entries){
   int count = 0;
   leveldb_readoptions_t *roptions;
   roptions = leveldb_readoptions_create();

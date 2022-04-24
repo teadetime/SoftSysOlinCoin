@@ -25,12 +25,12 @@ leveldb_t *utxo_pool_db;  // Level DB Database
  * 
  * @return int 0 if successful
  */
-int utxo_pool_init_leveldb();
+int utxo_pool_init_leveldb(char *db_env);
 
 /**
  * @brief Creates key for utxopool 
  * 
- * @param dest pointer to character buffer that will be allocated freeing responsibility of caller
+ * @param dest pointer to character buffer to write into
  * @param len pointer to integer containing length of alloced dest
  * @param hash hash of transaction for the utxo
  * @param vout output to use
@@ -41,7 +41,7 @@ int make_utxo_pool_key_with_hash(unsigned char *dest, size_t *len, unsigned char
 /**
  * @brief Make Utxo pool from a transaction and vout
  * 
- * @param dest pointer to character buffer that will be allocated freeing responsibility of caller
+ * @param dest pointer to character buffer to write into
  * @param len pointer to integer containing length of alloced dest
  * @param tx transaction to use as key for utxo
  * @param vout output to use as utxo

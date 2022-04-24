@@ -45,7 +45,7 @@ void _fill_mempool(){
   Transaction *input_tx, *tx1;
   input_tx = _make_tx();
   input_tx->outputs[0].amt = 100;
-  utxo_pool_init_leveldb();
+  utxo_pool_init_leveldb(TEST_DB_LOC);
   utxo_pool_add_leveldb(input_tx, 0);
 
   mbedtls_ecdsa_context *input_tx_context = malloc(sizeof(mbedtls_ecdsa_context));
@@ -65,8 +65,8 @@ void _fill_mempool(){
 }
 
 static char  *test_update_local_blockchain() {
-  blockchain_init_leveldb();
-  wallet_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   Block *good_block = mine_block();
   Block *found_block = NULL;
@@ -87,19 +87,21 @@ static char  *test_update_local_blockchain() {
     "Unable to locate block in blockchain",
     ret_find == 0
   );
+  unsigned char found_hash[BLOCK_HASH_LEN];
+  hash_blockheader(found_hash, &(found_block->header));
   mu_assert(
     "Find did not return correct block",
-    memcmp(&found_block->header, &good_block->header, sizeof(BlockHeader)) == 0
+    memcmp(found_hash, block_hash, sizeof(BLOCK_HASH_LEN)) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
 
 static char  *test_update_utxo_pool() {
-  blockchain_init_leveldb();
-  wallet_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   Block *good_block = mine_block();
   unsigned int prev_utxo_size = 99;
@@ -121,15 +123,15 @@ static char  *test_update_utxo_pool() {
     prev_wallet_size+1 == new_wallet_size
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
 
 static char  *test_update_mempool() {
-  blockchain_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
   Block *good_block = mine_block();
 
   unsigned int prev_mempool_size = HASH_COUNT(mempool);
@@ -144,14 +146,14 @@ static char  *test_update_mempool() {
     prev_mapping_size-1 == HASH_COUNT(utxo_to_tx)
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
 
 static char  *test_accept_block() {
-  blockchain_init_leveldb();
-  wallet_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   unsigned int prev_height = chain_height;
   Block *good_block = mine_block();
@@ -183,9 +185,11 @@ static char  *test_accept_block() {
     "Accept: Unable to locate block in blockchain",
     ret_find == 0
   );
+  unsigned char found_hash[BLOCK_HASH_LEN];
+  hash_blockheader(found_hash, &(found_block->header));
   mu_assert(
     "Find did not return correct block",
-    memcmp(&found_block->header, &good_block->header, sizeof(BlockHeader)) == 0
+    memcmp(found_hash, block_hash, sizeof(BLOCK_HASH_LEN)) == 0
   );
   mu_assert(
     "Accept: UTXO pool didn't change by expected amount",
@@ -204,15 +208,15 @@ static char  *test_accept_block() {
     prev_mapping_size-1 == HASH_COUNT(utxo_to_tx)
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
 
 
 static char  *test_handle_block() {
-  blockchain_init_leveldb();
-  wallet_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   unsigned int prev_height = chain_height;
   Block *good_block = mine_block();
@@ -245,9 +249,11 @@ static char  *test_handle_block() {
     "Handle: Unable to locate block in blockchain",
     ret_find == 0
   );
+  unsigned char found_hash[BLOCK_HASH_LEN];
+  hash_blockheader(found_hash, &(found_block->header));
   mu_assert(
     "Find did not return correct block",
-    memcmp(&found_block->header, &good_block->header, sizeof(BlockHeader)) == 0
+    memcmp(found_hash, block_hash, sizeof(BLOCK_HASH_LEN)) == 0
   );
   mu_assert(
     "Handle: UTXO pool didn't change by expected amount",
@@ -267,12 +273,11 @@ static char  *test_handle_block() {
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
   destroy_wallet();
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   return NULL;
 }
 
 static char *all_tests() {
-  //wallet_init();
   mu_run_test(test_update_local_blockchain);
   mu_run_test(test_update_utxo_pool);
   mu_run_test(test_update_mempool);
@@ -283,6 +288,7 @@ static char *all_tests() {
 }
 
 int main() {
+  create_proj_folders();
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);

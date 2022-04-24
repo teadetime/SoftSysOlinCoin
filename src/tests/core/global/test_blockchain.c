@@ -31,9 +31,9 @@ Block *_make_block() {
 }
 
 static char *test_blockchain_init_exists() {
-  int init_ret = blockchain_init_leveldb();
-  destroy_db(&blockchain_db, blockchain_path);
-  init_ret = blockchain_init_leveldb();
+  int init_ret = blockchain_init_leveldb(TEST_DB_LOC);
+  destroy_blockchain();
+  init_ret = blockchain_init_leveldb(TEST_DB_LOC);
   mu_assert(
       "Init return indicates fialure",
       init_ret == 0
@@ -44,7 +44,7 @@ static char *test_blockchain_init_exists() {
       "Genesis block was not created",
       count == 1
   );
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   return NULL;
 }
 
@@ -55,11 +55,14 @@ static char *test_blockchain_init_correct() {
   memset(empty_tx_hash, 0, TX_HASH_LEN);
   memset(empty_block_hash, 0, BLOCK_HASH_LEN);
 
-  blockchain_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
+  
   mu_assert(
     "Chain Height Incorrect",
     chain_height == 1
   );
+
+  // The following tests require to find the genesis block
   // mu_assert(
   //   "Genesis num_txs incorrect",
   //   blockchain->block->num_txs == 0
@@ -88,14 +91,13 @@ static char *test_blockchain_init_correct() {
   //     BLOCK_HASH_LEN
   //   ) == 0
   // );
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   return NULL;
 }
 
 static char  *test_blockchain_add() {
 
-  blockchain_init_leveldb();
-  //ret_block = blockchain_add(block);
+  blockchain_init_leveldb(TEST_DB_LOC);
   Block *block;
   block = _make_block();
   int ret_add = blockchain_add_leveldb(block);
@@ -109,12 +111,10 @@ static char  *test_blockchain_add() {
     "Add did not return correct block",
     entries == 2
   );
-  pretty_print_blockchain_hashmap();
-
   free(block->txs[0]);
   free(block->txs);
   free(block);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   return NULL;
 }
 
@@ -125,23 +125,24 @@ static char  *test_blockchain_find() {
   block = _make_block();
   hash_blockheader(hash, &(block->header));
 
-  blockchain_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
   blockchain_add_leveldb(block);
-  //ret_block = blockchain_find(hash);
   int ret_find = blockchain_find_leveldb(&ret_block, hash);
   mu_assert(
     "Function returned failure",
     ret_find == 0
   );
+  unsigned char found_hash[BLOCK_HASH_LEN];
+  hash_blockheader(found_hash, &(ret_block->header));
   mu_assert(
     "Find did not return correct block",
-    memcmp(&ret_block->header, &block->header, sizeof(BlockHeader)) == 0
+    memcmp(hash, found_hash, BLOCK_HASH_LEN) == 0
   );
 
   free(block->txs[0]);
   free(block->txs);
   free(block);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   return NULL;
 }
 
@@ -152,10 +153,9 @@ static char  *test_blockchain_remove() {
   block = _make_block();
   hash_blockheader(hash, &(block->header));
 
-  blockchain_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
   blockchain_add_leveldb(block);
   unsigned long prev_chain_height = chain_height;
-  //ret_block = blockchain_remove(hash);
   unsigned int prev_count;
   blockchain_count(&prev_count);
   int ret_remove = blockchain_remove_leveldb(hash);
@@ -188,7 +188,7 @@ static char  *test_blockchain_remove() {
   free(block->txs);
   free(block);
   free(ret_block);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   return NULL;
 }
 
@@ -202,6 +202,7 @@ static char *all_tests() {
 }
 
 int main() {
+  create_proj_folders();
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);

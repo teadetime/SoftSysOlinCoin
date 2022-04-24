@@ -16,5 +16,4 @@
 
 #define LINE_BREAK "================================\n"
 #define SOFT_LINE_BREAK "--------------------------------\n"
-#define blockchain_db_name "blockchain"
-#define utxo_pool_db_name "utxo_pool"
+#define LOCAL_LOCATION "/.Olincoin"

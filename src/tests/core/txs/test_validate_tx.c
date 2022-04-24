@@ -43,7 +43,7 @@ Transaction *build_complex_tx(){
   Transaction *input_tx, *tx1;
   input_tx = _make_tx();
   input_tx->outputs[0].amt = 100;
-  utxo_pool_init_leveldb();
+  utxo_pool_init_leveldb(TEST_DB_LOC);
   utxo_pool_add_leveldb(input_tx, 0);
   utxo_to_tx_add_tx(input_tx);
   mbedtls_ecdsa_context *input_tx_context = last_key_pair;
@@ -285,6 +285,7 @@ static char *all_tests(){
 }
 
 int main() {
+  create_proj_folders();
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);

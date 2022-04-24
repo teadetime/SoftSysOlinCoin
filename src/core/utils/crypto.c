@@ -67,6 +67,7 @@ size_t write_sig(
     int err;
     char buf[ERR_BUF];
 
+    init_entropy();
     err = mbedtls_ecdsa_write_signature(
         key_pair,
         MBEDTLS_MD_SHA256, hash, hash_len,
@@ -101,7 +102,7 @@ int validate_sig(
   else if (err == MBEDTLS_ERR_ECP_BAD_INPUT_DATA)
     return 1;
   else {
-    mbedtls_strerror(err, buf, ERR_BUF);
+    //mbedtls_strerror(err, buf, ERR_BUF);
     // printf("Validate signature error! %s\n", buf);
     // exit(1);
     return 1;

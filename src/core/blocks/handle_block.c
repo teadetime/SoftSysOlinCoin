@@ -7,7 +7,6 @@
 
 void update_local_blockchain(Block *block){
   // NOTE: NOT DEALING WITH BRANCHES HERE This is left for branch resolution code here
-  //blockchain_add(block);  // T\NOTE this increases chain height and sets new top header hash
   int ret_add = blockchain_add_leveldb(block);
   if(ret_add != 0){
     fprintf(stderr, "Blockchain Add Failed: \n");
@@ -23,6 +22,7 @@ void update_UTXO_pool_and_wallet_pool(Block *block){
       mbedtls_ecdsa_context *keypair = check_if_output_unlockable_leveldb(block->txs[i], j);
       if(keypair != NULL){
         wallet_pool_build_add_leveldb(block->txs[i], j, keypair);
+        mbedtls_ecdsa_free(keypair);
       }
     }
     for(unsigned int k = 0; k < block->txs[i]->num_inputs; k++){

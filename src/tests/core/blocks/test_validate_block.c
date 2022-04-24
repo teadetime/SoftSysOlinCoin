@@ -43,7 +43,7 @@ void _fill_mempool(){
   Transaction *input_tx, *tx1;
   input_tx = _make_tx();
   input_tx->outputs[0].amt = 100;
-  utxo_pool_init_leveldb();
+  utxo_pool_init_leveldb(TEST_DB_LOC);
   utxo_pool_add_leveldb(input_tx, 0);
   mbedtls_ecdsa_context *input_tx_context = malloc(sizeof(mbedtls_ecdsa_context));
   memcpy(input_tx_context, last_key_pair, sizeof(mbedtls_ecdsa_context));
@@ -61,8 +61,8 @@ void _fill_mempool(){
 }
 
 static char  *test_coinbase_tx() {
-  blockchain_init_leveldb();
-  wallet_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   Block *test_block = create_block_alloc(); // Note this creates a valid block
 
@@ -71,14 +71,14 @@ static char  *test_coinbase_tx() {
     validate_coinbase_tx(test_block->txs, test_block->num_txs) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
 
 static char  *test_validate_txs() {
-  blockchain_init_leveldb();
-  wallet_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   Block *test_block = create_block_alloc();
 
@@ -87,15 +87,15 @@ static char  *test_validate_txs() {
     validate_incoming_block_txs(test_block->txs, test_block->num_txs) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
 
 
 static char  *test_validate_prev_block() {
-  blockchain_init_leveldb();
-  wallet_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   Block *test_block = create_block_alloc();
   mu_assert(
@@ -103,14 +103,14 @@ static char  *test_validate_prev_block() {
     validate_prev_block_exists(test_block) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
 
 static char  *test_validate_all_tx() {
-  blockchain_init_leveldb();
-  wallet_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   Block *test_block = create_block_alloc();
   mu_assert(
@@ -118,29 +118,29 @@ static char  *test_validate_all_tx() {
     validate_all_tx_hash(test_block) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
 
 static char  *test_validate_block_double_spend() {
-  blockchain_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
-  wallet_init_leveldb();
+  wallet_init_leveldb(TEST_DB_LOC);
   Block *test_block = create_block_alloc();
   mu_assert(
     "Detecting double spend in valid block",
     validate_block_double_spend(test_block) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
 
 static char  *test_validate_whole_block() {
-  blockchain_init_leveldb();
-  wallet_init_leveldb();
+  blockchain_init_leveldb(TEST_DB_LOC);
+  wallet_init_leveldb(TEST_DB_LOC);
   _fill_mempool();
   Block *test_block = create_block_alloc();
   mu_assert(
@@ -154,7 +154,7 @@ static char  *test_validate_whole_block() {
     validate_block(good_block) == 0
   );
   destroy_db(&utxo_pool_db, utxo_pool_path);
-  destroy_db(&blockchain_db, blockchain_path);
+  destroy_blockchain();
   destroy_wallet();
   return NULL;
 }
@@ -171,6 +171,7 @@ static char *all_tests() {
 }
 
 int main() {
+  create_proj_folders();
   char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);

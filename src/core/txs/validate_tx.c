@@ -60,13 +60,14 @@ int validate_input_matches_utxopool(Input *input){
   unsigned char test_pub_key_hash[PUB_KEY_HASH_LEN];
   build_ctx_from_public(&new_key, input->pub_key);
   hash_pub_key(test_pub_key_hash, &new_key);
-  UTXO *old_utxo = NULL; //utxo_pool_find(input->prev_tx_id, input->prev_utxo_output);
+  UTXO *old_utxo = NULL;
   int find_ret = utxo_pool_find_leveldb(&old_utxo, input->prev_tx_id, input->prev_utxo_output);
-
   if(find_ret != 0){
     return 1;
   }
-  if(memcmp(old_utxo->public_key_hash, test_pub_key_hash, PUB_KEY_HASH_LEN) != 0){
+  int pub_key_hash_match = memcmp(old_utxo->public_key_hash, test_pub_key_hash, PUB_KEY_HASH_LEN);
+  free(old_utxo);
+  if(pub_key_hash_match != 0){
     return 2;
   }
   return 0;
@@ -136,8 +137,13 @@ int validate_tx_shared(Transaction *tx){
     }
     // Check the inputs are larger than outputs
     UTXO* input_utxo = NULL; //utxo_pool_find(tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
-    int find_ret = utxo_pool_find_leveldb(&input_utxo, tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
+    int utxo_found = utxo_pool_find_leveldb(&input_utxo, tx->inputs[i].prev_tx_id, tx->inputs[i].prev_utxo_output);
+    if(utxo_found != 0){
+      fprintf(stderr, "UTXO Found failed calculaiting tx fees: %i\n", utxo_found);
+      exit(1);
+    }
     total_in += input_utxo->amt;  // input utxo is not null based on previous tests
+    free(input_utxo);
   }
 
   for(unsigned int i = 0; i < tx->num_outputs; i++){

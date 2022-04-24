@@ -92,7 +92,8 @@ static char *all_tests() {
 }
 
 int main() {
-    char *result = all_tests();
+  create_proj_folders();
+  char *result = all_tests();
   if (result != NULL) {
     printf("%s\n", result);
   } else {
