@@ -11,7 +11,7 @@ Queue *queue_init(){
   new_q->head = NULL;
   new_q->tail = NULL;
   //INitialize sepmaphores and lock
-  new_q->semaphore = 0;//0
+  sem_init(&new_q->sem_len, 0, 0);
   if (pthread_mutex_init(&new_q->lock, NULL) != 0) {
       printf("\n mutex init has failed\n");
       return NULL;
