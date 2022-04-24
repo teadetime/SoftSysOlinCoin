@@ -22,18 +22,5 @@ Queue *queue_init();
 
 void queue_destroy(Queue *exisiting_q);
 
-int queue_add(Queue *existing_q, QueueItem *new_item);
-
-QueueItem *queue_pop(Queue *existing_q);
-
-int queue_add_int(Queue *existing_q, int *i);
-
-int *queue_pop_int(Queue *existing_q);
-
-int queue_add_tx(Queue *existing_q, Transaction *tx);
-
-Transaction *queue_pop_tx(Queue *existing_q);
-
-int queue_add_block(Queue *existing_q, Block *block);
-
-Block *queue_pop_block(Queue *existing_q);
+int queue_add_void(Queue *existing_q, void *new_item);
+void *queue_pop_void(Queue *existing_q);

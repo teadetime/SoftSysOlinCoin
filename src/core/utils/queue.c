@@ -33,65 +33,40 @@ void queue_destroy(Queue *existing_q){
   free(existing_q);
 }
 
-int queue_add(Queue *existing_q, QueueItem *new_item){
+int queue_add_void(Queue *existing_q, void *new_item){
   pthread_mutex_lock(&existing_q->lock);
+  QueueItem *new_entry = malloc(sizeof(QueueItem));
+  new_entry->item = new_item;
+  new_entry->next = NULL;
   if(!existing_q->tail && !existing_q->head){
-    existing_q->tail = new_item;
-    existing_q->head = new_item;
+    existing_q->tail = new_entry;
+    existing_q->head = new_entry;
   }
-  existing_q->tail->next = new_item;
-  sleep(4);
+  else{
+    existing_q->tail->next = new_entry;
+    existing_q->tail = new_entry;
+  }
   pthread_mutex_unlock(&existing_q->lock);
+  int ret = sem_post(&existing_q->sem_len); 
   return 0;
 }
 
-QueueItem *queue_pop(Queue *existing_q){
+void *queue_pop_void(Queue *existing_q){
+  sem_wait(&existing_q->sem_len);
   pthread_mutex_lock(&existing_q->lock);
-  QueueItem *ret = existing_q->head;
+  if(!existing_q->head){
+    fprintf(stderr, "Popping off empty Queue");
+    exit(1);
+  }
+
+  QueueItem *popped_item = existing_q->head;
   existing_q->head = existing_q->head->next;
   // Check to see if tail should be set to Null
   if(!existing_q->head){
     existing_q->tail = NULL;
   }
+  void *ret = popped_item->item;
+  free(popped_item);
   pthread_mutex_unlock(&existing_q->lock);
-  return ret;
-}
-
-int queue_add_int(Queue *existing_q, int *i){
-  QueueItem *new_item = malloc(sizeof(QueueItem));
-  new_item->item = (void *)i;
-  return queue_add(existing_q, new_item);
-}
-
-int *queue_pop_int(Queue *existing_q){
-  QueueItem *popped_item = queue_pop(existing_q);
-  int *ret = (int *)popped_item->item;
-  free(popped_item);
-  return ret;
-}
-
-int queue_add_tx(Queue *existing_q, Transaction *tx){
-  QueueItem *new_item = malloc(sizeof(Transaction));
-  new_item->item = (void *)tx;
-  return queue_add(existing_q, new_item);
-}
-
-Transaction *queue_pop_tx(Queue *existing_q){
-  QueueItem *popped_item = queue_pop(existing_q);
-  Transaction *ret = (Transaction *)popped_item->item;
-  free(popped_item);
-  return ret;
-}
-
-int queue_add_block(Queue *existing_q, Block *block){
-  QueueItem *new_item = malloc(sizeof(Block));
-  new_item->item = (void *)block;
-  return queue_add(existing_q, new_item);
-}
-
-Block *queue_pop_block(Queue *existing_q){
-  QueueItem *popped_item = queue_pop(existing_q);
-  Block *ret = (Block *)popped_item->item;
-  free(popped_item);
   return ret;
 }
