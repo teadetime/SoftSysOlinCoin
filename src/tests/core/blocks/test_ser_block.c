@@ -171,7 +171,7 @@ int main() {
       test_ser_block_fill_buf,
       fixture_setup_unlinked_block,
       fixture_teardown_unlinked_block
-    ),
+    )
   };
 
   return cmocka_run_group_tests(tests, NULL, NULL);
