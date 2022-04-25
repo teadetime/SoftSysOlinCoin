@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "base_block.h"
+#include "base_tx.h"
 #include "ser_block.h"
 #include "crypto.h"
 
@@ -54,5 +55,17 @@ void pretty_print_block(Block *block, char *prefix){
   for(unsigned int i=0; i<block->num_txs; i++){
     pretty_print_tx(block->txs[i], prefix);
     printf(LINE_BREAK);
+  }
+}
+
+void free_block(Block *block){
+  if(block != NULL){
+    if(block->txs != NULL){
+      for(unsigned int i = 0; i < block->num_txs; i++ ){
+        free_tx(block->txs[i]);
+      }
+      free(block->txs);
+    }
+    free(block);
   }
 }

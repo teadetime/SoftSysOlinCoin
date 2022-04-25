@@ -22,6 +22,13 @@ typedef struct Block{
  */
 void hash_blockheader(unsigned char *dest, BlockHeader *header);
 
+/**
+ * @brief Frees a block and it's containing transactions safely
+ * 
+ * @param block to free
+ */
+void free_block(Block *block);
+
 /*
 Prints a Block Header to stdout so data can be visualized
 
