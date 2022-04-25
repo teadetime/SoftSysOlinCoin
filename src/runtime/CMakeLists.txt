@@ -21,4 +21,5 @@ target_include_directories(runtime PUBLIC ${INCLUDE_ALL})
 target_link_libraries(runtime
   queue
   handle_block
-  Threads::Threads)
+  Threads::Threads
+  init_globals)
