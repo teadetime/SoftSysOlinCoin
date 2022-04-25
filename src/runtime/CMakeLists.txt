@@ -20,4 +20,5 @@ target_compile_options(runtime PRIVATE ${COMPILE_OPTIONS_STD})
 target_include_directories(runtime PUBLIC ${INCLUDE_ALL})
 target_link_libraries(runtime
   queue
+  handle_block
   Threads::Threads)

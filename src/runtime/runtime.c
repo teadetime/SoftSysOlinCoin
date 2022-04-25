@@ -1,6 +1,9 @@
 #include "queue.h"
 #include <unistd.h>
 #include "pthread.h"
+#include "validate_block.h"
+#include "handle_block.h"
+#include "create_block.h"
 
 typedef struct Globals {
   Queue *queue_block;
@@ -65,6 +68,60 @@ void *pop(void *queue){
   return NULL;
 }
 
+void *node_block_thread(void *arg){
+  Globals *globals = arg;
+  while(1){
+    Block *popped_block = queue_pop_void(globals->queue_block);
+
+    //Now aquire locks for validation (Utxo pool and blockcahin)
+    pthread_mutex_lock(&globals->utxo_pool_lock);
+    pthread_mutex_lock(&globals->blockchain_lock);
+    int block_valid = validate_block(popped_block);
+
+
+    if(block_valid == 0){
+      //Now aquire additional locks for handling
+      pthread_mutex_lock(&globals->utxo_to_tx_lock);
+      pthread_mutex_lock(&globals->wallet_pool_lock);
+      pthread_mutex_lock(&globals->key_pool_lock);
+      pthread_mutex_lock(&globals->mempool_lock);
+      accept_block(popped_block);
+      free_block(popped_block);
+      pthread_mutex_unlock(&globals->utxo_to_tx_lock);
+      pthread_mutex_unlock(&globals->wallet_pool_lock);
+      pthread_mutex_unlock(&globals->key_pool_lock);
+      pthread_mutex_unlock(&globals->mempool_lock);
+    }
+    pthread_mutex_unlock(&globals->utxo_pool_lock);
+    pthread_mutex_unlock(&globals->blockchain_lock);
+  }
+  return NULL;
+}
+
+void *miner_thread(void *arg){
+  Globals *globals = arg;
+
+  //Now aquire locks for creating a block!
+  pthread_mutex_lock(&globals->utxo_pool_lock);
+  pthread_mutex_lock(&globals->blockchain_lock);
+  pthread_mutex_lock(&globals->key_pool_lock) ;
+  pthread_mutex_lock(&globals->mempool_lock);
+  
+  Block *new_block = create_block_alloc();
+
+  pthread_mutex_unlock(&globals->utxo_pool_lock);
+  pthread_mutex_unlock(&globals->blockchain_lock);
+  pthread_mutex_unlock(&globals->key_pool_lock) ;
+  pthread_mutex_unlock(&globals->mempool_lock);
+  
+  while(try_header_hash(&(new_block->header)) != 0){
+    change_nonce(new_block);
+  }
+
+  queue_add_void(globals->queue_block, new_block);
+  return NULL;
+}
+
 int main() {
 
   Globals *globals = init_globals();
@@ -88,8 +145,8 @@ int main() {
   /* wait we run the risk of executing an exit which will terminate   */
   /* the process and all threads before the threads have completed.   */
 
-  pthread_join( node_block, NULL);
-  pthread_join( node_tx, NULL); 
+  pthread_join(node_block, NULL);
+  pthread_join(node_tx, NULL); 
 
   printf("Thread 1 returns: %d\n",node_block_ret);
   printf("Thread 2 returns: %d\n", node_tx_ret);
