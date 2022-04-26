@@ -33,10 +33,11 @@ We have finished updating our codebase and implementing persistence, so our next
 
 Eamon is currently refactoring our unit tests to use CMocka instead of MinUnit to facilitate testing networking functions down the line.
 - Requires writing proper fixtures for objects used in tests and databases used in tests, as well as moving old MinUnit asserts to CMocka asserts
-__Done when all tests are using fixtures and moved to CMocka__
+- __Done when all tests are using fixtures and moved to CMocka__
 
 Nathan is currently implementing our multi-threaded primary runtime.
   -  Requires implementing thread functions for a miner, a validation node and a wallet, as well a a thread-safe queue to pass messages between them
-__Done when we can run our node with all functions__
+  - __Done when we can run our node with all functions__
+
 Github: https://github.com/teadetime/SoftSysOlinCoin
 Tasks: https://github.com/users/teadetime/projects/1 
