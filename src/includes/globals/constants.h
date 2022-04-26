@@ -10,7 +10,7 @@
 #define ERR_BUF 1024
 #define BLOCK_REWARD 100
 #define DESIRED_NUM_TX 10
-#define HASH_DIFFICULTY 2
+#define HASH_DIFFICULTY 3
 #define MINING_NODE 1
 #define WALLET_NODE 1
 
