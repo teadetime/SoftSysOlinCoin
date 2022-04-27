@@ -61,13 +61,6 @@ int fixture_setup_unlinked_block(void **state) {
 }
 
 int fixture_teardown_unlinked_block(void **state) {
-  Block *block;
-
-  block = *state;
-  for (unsigned int i = 0; i < block->num_txs; i++)
-    free_tx(block->txs[i]);
-  free(block->txs);
-  free(block);
-
+  free_block(*state);
   return 0;
 }

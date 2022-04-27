@@ -20,10 +20,7 @@ int fixture_setup_unlinked_wallet_entry(void **state) {
 }
 
 int fixture_teardown_unlinked_wallet_entry(void **state) {
-  WalletEntry *content;
-  content = *state;
-  mbedtls_ecp_keypair_free(content->key_pair);
-  free(content);
+  free_wallet_entry(*state);
   return 0;
 }
 

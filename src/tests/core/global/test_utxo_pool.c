@@ -26,7 +26,7 @@ static void test_utxo_pool_add(void **state) {
   utxo_pool_count(&num_utxo_after);
 
   assert_int_equal(ret, 0);
-  assert_int_equal(num_utxo_after, num_utxo_prev+1);
+  assert_int_equal(num_utxo_after, num_utxo_prev + 1);
 }
 
 static void test_utxo_pool_find(void **state) {
@@ -49,25 +49,31 @@ static void test_utxo_pool_find(void **state) {
     tx->outputs[0].public_key_hash,
     PUB_KEY_HASH_LEN
   );
+
+  free(ret_utxo);
 }
 
 static void test_utxo_pool_remove(void **state) {
   Transaction *tx;
   UTXO  *ret_utxo = NULL;
   unsigned char hash[TX_HASH_LEN];
+  unsigned int prev_count, count;
   int ret_remove, ret_found;
 
   tx = *state;
   hash_tx(hash, tx);
 
   utxo_pool_add_leveldb(tx, 0);
-  ret_remove = utxo_pool_remove_leveldb(hash, 0);
+  utxo_pool_count(&prev_count);
 
+  ret_remove = utxo_pool_remove_leveldb(hash, 0);
+  utxo_pool_count(&count);
   assert_int_equal(ret_remove, 0);
-  assert_int_equal(ret_utxo, NULL);
+  assert_int_equal(count, prev_count - 1);
 
   ret_found = utxo_pool_find_leveldb(&ret_utxo, hash, 0);
   assert_int_not_equal(ret_found, 0);
+  assert_ptr_equal(ret_utxo, NULL);
 }
 
 int main() {
@@ -87,10 +93,11 @@ int main() {
   composition.teardown = utxo_tx_teardown;
 
   const struct CMUnitTest tests[] = {
-    cmocka_unit_test_setup_teardown(
+    cmocka_unit_test_prestate_setup_teardown(
       test_utxo_pool_init,
       fixture_setup_utxo_pool,
-      fixture_teardown_utxo_pool
+      fixture_teardown_utxo_pool,
+      NULL
     ),
     cmocka_unit_test_prestate_setup_teardown(
       test_utxo_pool_add,

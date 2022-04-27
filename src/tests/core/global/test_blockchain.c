@@ -61,22 +61,21 @@ static void test_blockchain_find(void **state) {
   hash_blockheader(found_hash, &(ret_block->header));
   assert_memory_equal(hash, found_hash, BLOCK_HASH_LEN);
 
-  free(ret_block);
+  free_block(ret_block);
 }
 
 static void test_blockchain_remove(void **state) {
   Block *block, *ret_block = NULL;
   unsigned char hash[BLOCK_HASH_LEN];
+  unsigned int prev_count, count;
 
   block = *state;
   hash_blockheader(hash, &(block->header));
 
   blockchain_add_leveldb(block);
-  unsigned int prev_count;
   blockchain_count(&prev_count);
 
   int ret_remove = blockchain_remove_leveldb(hash);
-  unsigned int count;
   blockchain_count(&count);
   assert_int_equal(ret_remove, 0);
   assert_int_equal(count, prev_count - 1);

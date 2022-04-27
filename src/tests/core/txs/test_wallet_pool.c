@@ -63,6 +63,8 @@ static void test_wallet_pool_find(void **state) {
       &key_pair->private_d
     ) == 0
   );
+
+  free_wallet_entry(ret_entry);
 }
 
 static void test_wallet_pool_remove(void **state) {
@@ -70,16 +72,21 @@ static void test_wallet_pool_remove(void **state) {
   WalletEntry *ret_entry = NULL;
   mbedtls_ecdsa_context *key_pair;
   unsigned char hash[TX_HASH_LEN];
+  unsigned int prev_count, count;
 
   tx = ((void**)*state)[0];
   key_pair = ((void**)*state)[1];
   hash_tx(hash, tx);
 
   wallet_pool_build_add_leveldb(tx, 0, key_pair);
-  int ret_rem = wallet_pool_remove_leveldb(hash, 0);
-  int ret_find = wallet_pool_find_leveldb(&ret_entry, hash, 0);
+  wallet_pool_count(&prev_count);
 
+  int ret_rem = wallet_pool_remove_leveldb(hash, 0);
+  wallet_pool_count(&count);
   assert_int_equal(ret_rem, 0);
+  assert_int_equal(count, prev_count - 1);
+
+  int ret_find = wallet_pool_find_leveldb(&ret_entry, hash, 0);
   assert_ptr_equal(ret_entry, NULL);
   assert_int_not_equal(ret_find, 0);
 }
@@ -111,6 +118,8 @@ static void test_key_pool_find(void **state) {
       &key_pair->private_Q
     ) == 0
   );
+
+  mbedtls_ecp_keypair_free(ret_pair);
 }
 
 static void test_output_unlockable(void **state) {
@@ -135,14 +144,18 @@ static void test_output_unlockable(void **state) {
 static void test_key_pool_remove(void **state) {
   mbedtls_ecdsa_context *key_pair, *ret_pair = NULL;
   unsigned char hash[PUB_KEY_HASH_LEN];
+  unsigned int prev_count, count;
 
   key_pair = *state;
   hash_pub_key(hash, key_pair);
 
   key_pool_add_leveldb(key_pair);
+  key_pool_count(&prev_count);
 
   int ret_rem = key_pool_remove_leveldb(hash);
+  key_pool_count(&count);
   assert_int_equal(ret_rem, 0);
+  assert_int_equal(count, prev_count - 1);
 
   int ret_found = key_pool_find_leveldb(&ret_pair, hash);
   assert_int_not_equal(ret_found, 0);
