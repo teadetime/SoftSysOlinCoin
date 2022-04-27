@@ -12,5 +12,6 @@ target_link_libraries(fixtures
   wallet_pool
   blockchain
   mempool
+  utxo_to_tx
   crypto
   cmocka-static)

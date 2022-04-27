@@ -1,203 +1,143 @@
 #include <stdio.h>
-#include "minunit.h"
+
+#include <setjmp.h>
+#include <cmocka.h>
+
 #include "utxo_to_tx.h"
 #include "crypto.h"
+#include "fixtures_tx.h"
+#include "fixtures_global.h"
 
-int tests_run = 0;
-
-Transaction *_make_tx() {
-  Transaction *tx;
-  Input *in;
-  Output *out;
-  mbedtls_ecdsa_context *key_pair;
-
-  tx = malloc(sizeof(Transaction));
-  in = malloc(sizeof(Input) * 2);
-  out = malloc(sizeof(Output));
-
-  memset(&in[0], 0x2, sizeof(Input));
-  key_pair = gen_keys();
-  in[0].pub_key = &(key_pair->private_Q);
-
-  memset(&in[1], 0x8, sizeof(Input));
-  key_pair = gen_keys();
-  in[1].pub_key = &(key_pair->private_Q);
-
-  memset(out, 0, sizeof(Output));
-
-  tx->num_inputs = 2;
-  tx->inputs = in;
-  tx->num_outputs = 1;
-  tx->outputs = out;
-
-  return tx;
-}
-
-void _free_tx(Transaction *tx) {
-  if (tx->inputs != NULL)
-    free(tx->inputs);
-  if (tx->outputs != NULL)
-    free(tx->outputs);
-  free(tx);
-}
-
-static char *test_utxo_to_tx_init() {
+static void test_utxo_to_tx_init(void **state) {
+  (void)state;
   utxo_to_tx_init();
-  mu_assert(
-      "UTXO to Tx mapping was not initialized",
-      utxo_to_tx == NULL
-  );
-  return NULL;
+  assert_ptr_equal(utxo_to_tx, NULL);
 }
 
-static char  *test_utxo_to_tx_add() {
+static void test_utxo_to_tx_add(void **state) {
   Transaction *tx;
   int ret_val;
   Input *in;
+  unsigned int prev_count, count;
   unsigned char tx_hash[TX_HASH_LEN];
 
-  tx = _make_tx();
-  utxo_to_tx_init();
-
+  tx = *state;
   in = &tx->inputs[0];
   hash_tx(tx_hash, tx);
+  prev_count = HASH_COUNT(utxo_to_tx);
   ret_val = utxo_to_tx_add(in->prev_tx_id, in->prev_utxo_output, tx_hash);
-
-  mu_assert(
-    "Return value indicates failure",
-    ret_val == 0
-  );
+  count = HASH_COUNT(utxo_to_tx);
+  assert_int_equal(ret_val, 0);
 
   // Relies on UTHash storing new additions as first value in utxo_to_tx global
   // variable, which *should* always happen since it starts as NULL
-  mu_assert(
-    "Stored UTXO transaction hash incorrect",
-    memcmp(
-      utxo_to_tx->id.tx_hash,
-      in->prev_tx_id,
-      TX_HASH_LEN
-    ) == 0
-  );
-  mu_assert(
-    "Stored UTXO vout incorrect",
-      utxo_to_tx->id.vout == in->prev_utxo_output
-  );
-  mu_assert(
-    "Stored transaction hash incorrect",
-    memcmp(
-      utxo_to_tx->tx_hash,
-      tx_hash,
-      TX_HASH_LEN
-    ) == 0
-  );
-
-  _free_tx(tx);
-
-  return NULL;
+  assert_memory_equal(utxo_to_tx->id.tx_hash, in->prev_tx_id, TX_HASH_LEN);
+  assert_int_equal(utxo_to_tx->id.vout, in->prev_utxo_output);
+  assert_memory_equal(utxo_to_tx->tx_hash, tx_hash, TX_HASH_LEN);
+  assert_int_equal(count, prev_count + 1);
 }
 
-static char  *test_utxo_to_tx_add_tx() {
+static void test_utxo_to_tx_add_tx(void **state) {
   Transaction *tx;
   int ret_val, count;
   unsigned char tx_hash[TX_HASH_LEN];
 
-  tx = _make_tx();
-  utxo_to_tx_init();
-
+  tx = *state;
   hash_tx(tx_hash, tx);
   ret_val = utxo_to_tx_add_tx(tx);
-
-  mu_assert(
-    "Return value indicates failure",
-    ret_val == 0
-  );
+  assert_int_equal(ret_val, 0);
 
   // add_tx() calls add() under the hood, so we just test to ensure something
   // was added, and not what was added. This is better served by a mock
   count = HASH_COUNT(utxo_to_tx);
-  mu_assert(
-    "Incorrect final hashmap length",
-    count == 2
-  );
-
-  _free_tx(tx);
-
-  return NULL;
+  assert_int_equal(count, 4);
 }
 
-static char  *test_utxo_to_tx_find() {
+static void test_utxo_to_tx_find(void **state) {
   Transaction *tx;
   Input *in;
   int ret_val;
   unsigned char tx_hash[TX_HASH_LEN], ret_hash[TX_HASH_LEN];
 
-  tx = _make_tx();
+  tx = *state;
   in = &tx->inputs[0];
   hash_tx(tx_hash, tx);
 
-  utxo_to_tx_init();
   utxo_to_tx_add_tx(tx);
   ret_val = utxo_to_tx_find(ret_hash, in->prev_tx_id, in->prev_utxo_output);
 
-  mu_assert(
-    "Return value indicates failure",
-    ret_val == 0
-  );
-  mu_assert(
-    "Find did not return correct transacation hash",
-    memcmp(tx_hash, ret_hash, TX_HASH_LEN) == 0
-  );
-
-  _free_tx(tx);
-
-  return NULL;
+  assert_int_equal(ret_val, 0);
+  assert_memory_equal(tx_hash, ret_hash, TX_HASH_LEN);
 }
 
-static char  *test_utxo_to_tx_remove() {
+static void test_utxo_to_tx_remove(void **state) {
   Transaction *tx;
   Input *in;
   int ret_val;
+  unsigned int prev_count, count;
 
-  tx = _make_tx();
+  tx = *state;
   in = &tx->inputs[0];
-
-  utxo_to_tx_init();
   utxo_to_tx_add_tx(tx);
+  prev_count = HASH_COUNT(utxo_to_tx);
 
   ret_val = utxo_to_tx_remove(in->prev_tx_id, in->prev_utxo_output);
-  mu_assert(
-    "Return value indicates failure",
-    ret_val == 0
-  );
+  count = HASH_COUNT(utxo_to_tx);
+  assert_int_equal(ret_val, 0);
+  assert_int_equal(count, prev_count - 1);
 
   ret_val = utxo_to_tx_find(NULL, in->prev_tx_id, in->prev_utxo_output);
-  mu_assert(
-    "Entry was not removed",
-    ret_val == 1
-  );
-
-  _free_tx(tx);
-
-  return NULL;
-}
-
-static char *all_tests() {
-  mu_run_test(test_utxo_to_tx_init);
-  mu_run_test(test_utxo_to_tx_add);
-  mu_run_test(test_utxo_to_tx_add_tx);
-  mu_run_test(test_utxo_to_tx_find);
-  mu_run_test(test_utxo_to_tx_remove);
-  return NULL;
+  assert_int_equal(ret_val, 1);
 }
 
 int main() {
-  char *result = all_tests();
-  if (result != NULL) {
-    printf("%s\n", result);
-  } else {
-    printf("utxo_to_tx.c passing!\n");
-  }
-  printf("Tests run: %d\n", tests_run);
+  int (*utxo_to_tx_setup[])(void**) = {
+    fixture_setup_utxo_to_tx,
+    fixture_setup_unlinked_tx,
+    NULL
+  };
+  int (*utxo_to_tx_teardown[])(void**) = {
+    fixture_teardown_utxo_to_tx,
+    fixture_teardown_unlinked_tx,
+    NULL
+  };
+  ComposedFixture composition;
 
-  return result != 0;
+  composition.setup = utxo_to_tx_setup;
+  composition.teardown = utxo_to_tx_teardown;
+
+  const struct CMUnitTest tests[] = {
+    cmocka_unit_test_prestate_setup_teardown(
+      test_utxo_to_tx_init,
+      NULL,
+      NULL,
+      NULL
+    ),
+    cmocka_unit_test_prestate_setup_teardown(
+      test_utxo_to_tx_add,
+      fixture_setup_compose,
+      fixture_teardown_compose,
+      &composition
+    ),
+    cmocka_unit_test_prestate_setup_teardown(
+      test_utxo_to_tx_add_tx,
+      fixture_setup_compose,
+      fixture_teardown_compose,
+      &composition
+    ),
+    cmocka_unit_test_prestate_setup_teardown(
+      test_utxo_to_tx_find,
+      fixture_setup_compose,
+      fixture_teardown_compose,
+      &composition
+    ),
+    cmocka_unit_test_prestate_setup_teardown(
+      test_utxo_to_tx_remove,
+      fixture_setup_compose,
+      fixture_teardown_compose,
+      &composition
+    )
+  };
+
+  return cmocka_run_group_tests(tests, NULL, NULL);
 }

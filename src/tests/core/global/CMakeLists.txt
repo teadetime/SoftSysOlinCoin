@@ -39,10 +39,10 @@ target_link_libraries(test_list
 
 # Test UTXO To Tx
 add_executable(test_utxo_to_tx test_utxo_to_tx.c)
-target_compile_options(test_utxo_to_tx
+target_compile_options(test_utxo_to_tx PRIVATE ${COMPILE_OPTIONS_STD})
+target_include_directories(test_utxo_to_tx
   PUBLIC ${INCLUDE_ALL}
   PUBLIC ${INCLUDE_FIXTURES})
-target_include_directories(test_utxo_to_tx PUBLIC ${INCLUDE_ALL})
 target_link_libraries(test_utxo_to_tx
   utxo_to_tx
   core_tx

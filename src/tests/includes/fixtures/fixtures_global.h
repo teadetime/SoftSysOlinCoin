@@ -22,3 +22,6 @@ int fixture_teardown_blockchain(void **state);
 
 int fixture_setup_mempool(void **state);
 int fixture_teardown_mempool(void **state);
+
+int fixture_setup_utxo_to_tx(void **state);
+int fixture_teardown_utxo_to_tx(void **state);
