@@ -4,7 +4,7 @@ message(STATUS "Building Runtime")
 # Add inlcudes for the runtime headers
 add_subdirectory(includes)
 
-add_executable(shell shell.c)
+add_library(shell shell.c)
 target_compile_options(shell PRIVATE ${COMPILE_OPTIONS_STD})
 target_include_directories(shell PUBLIC
   ${INCLUDE_ALL}
@@ -22,4 +22,7 @@ target_link_libraries(runtime
   queue
   handle_block
   Threads::Threads
-  init_globals)
+  init_globals
+  validate_tx
+  handle_tx
+  shell)
