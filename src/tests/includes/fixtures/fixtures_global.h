@@ -19,3 +19,6 @@ int fixture_teardown_wallet(void **state);
 int fixture_clear_blockchain(void **state);
 int fixture_setup_blockchain(void **state);
 int fixture_teardown_blockchain(void **state);
+
+int fixture_setup_mempool(void **state);
+int fixture_teardown_mempool(void **state);

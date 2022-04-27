@@ -12,13 +12,13 @@ Transaction *mempool_add(Transaction *tx) {
 
   new_entry = malloc(sizeof(MemPool));
   hash_tx(new_entry->id, tx);
-  new_entry->tx = tx;
+  new_entry->tx = copy_tx(tx);
 
   found_entry = mempool_find_node(new_entry->id);
   if (found_entry == NULL) {
     HASH_ADD(hh, mempool, id, TX_HASH_LEN, new_entry);
     utxo_to_tx_add_tx(tx);
-    return tx;
+    return new_entry->tx;
   }
   free(new_entry);
   return NULL;
@@ -51,7 +51,7 @@ Transaction *mempool_find(unsigned char *tx_hash) {
 
   found_entry = mempool_find_node(tx_hash);
   if (found_entry != NULL) {
-    return found_entry->tx;
+    return copy_tx(found_entry->tx);
   }
 
   return NULL;

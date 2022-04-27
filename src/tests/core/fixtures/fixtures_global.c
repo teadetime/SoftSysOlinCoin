@@ -3,6 +3,7 @@
 #include "utxo_pool.h"
 #include "wallet_pool.h"
 #include "blockchain.h"
+#include "mempool.h"
 #include "init_db.h"
 
 #include <string.h>
@@ -75,5 +76,21 @@ int fixture_setup_blockchain(void **state) {
 
 int fixture_teardown_blockchain(void **state) {
   destroy_blockchain();
+  return 0;
+}
+
+int fixture_setup_mempool(void **state) {
+  mempool_init();
+  return 0;
+}
+
+int fixture_teardown_mempool(void **state) {
+  MemPool *current, *tmp;
+  HASH_ITER(hh, mempool, current, tmp) {
+    HASH_DEL(mempool, current);
+    free_tx(current->tx);
+    free(current);
+  }
+  mempool = NULL;
   return 0;
 }
