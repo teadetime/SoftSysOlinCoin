@@ -1,4 +1,5 @@
 #include "fixtures_wallet.h"
+#include "fixtures_tx.h"
 #include "crypto.h"
 #include "wallet_pool.h"
 
@@ -33,5 +34,23 @@ int fixture_setup_unlinked_keypair(void **state) {
 
 int fixture_teardown_unlinked_keypair(void **state) {
   mbedtls_ecp_keypair_free(*state);
+  return 0;
+}
+
+int fixture_setup_unlinked_tx_keypair(void **state) {
+  void **sub_state;
+  sub_state = malloc(sizeof(void*) * 2);
+  fixture_setup_unlinked_tx(&sub_state[0]);
+  fixture_setup_unlinked_keypair(&sub_state[1]);
+  *state = sub_state;
+  return 0;
+}
+
+int fixture_teardown_unlinked_tx_keypair(void **state) {
+  void **sub_state;
+  sub_state = *state;
+  fixture_teardown_unlinked_tx(&sub_state[0]);
+  fixture_teardown_unlinked_keypair(&sub_state[1]);
+  free(sub_state);
   return 0;
 }

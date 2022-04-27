@@ -56,7 +56,7 @@ static char *test_blockchain_init_correct() {
   memset(empty_block_hash, 0, BLOCK_HASH_LEN);
 
   blockchain_init_leveldb(TEST_DB_LOC);
-  
+
   mu_assert(
     "Chain Height Incorrect",
     chain_height == 1

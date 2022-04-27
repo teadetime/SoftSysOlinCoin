@@ -1,6 +1,7 @@
 #include "fixtures_tx.h"
 #include "fixtures_global.h"
 #include "utxo_pool.h"
+#include "wallet_pool.h"
 #include "init_db.h"
 
 #include <string.h>
@@ -41,5 +42,21 @@ int fixture_setup_utxo_pool(void **state) {
 
 int fixture_teardown_utxo_pool(void **state) {
   destroy_db(&utxo_pool_db, utxo_pool_path);
+  return 0;
+}
+
+int fixture_clear_wallet(void **state) {
+  wallet_init_leveldb(TEST_DB_LOC);
+  destroy_wallet();
+  return 0;
+}
+
+int fixture_setup_wallet(void **state) {
+  wallet_init_leveldb(TEST_DB_LOC);
+  return 0;
+}
+
+int fixture_teardown_wallet(void **state) {
+  destroy_wallet();
   return 0;
 }
