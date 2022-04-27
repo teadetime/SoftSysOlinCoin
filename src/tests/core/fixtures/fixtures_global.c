@@ -2,6 +2,7 @@
 #include "fixtures_global.h"
 #include "utxo_pool.h"
 #include "wallet_pool.h"
+#include "blockchain.h"
 #include "init_db.h"
 
 #include <string.h>
@@ -58,5 +59,21 @@ int fixture_setup_wallet(void **state) {
 
 int fixture_teardown_wallet(void **state) {
   destroy_wallet();
+  return 0;
+}
+
+int fixture_clear_blockchain(void **state) {
+  blockchain_init_leveldb(TEST_DB_LOC);
+  destroy_blockchain();
+  return 0;
+}
+
+int fixture_setup_blockchain(void **state) {
+  blockchain_init_leveldb(TEST_DB_LOC);
+  return 0;
+}
+
+int fixture_teardown_blockchain(void **state) {
+  destroy_blockchain();
   return 0;
 }

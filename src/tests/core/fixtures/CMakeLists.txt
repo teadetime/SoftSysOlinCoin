@@ -10,5 +10,7 @@ target_link_libraries(fixtures
   core_tx
   core_block
   wallet_pool
+  blockchain
+  mempool
   crypto
   cmocka-static)

@@ -139,7 +139,6 @@ int blockchain_init_leveldb(char *db_env){
     memcpy(top_block_header_hash, file_top_block_hash, BLOCK_HASH_LEN);
   }
   else{
-
     int ret = blockchain_add_leveldb(&genesis_block);
     if(ret != 0){
       return 3;
