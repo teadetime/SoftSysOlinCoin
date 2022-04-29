@@ -15,6 +15,17 @@ target_link_libraries(shell
   handle_block
   init_globals)
 
+add_library(server server.c)
+target_compile_options(server PRIVATE ${COMPILE_OPTIONS_STD})
+target_include_directories(server PUBLIC
+  ${INCLUDE_ALL}
+  )
+add_library(client client.c)
+target_compile_options(client PRIVATE ${COMPILE_OPTIONS_STD})
+target_include_directories(client PUBLIC
+  ${INCLUDE_ALL}
+  )
+
 add_executable(runtime runtime.c)
 target_compile_options(runtime PRIVATE ${COMPILE_OPTIONS_STD})
 target_include_directories(runtime PUBLIC ${INCLUDE_ALL})
@@ -25,4 +36,6 @@ target_link_libraries(runtime
   init_globals
   validate_tx
   handle_tx
-  shell)
+  shell
+  server
+  client)

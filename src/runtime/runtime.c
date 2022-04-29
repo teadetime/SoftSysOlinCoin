@@ -10,6 +10,8 @@
 #include "runtime.h"
 #include "init_globals.h"
 #include "init_db.h"
+#include "server.h"
+#include "client.h"
 
 Globals *init_globals(){
   Globals *new_globals = malloc(sizeof(Globals));
@@ -174,14 +176,14 @@ int main() {
   // Intitialize the globabls!
   node_init(PROD_DB_LOC);
 
-  pthread_t node_block, node_tx, shell, miner;
-  int node_block_ret, node_tx_ret, shell_ret, miner_ret;
-  /* Create independent threads each of which will execute function */
+  pthread_t node_block, node_tx, shell, miner, server, client;
+  int node_block_ret, node_tx_ret, shell_ret, miner_ret, server_ret, client_ret;
 
-  // node_block_ret = pthread_create( &node_block, NULL, pop, (void*) globals->queue_block);
-  // sleep(1);
-  // node_tx_ret = pthread_create( &node_tx, NULL, add_and_delay, (void*) globals->queue_block);
-  
+  /* Create independent threads each of which will execute function */
+  server_ret = pthread_create( &server, NULL, server_thread, (void*) globals);
+  // Now Create the Client Thread
+  client_ret = pthread_create( &client, NULL, client_thread, (void*) globals);
+
   node_block_ret = pthread_create( &node_block, NULL, node_block_thread, (void*) globals);
   node_tx_ret = pthread_create( &node_tx, NULL, node_tx_thread, (void*) globals);
   shell_ret = pthread_create( &shell, NULL, shell_thread, (void*) globals);
@@ -192,6 +194,7 @@ int main() {
   /* the process and all threads before the threads have completed.   */
 
   pthread_join(shell, NULL);
+  pthread_join(server, NULL);
   pthread_join(node_block, NULL);
   pthread_join(node_tx, NULL);
   pthread_join(miner, NULL); 
@@ -200,5 +203,6 @@ int main() {
   printf("Node TX returns: %d\n", node_tx_ret);
   printf("Shell returns: %d\n", shell_ret);
   printf("Miner returns: %d\n", miner_ret);
+  printf("Server returns: %d\n", server_ret);
   return 0; 
 }
