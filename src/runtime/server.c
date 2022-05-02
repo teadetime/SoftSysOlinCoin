@@ -139,7 +139,7 @@ void *server_thread(void *arg){
       attr.mq_msgsize = MAX_MSG_SIZE;
       attr.mq_curmsgs = 0;
       char in_buffer [MSG_BUFFER_SIZE];
-      // printf("Opening Queue from server child: %s", globals->q_server_individual[globals->connected]);
+      printf("Opening Queue from server child: %s", globals->q_server_individual[globals->connected]);
       // if ((child_mq = mq_open (globals->q_server_individual[globals->connected], O_RDONLY | O_CREAT, QUEUE_PERMISSIONS, &attr)) == -1) {
       //     perror ("Server: mq_open (server)");
       //     exit (1);
@@ -150,7 +150,7 @@ void *server_thread(void *arg){
         //   perror ("Client: mq_receive");
         //   exit (1);
         // }
-        char *test = "dummy_data_from_server";
+        char *test = "dummy_data_from_server 1";
         // Send the queue data over a socket
         if (send(new_fd, test, strlen(test)+1, 0) == -1)
           perror("send");

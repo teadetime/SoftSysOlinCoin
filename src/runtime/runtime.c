@@ -189,7 +189,7 @@ void *miner_thread(void *arg){
     printf("Miner mined a block Block\n");
     queue_add_void(globals->queue_block, new_block);
     // Serialize block and send it to our peers
-    add_to_outgoing(globals);
+    //add_to_outgoing(globals);
   }
   return NULL;
 }
