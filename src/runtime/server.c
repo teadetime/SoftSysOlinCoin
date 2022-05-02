@@ -147,6 +147,7 @@ void *server_thread(void *arg){
       // }
       unsigned long counter = 0;
       while(pid != 1){
+        printf("stuff\n");
         // Check to see if parent killed
         if(counter % 10000){
           pid = getpid();

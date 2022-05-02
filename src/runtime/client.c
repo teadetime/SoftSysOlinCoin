@@ -43,7 +43,7 @@ void *client_thread(void *arg){
       struct sockaddr_in serv_addr;
       if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
           printf("\n Socket creation error \n");
-          continue;
+          exit(0);
       }
   
       serv_addr.sin_family = AF_INET;
@@ -55,14 +55,14 @@ void *client_thread(void *arg){
           <= 0) {
           printf(
               "\nInvalid address/ Address not supported \n");
-          continue;
+          exit(0);
       }
   
       if (connect(sockfd, (struct sockaddr*)&serv_addr,
                   sizeof(serv_addr))
           < 0) {
           printf("\nConnection Failed \n");
-          continue;
+          exit(0);
       }
 
      
