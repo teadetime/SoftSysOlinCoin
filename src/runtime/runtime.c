@@ -13,7 +13,7 @@
 #include "server.h"
 #include "client.h"
 
-#define MAX_INCOMING_CONNECTIONS 20
+#define MAX_INCOMING_CONNECTIONS 10
 
 Globals *init_globals(){
   Globals *new_globals = malloc(sizeof(Globals));

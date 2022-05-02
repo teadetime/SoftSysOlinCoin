@@ -139,25 +139,26 @@ void *server_thread(void *arg){
       attr.mq_msgsize = MAX_MSG_SIZE;
       attr.mq_curmsgs = 0;
       char in_buffer [MSG_BUFFER_SIZE];
-      printf("Opening Queue from server child: %s", globals->q_server_individual[globals->connected]);
-      if ((child_mq = mq_open (globals->q_server_individual[globals->connected], O_RDONLY | O_CREAT, QUEUE_PERMISSIONS, &attr)) == -1) {
-          perror ("Server: mq_open (server)");
-          exit (1);
-      }
+      // printf("Opening Queue from server child: %s", globals->q_server_individual[globals->connected]);
+      // if ((child_mq = mq_open (globals->q_server_individual[globals->connected], O_RDONLY | O_CREAT, QUEUE_PERMISSIONS, &attr)) == -1) {
+      //     perror ("Server: mq_open (server)");
+      //     exit (1);
+      // }
       while (1) {
-        if (mq_receive(child_mq, in_buffer, MSG_BUFFER_SIZE, NULL) == -1) {
-          perror ("Client: mq_receive");
-          exit (1);
-        }
-
+        sleep(5);
+        // if (mq_receive(child_mq, in_buffer, MSG_BUFFER_SIZE, NULL) == -1) {
+        //   perror ("Client: mq_receive");
+        //   exit (1);
+        // }
+        char *test = "dummy_data_from_server";
         // Send the queue data over a socket
-        if (send(new_fd, in_buffer, MSG_BUFFER_SIZE, 0) == -1)
+        if (send(new_fd, test, strlen(test)+1, 0) == -1)
           perror("send");
       }
-      if (mq_close(child_mq) == -1) {
-        perror ("Client: mq_close");
-        exit (1);
-      }
+      // if (mq_close(child_mq) == -1) {
+      //   perror ("Client: mq_close");
+      //   exit (1);
+      // }
 			close(new_fd);
 			exit(0);
 		}
