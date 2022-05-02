@@ -134,7 +134,8 @@ void *client_thread(void *arg){
         }
         buf[numbytes] = '\0';
 
-        printf("client: received '%s'\n",buf);
+        printf("client: received %i bytes '%s'\n",numbytes, buf);
+        sleep(1);
 
       }
 
