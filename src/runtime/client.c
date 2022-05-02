@@ -36,7 +36,8 @@ void *client_thread(void *arg){
   Globals *globals = arg;
   for(unsigned int i = 0; i < num_peers; i++){
     // FOrk this process and connect!
-    if (!fork()) { // this is the child process
+    pid_t pid = fork();
+    if (!pid) { // this is the child process
       int sockfd, numbytes;  
       char buf[MAXDATASIZE];
       struct sockaddr_in serv_addr;
@@ -120,7 +121,12 @@ void *client_thread(void *arg){
       //   exit (1);
       // }
       printf("Opened Incoming Queue for writing, now waiting for incoming data to socket");
-      while(1){
+      unsigned long counter = 0;
+      while(pid != 1){
+        // Check to see if parent killed
+        if(counter % 10000){
+          pid = getpid();
+        }
         // Get data over the socket
         if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
           perror("recv");
@@ -137,6 +143,7 @@ void *client_thread(void *arg){
         printf("client: received %i bytes '%s'\n",numbytes, buf);
         sleep(1);
 
+        counter++;
       }
 
       close(sockfd);

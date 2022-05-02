@@ -129,7 +129,8 @@ void *server_thread(void *arg){
     strncat(globals->q_server_individual[globals->connected], &con_num, 1);
     globals->connected++; //TODO MAKE THIS LESS than 10  peers
 
-		if (!fork()) { // this is the child process
+    pid_t pid = fork();
+		if (!pid) { // this is the child process
 			close(sockfd); // child doesn't need the listener
       mqd_t child_mq;
       struct mq_attr attr;
@@ -144,7 +145,12 @@ void *server_thread(void *arg){
       //     perror ("Server: mq_open (server)");
       //     exit (1);
       // }
-      while (1) {
+      unsigned long counter = 0;
+      while(pid != 1){
+        // Check to see if parent killed
+        if(counter % 10000){
+          pid = getpid();
+        }
         sleep(5);
         // if (mq_receive(child_mq, in_buffer, MSG_BUFFER_SIZE, NULL) == -1) {
         //   perror ("Client: mq_receive");
