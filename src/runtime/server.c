@@ -11,6 +11,13 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include "server.h"
+#include "mqueue.h"
+#include "runtime.h"
+
+#define QUEUE_PERMISSIONS 0660
+#define MAX_MESSAGES 10
+#define MAX_MSG_SIZE 256
+#define MSG_BUFFER_SIZE MAX_MSG_SIZE + 10
 
 void sigchld_handler(int s)
 {
@@ -36,7 +43,8 @@ void *get_in_addr(struct sockaddr *sa)
 }
 
 
-void *server_thread(){
+void *server_thread(void *arg){
+  Globals *globals = arg;
   int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
 	struct addrinfo hints, *servinfo, *p;
 	struct sockaddr_storage their_addr; // connector's address information
@@ -53,7 +61,7 @@ void *server_thread(){
 
 	if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-		return 1;
+		exit(1);
 	}
 
 	// loop through all the results and bind to the first we can
@@ -114,10 +122,42 @@ void *server_thread(){
 			s, sizeof s);
 		printf("server: got connection from %s\n", s);
 
+    char *q_name = "/outgoing_";
+    char con_num = '0' + globals->connected;
+    globals->q_server_individual[globals->connected] = calloc(sizeof(char), strlen(q_name)+2); //digits etc
+    strncpy(globals->q_server_individual[globals->connected], q_name, strlen(q_name)+1);
+    strncat(globals->q_server_individual[globals->connected], &con_num, 1);
+    globals->connected++; //TODO MAKE THIS LESS than 10  peers
+
 		if (!fork()) { // this is the child process
 			close(sockfd); // child doesn't need the listener
-			if (send(new_fd, "Hello, world!", 13, 0) == -1)
-				perror("send");
+      mqd_t child_mq;
+      struct mq_attr attr;
+
+      attr.mq_flags = 0;
+      attr.mq_maxmsg = MAX_MESSAGES;
+      attr.mq_msgsize = MAX_MSG_SIZE;
+      attr.mq_curmsgs = 0;
+      char in_buffer [MSG_BUFFER_SIZE];
+      printf("Opening Queue from server child: %s", globals->q_server_individual[globals->connected]);
+      if ((child_mq = mq_open (globals->q_server_individual[globals->connected], O_RDONLY | O_CREAT, QUEUE_PERMISSIONS, &attr)) == -1) {
+          perror ("Server: mq_open (server)");
+          exit (1);
+      }
+      while (1) {
+        if (mq_receive(child_mq, in_buffer, MSG_BUFFER_SIZE, NULL) == -1) {
+          perror ("Client: mq_receive");
+          exit (1);
+        }
+
+        // Send the queue data over a socket
+        if (send(new_fd, in_buffer, MSG_BUFFER_SIZE, 0) == -1)
+          perror("send");
+      }
+      if (mq_close(child_mq) == -1) {
+        perror ("Client: mq_close");
+        exit (1);
+      }
 			close(new_fd);
 			exit(0);
 		}
@@ -126,3 +166,4 @@ void *server_thread(){
 
 	return NULL;
 }
+

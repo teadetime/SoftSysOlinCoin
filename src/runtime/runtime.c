@@ -13,6 +13,8 @@
 #include "server.h"
 #include "client.h"
 
+#define MAX_INCOMING_CONNECTIONS 20
+
 Globals *init_globals(){
   Globals *new_globals = malloc(sizeof(Globals));
   new_globals->queue_block = queue_init();
@@ -46,6 +48,10 @@ Globals *init_globals(){
   new_globals->miner_update = malloc(sizeof(int));
   *new_globals->miner_update = 1;
 
+  new_globals->q_server_individual = malloc(MAX_INCOMING_CONNECTIONS * sizeof(char *));
+  new_globals->connected = 0;
+  new_globals->q_client = malloc(32);
+  strcpy(new_globals->q_client, "/client_incoming");
   return new_globals;
 }
 
@@ -89,11 +95,11 @@ void *node_block_thread(void *arg){
 void *node_tx_thread(void *arg){
   Globals *globals = arg;
   while(1){
-    printf("NodeTX Thread Waiting to pop TX\n");
+    //printf("NodeTX Thread Waiting to pop TX\n");
     Transaction *popped_tx = queue_pop_void(globals->queue_tx);
-    printf("NodeTX Thread TX Popped\n");
+    //printf("NodeTX Thread TX Popped\n");
     //Now aquire locks for validation (Utxo pool and blockcahin)
-    printf("NodeTX Thread Waiting on lock for validation\n");
+    //printf("NodeTX Thread Waiting on lock for validation\n");
 
 
     pthread_mutex_lock(&globals->utxo_pool_lock);
@@ -111,9 +117,33 @@ void *node_tx_thread(void *arg){
     pthread_mutex_unlock(&globals->mempool_lock);
     pthread_mutex_unlock(&globals->utxo_to_tx_lock);
     pthread_mutex_unlock(&globals->utxo_pool_lock);
-    printf("NodeTX Thread unlocked from validation\n");
+    //printf("NodeTX Thread unlocked from validation\n");
   }
   return NULL;
+}
+
+
+void add_to_outgoing(Globals *globals){
+  printf("FOund a block and adding outgoing data");
+  for(int i = 0; i < globals->connected; i++){
+    char *q_name = globals->q_server_individual[i];
+    mqd_t child_mq;
+    if ((child_mq = mq_open (q_name, O_WRONLY)) == -1) {
+        perror ("Server: mq_open (server)");
+        exit (1);
+    }
+    // send message to server
+    char *test = "fake_block";
+    if (mq_send (child_mq, test, strlen (test) + 1, 1) == -1) {
+        perror ("Client: Not able to send message to server");
+    }
+    if (mq_close (child_mq) == -1) {
+      perror ("Client: mq_close");
+      exit (1);
+    }
+
+
+  }
 }
 
 void *miner_thread(void *arg){
@@ -121,20 +151,20 @@ void *miner_thread(void *arg){
   unsigned long hash_check_flag = 10000;
   int new_block_in_chain = 1; //1 is false 0 is true
   while(1){
-    printf("Miner Thread waiting on lock to create Block\n");
+    //printf("Miner Thread waiting on lock to create Block\n");
     //Now aquire locks for creating a block!
     pthread_mutex_lock(&globals->utxo_pool_lock);
     pthread_mutex_lock(&globals->blockchain_lock);
     pthread_mutex_lock(&globals->key_pool_lock) ;
     pthread_mutex_lock(&globals->mempool_lock);
-    printf("Miner Thread got lock to create Block\n");
+    //printf("Miner Thread got lock to create Block\n");
     Block *new_block = create_block_alloc();
 
     pthread_mutex_unlock(&globals->utxo_pool_lock);
     pthread_mutex_unlock(&globals->blockchain_lock);
     pthread_mutex_unlock(&globals->key_pool_lock) ;
     pthread_mutex_unlock(&globals->mempool_lock);
-    printf("Miner Thread done creating Block\n");
+    //printf("Miner Thread done creating Block\n");
 
     while(try_header_hash(&(new_block->header)) != 0){
       change_nonce(new_block);
@@ -158,9 +188,12 @@ void *miner_thread(void *arg){
     print_block(new_block,"");
     printf("Miner mined a block Block\n");
     queue_add_void(globals->queue_block, new_block);
+    // Serialize block and send it to our peers
+    add_to_outgoing(globals);
   }
   return NULL;
 }
+
 
 void *shell_thread(void *arg){
   Globals *globals = arg;
@@ -181,6 +214,7 @@ int main() {
 
   /* Create independent threads each of which will execute function */
   server_ret = pthread_create( &server, NULL, server_thread, (void*) globals);
+  sleep(5);
   // Now Create the Client Thread
   client_ret = pthread_create( &client, NULL, client_thread, (void*) globals);
 

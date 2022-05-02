@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <semaphore.h>
-#include "base_tx.h"
-#include "base_block.h"
 
 typedef struct QueueItem{
   void *item;
