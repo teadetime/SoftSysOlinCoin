@@ -132,7 +132,10 @@ void *client_thread(void *arg){
           perror("recv");
           exit(1);
         }
-
+        if(numbytes == 0 ){
+          // Connection has been closed from the other side (by the socket server)
+          break;
+        }
         // Add the data to the queue
         //char *test = "recieved fake_block";
         // if (mq_send (incoming, buf, numbytes, 0) == -1) {

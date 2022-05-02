@@ -228,10 +228,10 @@ int main() {
   /* the process and all threads before the threads have completed.   */
 
   pthread_join(shell, NULL);
-  pthread_join(server, NULL);
-  pthread_join(node_block, NULL);
-  pthread_join(node_tx, NULL);
-  pthread_join(miner, NULL); 
+  // pthread_join(server, NULL);
+  // pthread_join(node_block, NULL);
+  // pthread_join(node_tx, NULL);
+  // pthread_join(miner, NULL); 
 
   printf("Node Block returns: %d\n",node_block_ret);
   printf("Node TX returns: %d\n", node_tx_ret);
