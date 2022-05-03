@@ -4,7 +4,7 @@
 #include "semaphore.h"
 #include <mqueue.h>
 
-typedef struct Globals {
+typedef struct {
   Queue *queue_block;
   Queue *queue_tx;
   pthread_mutex_t utxo_pool_lock;

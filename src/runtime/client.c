@@ -29,7 +29,7 @@ void *get_in_addr2(struct sockaddr *sa)
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-char peers[][20] = {"192.168.32.251"};//"ubuntu.local"};//"localhost", 
+char peers[][20] = {"192.168.32.251"};//"ubuntu.local"};//"localhost",
 unsigned int num_peers = 1; // Match above
 
 void *client_thread(void *arg){
@@ -38,17 +38,17 @@ void *client_thread(void *arg){
     // FOrk this process and connect!
     pid_t pid = fork();
     if (!pid) { // this is the child process
-      int sockfd, numbytes;  
+      int sockfd, numbytes;
       char buf[MAXDATASIZE];
       struct sockaddr_in serv_addr;
       if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
           printf("\n Socket creation error \n");
           exit(0);
       }
-  
+
       serv_addr.sin_family = AF_INET;
       serv_addr.sin_port = htons(PORT_INT);
-  
+
       // Convert IPv4 and IPv6 addresses from text to binary
       // form
       if (inet_pton(AF_INET, peers[i], &serv_addr.sin_addr)
@@ -57,7 +57,7 @@ void *client_thread(void *arg){
               "\nInvalid address/ Address not supported \n");
           exit(0);
       }
-  
+
       if (connect(sockfd, (struct sockaddr*)&serv_addr,
                   sizeof(serv_addr))
           < 0) {
@@ -65,7 +65,7 @@ void *client_thread(void *arg){
           exit(0);
       }
 
-     
+
       // // using Hostname
       // struct addrinfo hints, *servinfo, *p;
       // int rv;
@@ -108,7 +108,7 @@ void *client_thread(void *arg){
 
       // freeaddrinfo(servinfo); // all done with this structure
 
-      
+
       struct mq_attr attr;
 
       attr.mq_flags = 0;
@@ -116,10 +116,10 @@ void *client_thread(void *arg){
       attr.mq_msgsize = MAX_MSG_SIZE;
       attr.mq_curmsgs = 0;
       mqd_t incoming;
-      // if ((incoming = mq_open (globals->q_client, O_WRONLY | O_CREAT, QUEUE_PERMISSIONS, &attr)) == -1) {
-      //   perror ("Server: mq_open (server)");
-      //   exit (1);
-      // }
+      if ((incoming = mq_open (globals->q_client, O_WRONLY | O_CREAT, QUEUE_PERMISSIONS, &attr)) == -1) {
+        perror ("Server: mq_open (server)");
+        exit (1);
+      }
       printf("Opened Incoming Queue for writing, now waiting for incoming data to socket");
       unsigned long counter = 0;
       while(pid != 1){
@@ -131,19 +131,18 @@ void *client_thread(void *arg){
         if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
           perror("recv");
           exit(1);
-        }
-        if(numbytes == 0 ){
+        } if(numbytes == 0 ){
           // Connection has been closed from the other side (by the socket server)
           break;
         }
         // Add the data to the queue
         //char *test = "recieved fake_block";
-        // if (mq_send (incoming, buf, numbytes, 0) == -1) {
-        //     perror ("Client: Not able to send message to server");
-        // }
+        if (mq_send(incoming, buf, numbytes, 0) == -1) {
+            perror ("Client: Not able to send message to server");
+        }
         buf[numbytes] = '\0';
 
-        printf("client: received %i bytes '%s'\n",numbytes, buf);
+        printf("client: received %i bytes '%s'\n", numbytes, buf);
         sleep(1);
 
         counter++;
@@ -162,38 +161,31 @@ void *client_thread(void *arg){
   attr.mq_msgsize = MAX_MSG_SIZE;
   attr.mq_curmsgs = 0;
   mqd_t incoming_parent;
-  // if ((incoming_parent = mq_open (globals->q_client, O_RDONLY | O_CREAT, QUEUE_PERMISSIONS, &attr)) == -1) {
-  //   perror ("Server: mq_open (server)");
-  //   exit (1);
-  // }
+  if ((incoming_parent = mq_open (globals->q_client, O_RDONLY | O_CREAT, QUEUE_PERMISSIONS, &attr)) == -1) {
+    perror ("Server: mq_open (server)");
+    exit (1);
+  }
   // Now pop off the queues whenever something is added!
   while(1){
     // Add to Block and TX Queue
-   
-    // char in_buffer [MSG_BUFFER_SIZE];
-    // unsigned int priority;
-    // if (mq_receive (incoming_parent, in_buffer, MSG_BUFFER_SIZE, &priority) == -1) {
-    //   perror ("Server: mq_receive");
-    //   exit (1);
-    // }
-    // // Block
-    // if(priority == 1){
-    //   // Dummy text data
-    //   printf("Incoming data to client parent: %s", in_buffer);
-    //   continue;
-    //   Block *new_block = deser_block_alloc(NULL, (unsigned char *)in_buffer);
-    //   queue_add_void(globals->queue_block, new_block);
-    // }
-    // //TX
-    // else if (priority == 2)
-    // {
-    //   Transaction *new_tx = deser_tx_alloc(NULL, (unsigned char *)in_buffer);
-    //   queue_add_void(globals->queue_tx, new_tx);
-    // }
-    // //Garbage
-    // else{
-
-    // }
+    char in_buffer [MSG_BUFFER_SIZE];
+    unsigned int priority;
+    if (mq_receive(incoming_parent, in_buffer, MSG_BUFFER_SIZE, &priority) == -1) {
+      perror ("Server: mq_receive");
+      exit (1);
+    }
+    if(priority == 1){
+      // Dummy text data
+      // printf("Incoming data to client parent: %s", in_buffer);
+      // continue;
+      Block *new_block = deser_block_alloc(NULL, (unsigned char *)in_buffer);
+      queue_add_void(globals->queue_block, new_block);
+    }
+    else if (priority == 0)
+    {
+      Transaction *new_tx = deser_tx_alloc(NULL, (unsigned char *)in_buffer);
+      queue_add_void(globals->queue_tx, new_tx);
+    }
   }
 
 	return 0;

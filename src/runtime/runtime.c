@@ -222,7 +222,7 @@ int main() {
   node_tx_ret = pthread_create( &node_tx, NULL, node_tx_thread, (void*) globals);
   shell_ret = pthread_create( &shell, NULL, shell_thread, (void*) globals);
   miner_ret = pthread_create( &miner, NULL, miner_thread, (void*) globals);
-  
+
   /* Wait till threads are complete before main continues. Unless we  */
   /* wait we run the risk of executing an exit which will terminate   */
   /* the process and all threads before the threads have completed.   */
@@ -231,12 +231,12 @@ int main() {
   // pthread_join(server, NULL);
   // pthread_join(node_block, NULL);
   // pthread_join(node_tx, NULL);
-  // pthread_join(miner, NULL); 
+  // pthread_join(miner, NULL);
 
   printf("Node Block returns: %d\n",node_block_ret);
   printf("Node TX returns: %d\n", node_tx_ret);
   printf("Shell returns: %d\n", shell_ret);
   printf("Miner returns: %d\n", miner_ret);
   printf("Server returns: %d\n", server_ret);
-  return 0; 
+  return 0;
 }
