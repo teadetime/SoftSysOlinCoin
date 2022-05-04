@@ -188,10 +188,14 @@ void *client_thread(void *arg){
     );
     if (id == BLOCK_ID) {
       Block *new_block = deser_block_alloc(NULL, (unsigned char *)ser_buffer);
+      printf("Block received over network:\n");
+      print_block(new_block, "");
       queue_add_void(globals->queue_block, new_block);
     }
     else if (id == TX_ID) {
       Transaction *new_tx = deser_tx_alloc(NULL, (unsigned char *)ser_buffer);
+      printf("Tx received over network:\n");
+      print_tx(new_tx, "");
       queue_add_void(globals->queue_tx, new_tx);
     }
   }

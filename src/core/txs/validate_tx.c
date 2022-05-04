@@ -1,12 +1,12 @@
 /**
  * @file validate_tx.c
  * @author Nathan Faber nfaber@olin.edu
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-03-20
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 #include "base_tx.h"
 #include "utxo_pool.h"
@@ -39,7 +39,7 @@ void create_blank_sig_txhash(unsigned char *blank_hash, Transaction *tx){
     memset(blank_sig_tx->inputs[i].signature, 0, SIGNATURE_LEN);
   }
   memcpy(blank_sig_tx->outputs, tx->outputs, tx->num_outputs*sizeof(Output));
-  
+
   // need to make hash where the tx has signatures that are 0's
   hash_tx(blank_hash, blank_sig_tx);
   free_tx(blank_sig_tx);
@@ -111,9 +111,9 @@ int validate_coinbase_tx_parts_not_null(Transaction *coinbase_tx){
   if(coinbase_tx->num_inputs != 0){
     return 2;
   }
-  if(coinbase_tx->inputs != NULL){
-    return 3;
-  }
+  /* if(coinbase_tx->inputs != NULL){ */
+  /*   return 3; */
+  /* } */
   if(coinbase_tx->num_outputs != 1){
     return 4;
   }
@@ -122,7 +122,7 @@ int validate_coinbase_tx_parts_not_null(Transaction *coinbase_tx){
   }
   return 0;
 }
-  
+
 int validate_tx_shared(Transaction *tx){
   unsigned long total_in = 0;
   unsigned long total_out = 0;
@@ -192,4 +192,3 @@ int validate_tx_incoming(Transaction *tx){
   }
   return 0;
 }
-
