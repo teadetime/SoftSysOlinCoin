@@ -4,6 +4,18 @@
 #include "semaphore.h"
 #include <mqueue.h>
 
+#define MAX_INCOMING_CONNECTIONS 10
+#define INCOMING_QUEUE "/client_incoming"
+#define OUTGOING_QUEUE_FORMAT "/server_outgoing_%d"
+
+#define QUEUE_PERMISSIONS 0660
+#define MAX_MESSAGES 10
+#define MAX_MSG_SIZE 256
+#define MSG_BUFFER_SIZE MAX_MSG_SIZE + 10
+
+#define BLOCK_ID 1
+#define TX_ID 0
+
 typedef struct {
   Queue *queue_block;
   Queue *queue_tx;
@@ -17,6 +29,5 @@ typedef struct {
   pthread_mutex_t miner_update_lock;
   int connected;
   char **q_server_individual; // send the same thing out to multiple nodes
-  mqd_t q_server; // Main queu that gets distributed to all the individual queues
   char *q_client; // Only one queue from all the incoming blocks
 } Globals;
