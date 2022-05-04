@@ -181,6 +181,7 @@ int shell_exit(Globals *globals, char **args) {
 int shell_help(Globals *globals, char **args) {
   int len;
   (void)args;
+  (void)globals;
 
   len = sizeof(shell_commands) / sizeof(Command);
   printf("Available shell commands:\n");
