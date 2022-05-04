@@ -157,6 +157,11 @@ void server_fork(Globals *globals, int sockfd, pid_t pid) {
     buf_size = *(size_t*)(in_buffer + sizeof(int));
     total_size = buf_size + sizeof(int) + sizeof(size_t);
 
+    printf(
+      "Server recieved obj of size %lu from buffer. Sending...\n",
+      buf_size
+    );
+
     if (send_all(sockfd, in_buffer, &total_size) == -1) {
       perror("Server: send_all");
       exit(1);

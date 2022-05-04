@@ -56,7 +56,7 @@ int recv_obj(int s, char *buf, size_t *total_size) {
     return rv;
 
   buf_size = *(size_t*)(buf + sizeof(int));
-  if ((rv = recv_all(s, buf, &buf_size)) != 0)
+  if ((rv = recv_all(s, buf + head_size, &buf_size)) != 0)
     return rv;
 
   *total_size = buf_size + head_size;
@@ -104,7 +104,7 @@ void client_fork(Globals *globals, pid_t pid, int i) {
     perror ("Client: mq_open (server)");
     exit (1);
   }
-  printf("Opened Incoming Queue for writing");
+  printf("Opened Incoming Queue for writing\n");
 
   counter = 0;
   while (pid != 1) {
@@ -196,5 +196,5 @@ void *client_thread(void *arg){
     }
   }
 
-	return 0;
+  return 0;
 }
