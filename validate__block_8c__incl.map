@@ -1,0 +1,19 @@
+<map id="src/core/blocks/validate_block.c" name="src/core/blocks/validate_block.c">
+<area shape="rect" id="node1" title="implementation of functions used to validate a new block that is broadcast on the blockchain and upda..." alt="" coords="287,5,447,47"/>
+<area shape="rect" id="node2" href="$validate__block_8h.html" title="Header for fof functions used to validate a new block that is broadcast on the blockchain and update ..." alt="" coords="85,95,199,121"/>
+<area shape="rect" id="node8" href="$create__block_8h.html" title="Functions to handle block creation for mining functionality as well as mining." alt="" coords="223,95,330,121"/>
+<area shape="rect" id="node9" href="$mempool_8h_source.html" title=" " alt="" coords="354,169,439,196"/>
+<area shape="rect" id="node12" href="$blockchain_8h_source.html" title=" " alt="" coords="683,95,777,121"/>
+<area shape="rect" id="node14" href="$utxo__to__tx_8h_source.html" title=" " alt="" coords="567,95,658,121"/>
+<area shape="rect" id="node16" href="$double__spend__set_8h_source.html" title=" " alt="" coords="405,95,543,121"/>
+<area shape="rect" id="node17" href="$validate__tx_8h.html" title=" " alt="" coords="5,169,100,196"/>
+<area shape="rect" id="node3" href="$base__tx_8h_source.html" title=" " alt="" coords="166,244,243,271"/>
+<area shape="rect" id="node7" href="$base__block_8h_source.html" title=" " alt="" coords="231,169,330,196"/>
+<area shape="rect" id="node4" title=" " alt="" coords="187,319,249,345"/>
+<area shape="rect" id="node5" href="$constants_8h_source.html" title=" " alt="" coords="287,319,376,345"/>
+<area shape="rect" id="node6" title=" " alt="" coords="45,319,162,345"/>
+<area shape="rect" id="node10" title=" " alt="" coords="369,244,429,271"/>
+<area shape="rect" id="node11" title=" " alt="" coords="453,244,524,271"/>
+<area shape="rect" id="node13" title=" " alt="" coords="604,244,688,271"/>
+<area shape="rect" id="node15" href="$utxo__pool_8h_source.html" title=" " alt="" coords="469,169,556,196"/>
+</map>

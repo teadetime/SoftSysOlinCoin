@@ -1,0 +1,5 @@
+<map id="src/includes/blocks/create_block.h" name="src/includes/blocks/create_block.h">
+<area shape="rect" id="node1" title="Functions to handle block creation for mining functionality as well as mining." alt="" coords="111,5,246,47"/>
+<area shape="rect" id="node2" href="$validate__block_8c.html" title="implementation of functions used to validate a new block that is broadcast on the blockchain and upda..." alt="" coords="5,95,165,136"/>
+<area shape="rect" id="node3" href="$validate__tx_8c.html" title=" " alt="" coords="190,102,357,129"/>
+</map>

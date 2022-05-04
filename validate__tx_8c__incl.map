@@ -1,0 +1,20 @@
+<map id="src/core/txs/validate_tx.c" name="src/core/txs/validate_tx.c">
+<area shape="rect" id="node1" title=" " alt="" coords="323,5,489,32"/>
+<area shape="rect" id="node2" href="$base__tx_8h_source.html" title=" " alt="" coords="465,229,542,256"/>
+<area shape="rect" id="node4" href="$constants_8h_source.html" title=" " alt="" coords="223,304,312,331"/>
+<area shape="rect" id="node6" href="$utxo__pool_8h_source.html" title=" " alt="" coords="224,155,311,181"/>
+<area shape="rect" id="node9" href="$mempool_8h_source.html" title=" " alt="" coords="91,155,177,181"/>
+<area shape="rect" id="node11" href="$crypto_8h_source.html" title=" " alt="" coords="661,80,727,107"/>
+<area shape="rect" id="node14" href="$create__block_8h.html" title="Functions to handle block creation for mining functionality as well as mining." alt="" coords="499,80,606,107"/>
+<area shape="rect" id="node16" href="$validate__tx_8h.html" title=" " alt="" coords="913,80,1008,107"/>
+<area shape="rect" id="node17" href="$utxo__to__tx_8h_source.html" title=" " alt="" coords="222,80,313,107"/>
+<area shape="rect" id="node18" href="$double__spend__set_8h_source.html" title=" " alt="" coords="337,80,475,107"/>
+<area shape="rect" id="node3" title=" " alt="" coords="472,304,535,331"/>
+<area shape="rect" id="node5" title=" " alt="" coords="662,304,779,331"/>
+<area shape="rect" id="node7" title=" " alt="" coords="159,229,229,256"/>
+<area shape="rect" id="node8" title=" " alt="" coords="305,229,389,256"/>
+<area shape="rect" id="node10" title=" " alt="" coords="23,229,83,256"/>
+<area shape="rect" id="node12" title=" " alt="" coords="663,155,787,181"/>
+<area shape="rect" id="node13" title=" " alt="" coords="509,155,639,181"/>
+<area shape="rect" id="node15" href="$base__block_8h_source.html" title=" " alt="" coords="335,155,434,181"/>
+</map>

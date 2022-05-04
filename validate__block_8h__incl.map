@@ -1,0 +1,8 @@
+<map id="src/includes/blocks/validate_block.h" name="src/includes/blocks/validate_block.h">
+<area shape="rect" id="node1" title="Header for fof functions used to validate a new block that is broadcast on the blockchain and update ..." alt="" coords="147,5,281,47"/>
+<area shape="rect" id="node2" href="$base__tx_8h_source.html" title=" " alt="" coords="133,169,210,196"/>
+<area shape="rect" id="node6" href="$base__block_8h_source.html" title=" " alt="" coords="209,95,307,121"/>
+<area shape="rect" id="node3" title=" " alt="" coords="5,244,68,271"/>
+<area shape="rect" id="node4" href="$constants_8h_source.html" title=" " alt="" coords="235,244,324,271"/>
+<area shape="rect" id="node5" title=" " alt="" coords="93,244,210,271"/>
+</map>
