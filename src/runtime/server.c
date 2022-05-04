@@ -98,17 +98,16 @@ void build_sig_handler() {
 }
 
 // From Beej's Guide
-int send_all(int s, char *buf, size_t *len)
-{
+int send_all(int s, char *buf, size_t *len) {
   size_t total = 0;        // how many bytes we've sent
-  size_t bytesleft = *len; // how many we have left to send
+  size_t bytes_left = *len; // how many we have left to send
   int n;
 
-  while(total < *len) {
-    n = send(s, buf + total, bytesleft, 0);
+  while (total < *len) {
+    n = send(s, buf + total, bytes_left, 0);
     if (n == -1) { break; }
     total += n;
-    bytesleft -= n;
+    bytes_left -= n;
   }
 
   *len = total; // return number actually sent here

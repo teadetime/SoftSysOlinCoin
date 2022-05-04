@@ -15,10 +15,8 @@
 #include "ser_block.h"
 #include "ser_tx.h"
 
-#define QUEUE_PERMISSIONS 0660
-#define MAX_MESSAGES 10
-#define MAX_MSG_SIZE 256
-#define MSG_BUFFER_SIZE MAX_MSG_SIZE + 10
+char peers[][20] = {"192.168.32.251"};//"ubuntu.local"};//"localhost",
+unsigned int num_peers = 1; // Match above
 
 void *get_in_addr2(struct sockaddr *sa)
 {
@@ -29,161 +27,171 @@ void *get_in_addr2(struct sockaddr *sa)
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-char peers[][20] = {"192.168.32.251"};//"ubuntu.local"};//"localhost",
-unsigned int num_peers = 1; // Match above
+int recv_all(int s, char *buf, size_t *len) {
+  size_t total = 0;        // how many bytes we've read
+  size_t bytes_left = *len; // how many we have left to read
+  int n;
 
-void *client_thread(void *arg){
-  Globals *globals = arg;
-  for(unsigned int i = 0; i < num_peers; i++){
-    // FOrk this process and connect!
-    pid_t pid = fork();
-    if (!pid) { // this is the child process
-      int sockfd, numbytes;
-      char buf[MAXDATASIZE];
-      struct sockaddr_in serv_addr;
-      if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-          printf("\n Socket creation error \n");
-          exit(0);
-      }
-
-      serv_addr.sin_family = AF_INET;
-      serv_addr.sin_port = htons(PORT_INT);
-
-      // Convert IPv4 and IPv6 addresses from text to binary
-      // form
-      if (inet_pton(AF_INET, peers[i], &serv_addr.sin_addr)
-          <= 0) {
-          printf(
-              "\nInvalid address/ Address not supported \n");
-          exit(0);
-      }
-
-      if (connect(sockfd, (struct sockaddr*)&serv_addr,
-                  sizeof(serv_addr))
-          < 0) {
-          printf("\nConnection Failed \n");
-          exit(0);
-      }
-
-
-      // // using Hostname
-      // struct addrinfo hints, *servinfo, *p;
-      // int rv;
-      // char s[INET6_ADDRSTRLEN];
-
-      // memset(&hints, 0, sizeof hints);
-      // hints.ai_family = AF_UNSPEC;
-      // hints.ai_socktype = SOCK_STREAM;
-
-      // if ((rv = getaddrinfo(peers[i], PORT, &hints, &servinfo)) != 0) {
-      //   fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-      //   return NULL;
-      // }
-
-      // // loop through all the results and connect to the first we can
-      // for(p = servinfo; p != NULL; p = p->ai_next) {
-      //   if ((sockfd = socket(p->ai_family, p->ai_socktype,
-      //       p->ai_protocol)) == -1) {
-      //     perror("client: socket");
-      //     continue;
-      //   }
-
-      //   if (connect(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
-      //     perror("client: connect");
-      //     close(sockfd);
-      //     continue;
-      //   }
-
-      //   break;
-      // }
-
-      // if (p == NULL) {
-      //   fprintf(stderr, "client: failed to connect\n");
-      //   return 2;
-      // }
-
-      // inet_ntop(p->ai_family, get_in_addr2((struct sockaddr *)p->ai_addr),
-      //     s, sizeof s);
-      // printf("client: connecting to %s\n", s);
-
-      // freeaddrinfo(servinfo); // all done with this structure
-
-
-      struct mq_attr attr;
-
-      attr.mq_flags = 0;
-      attr.mq_maxmsg = MAX_MESSAGES;
-      attr.mq_msgsize = MAX_MSG_SIZE;
-      attr.mq_curmsgs = 0;
-      mqd_t incoming;
-      if ((incoming = mq_open (globals->q_client, O_WRONLY | O_CREAT, QUEUE_PERMISSIONS, &attr)) == -1) {
-        perror ("Server: mq_open (server)");
-        exit (1);
-      }
-      printf("Opened Incoming Queue for writing, now waiting for incoming data to socket");
-      unsigned long counter = 0;
-      while(pid != 1){
-        // Check to see if parent killed
-        if(counter % 10000){
-          pid = getpid();
-        }
-        // Get data over the socket
-        if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
-          perror("recv");
-          exit(1);
-        } if(numbytes == 0 ){
-          // Connection has been closed from the other side (by the socket server)
-          break;
-        }
-        // Add the data to the queue
-        //char *test = "recieved fake_block";
-        if (mq_send(incoming, buf, numbytes, 0) == -1) {
-            perror ("Client: Not able to send message to server");
-        }
-        buf[numbytes] = '\0';
-
-        printf("client: received %i bytes '%s'\n", numbytes, buf);
-        sleep(1);
-
-        counter++;
-      }
-
-      close(sockfd);
-			exit(0);
-		}
+  while (total < *len) {
+    n = recv(s, buf + total, bytes_left, 0);
+    if (n == 0)
+      return 1;
+    else if (n == -1)
+      return -1;
+    total += n;
+    bytes_left -= n;
   }
 
-  //INCOMING PARENT
+  *len = total; // return number actually sent here
+
+  return 0;
+}
+
+int recv_obj(int s, char *buf, size_t *total_size) {
+  int rv;
+  size_t head_size, buf_size;
+
+  head_size = sizeof(int) + sizeof(long);
+  if ((rv = recv_all(s, buf, &head_size)) != 0)
+    return rv;
+
+  buf_size = *(size_t*)(buf + sizeof(int));
+  if ((rv = recv_all(s, buf, &buf_size)) != 0)
+    return rv;
+
+  *total_size = buf_size + head_size;
+  return 0;
+}
+
+void client_fork(Globals *globals, pid_t pid, int i) {
+  int sockfd, rv, priority;
+  size_t numbytes;
+  unsigned long counter;
+  char buf[MAX_MSG_SIZE];
+  struct sockaddr_in serv_addr;
   struct mq_attr attr;
+  mqd_t incoming;
+
+  if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+      printf("\n Socket creation error \n");
+      exit(0);
+  }
+
+  serv_addr.sin_family = AF_INET;
+  serv_addr.sin_port = htons(PORT_INT);
+
+  // Convert IPv4 and IPv6 addresses from text to binary form
+  if (inet_pton(AF_INET, peers[i], &serv_addr.sin_addr) <= 0) {
+      printf("\nInvalid address/ Address not supported \n");
+      exit(0);
+  }
+  if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
+      printf("\nConnection Failed \n");
+      exit(0);
+  }
 
   attr.mq_flags = 0;
   attr.mq_maxmsg = MAX_MESSAGES;
   attr.mq_msgsize = MAX_MSG_SIZE;
   attr.mq_curmsgs = 0;
-  mqd_t incoming_parent;
-  if ((incoming_parent = mq_open (globals->q_client, O_RDONLY | O_CREAT, QUEUE_PERMISSIONS, &attr)) == -1) {
-    perror ("Server: mq_open (server)");
+  incoming = mq_open(
+    globals->q_client,
+    O_WRONLY | O_CREAT,
+    QUEUE_PERMISSIONS,
+    &attr
+  );
+  if (incoming == -1) {
+    perror ("Client: mq_open (server)");
     exit (1);
   }
+  printf("Opened Incoming Queue for writing");
+
+  counter = 0;
+  while (pid != 1) {
+    // Check to see if parent killed
+    if (counter % 10000) {
+      pid = getpid();
+    }
+
+    // Get data over the socket
+    rv = recv_obj(sockfd, buf, &numbytes);
+    if (rv == -1) {
+      perror("recv obj");
+      exit(1);
+    } else if (rv == 1) {
+      // Connection has been closed from the other side (by the socket server)
+      break;
+    }
+
+    // Add the data to the queue
+    priority = *(int*)buf;
+    if (mq_send(incoming, buf, numbytes, priority) == -1) {
+        perror ("Client: Not able to send message to main process");
+        continue;
+    }
+    printf("client: received %lu bytes\n", numbytes);
+
+    counter++;
+  }
+
+  close(sockfd);
+  exit(0);
+}
+
+void *client_thread(void *arg){
+  Globals *globals = arg;
+  for (unsigned int i = 0; i < num_peers; i++) {
+    // Fork this process and connect!
+    pid_t pid = fork();
+    if (!pid) { // this is the child process
+      client_fork(globals, pid, i);
+		}
+  }
+
+  //INCOMING PARENT
+  struct mq_attr attr;
+  mqd_t incoming_parent;
+  char in_buffer[MSG_BUFFER_SIZE], *ser_buffer;
+  unsigned int priority;
+  int id;
+  size_t buf_size;
+
+  attr.mq_flags = 0;
+  attr.mq_maxmsg = MAX_MESSAGES;
+  attr.mq_msgsize = MAX_MSG_SIZE;
+  attr.mq_curmsgs = 0;
+  incoming_parent = mq_open(
+    globals->q_client,
+    O_RDONLY | O_CREAT,
+    QUEUE_PERMISSIONS,
+    &attr
+  );
+  if (incoming_parent == -1) {
+    perror ("Client: mq_open (server)");
+    exit (1);
+  }
+
   // Now pop off the queues whenever something is added!
-  while(1){
-    // Add to Block and TX Queue
-    char in_buffer [MSG_BUFFER_SIZE];
-    unsigned int priority;
-    if (mq_receive(incoming_parent, in_buffer, MSG_BUFFER_SIZE, &priority) == -1) {
-      perror ("Server: mq_receive");
+  while (1) {
+    if (mq_receive(incoming_parent, in_buffer, MAX_MSG_SIZE, &priority) == -1) {
+      perror ("Client: mq_receive");
       exit (1);
     }
-    if(priority == 1){
-      // Dummy text data
-      // printf("Incoming data to client parent: %s", in_buffer);
-      // continue;
-      Block *new_block = deser_block_alloc(NULL, (unsigned char *)in_buffer);
+
+    id = *(int*)in_buffer;
+    buf_size = *(size_t*)(in_buffer + sizeof(int));
+    ser_buffer = in_buffer + sizeof(int) + sizeof(size_t);
+
+    printf(
+      "Client parent recieved %lu byte object of id '%d'\n",
+      buf_size, id
+    );
+    if (id == BLOCK_ID) {
+      Block *new_block = deser_block_alloc(NULL, (unsigned char *)ser_buffer);
       queue_add_void(globals->queue_block, new_block);
     }
-    else if (priority == 0)
-    {
-      Transaction *new_tx = deser_tx_alloc(NULL, (unsigned char *)in_buffer);
+    else if (id == TX_ID) {
+      Transaction *new_tx = deser_tx_alloc(NULL, (unsigned char *)ser_buffer);
       queue_add_void(globals->queue_tx, new_tx);
     }
   }
