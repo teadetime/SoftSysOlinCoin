@@ -23,7 +23,6 @@ unsigned long calc_block_reward(unsigned long blockchain_height){
   return BLOCK_REWARD;
 }
 
-
 Transaction *create_coinbase_tx(unsigned long tx_fees){
   Transaction *coinbase_tx = malloc(sizeof(Transaction));
   Output *miner_output = malloc(sizeof(Output));

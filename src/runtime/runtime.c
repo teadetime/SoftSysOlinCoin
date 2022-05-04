@@ -1,15 +1,24 @@
-#include "queue.h"
 #include <unistd.h>
 #include "pthread.h"
-#include "validate_block.h"
-#include "handle_block.h"
+
+#include "queue.h"
+
+#include "ser_tx.h"
 #include "validate_tx.h"
 #include "handle_tx.h"
+
+#include "ser_block.h"
 #include "create_block.h"
-#include "shell.h"
-#include "runtime.h"
+#include "validate_block.h"
+#include "handle_block.h"
+
 #include "init_globals.h"
 #include "init_db.h"
+
+#include "runtime.h"
+#include "shell.h"
+#include "server.h"
+#include "client.h"
 
 Globals *init_globals(){
   Globals *new_globals = malloc(sizeof(Globals));
@@ -44,40 +53,95 @@ Globals *init_globals(){
   new_globals->miner_update = malloc(sizeof(int));
   *new_globals->miner_update = 1;
 
+  new_globals->q_server_individual = malloc(MAX_INCOMING_CONNECTIONS * sizeof(char *));
+  new_globals->connected = 0;
+  new_globals->q_client = malloc(strlen(INCOMING_QUEUE) + 1);
+  strcpy(new_globals->q_client, "/client_incoming");
+
   return new_globals;
+}
+
+unsigned char *init_queue_buffer(unsigned char *buf, int id, size_t size) {
+  memcpy(buf, &id, sizeof(id));
+  memcpy(buf + sizeof(id), &size, sizeof(size));
+  return buf + sizeof(id) + sizeof(size);
+}
+
+void propogate_object(Globals *globals, void *obj, int id){
+  char *q_name;
+  mqd_t child_mq;
+  unsigned char buf[MAX_MSG_SIZE], *ser_buf;
+  size_t buf_size;
+
+  switch (id) {
+    case BLOCK_ID:
+      ser_buf = init_queue_buffer(buf, id, size_ser_block(obj));
+      buf_size = ser_block(ser_buf, obj);
+      break;
+    case TX_ID:
+      ser_buf = init_queue_buffer(buf, id, size_ser_tx(obj));
+      buf_size = ser_tx(ser_buf, obj);
+      break;
+    default:
+      perror("Invalid ID passed to propogate_object()");
+      exit(1);
+  }
+  buf_size += ser_buf - buf;
+
+  printf("Recieved object of ID '%d', adding to queues\n", id);
+  for (int i = 0; i < globals->connected; i++) {
+    q_name = globals->q_server_individual[i];
+    if ((child_mq = mq_open(q_name, O_WRONLY)) == -1) {
+      perror("Main Process: mq_open(server)");
+      exit(1);
+    }
+    if (mq_send(child_mq, (char*)buf, buf_size, id) == -1) {
+      perror("Main Process: Not able to send message to server");
+    }
+    if (mq_close(child_mq) == -1) {
+      perror("Main Process: mq_close");
+      exit(1);
+    }
+  }
 }
 
 void *node_block_thread(void *arg){
   Globals *globals = arg;
-  while(1){
+  while (1) {
     printf("Node Thread Waiting to pop Block\n");
     Block *popped_block = queue_pop_void(globals->queue_block);
     printf("Node Thread Block Popped\n");
+
     //Now aquire locks for validation (Utxo pool and blockcahin)
     printf("Node Thread Waiting on lock for validation\n");
     pthread_mutex_lock(&globals->utxo_pool_lock);
     pthread_mutex_lock(&globals->blockchain_lock);
+
     int block_valid = validate_block(popped_block);
 
-
-    if(block_valid == 0){
-      //Now aquire additional locks for handling
+    if (block_valid == 0) {
+      //Now acquire additional locks for handling
       printf("Node Thread Waiting on lock for Handling\n");
       pthread_mutex_lock(&globals->utxo_to_tx_lock);
       pthread_mutex_lock(&globals->wallet_pool_lock);
       pthread_mutex_lock(&globals->key_pool_lock);
       pthread_mutex_lock(&globals->mempool_lock);
+
       accept_block(popped_block);
+      propogate_object(globals, popped_block, BLOCK_ID);
       free_block(popped_block);
+
       pthread_mutex_lock(&globals->miner_update_lock);
       *globals->miner_update = 0;
       pthread_mutex_unlock(&globals->miner_update_lock);
+
       pthread_mutex_unlock(&globals->utxo_to_tx_lock);
       pthread_mutex_unlock(&globals->wallet_pool_lock);
       pthread_mutex_unlock(&globals->key_pool_lock);
       pthread_mutex_unlock(&globals->mempool_lock);
-      printf("Node Thread unlockedr Handling\n");
+      printf("Node Thread unlocked Handling\n");
     }
+
     pthread_mutex_unlock(&globals->utxo_pool_lock);
     pthread_mutex_unlock(&globals->blockchain_lock);
   }
@@ -86,13 +150,12 @@ void *node_block_thread(void *arg){
 
 void *node_tx_thread(void *arg){
   Globals *globals = arg;
-  while(1){
-    printf("NodeTX Thread Waiting to pop TX\n");
+  while(1) {
+    //printf("NodeTX Thread Waiting to pop TX\n");
     Transaction *popped_tx = queue_pop_void(globals->queue_tx);
-    printf("NodeTX Thread TX Popped\n");
+    //printf("NodeTX Thread TX Popped\n");
     //Now aquire locks for validation (Utxo pool and blockcahin)
-    printf("NodeTX Thread Waiting on lock for validation\n");
-
+    //printf("NodeTX Thread Waiting on lock for validation\n");
 
     pthread_mutex_lock(&globals->utxo_pool_lock);
     pthread_mutex_lock(&globals->utxo_to_tx_lock);
@@ -100,16 +163,16 @@ void *node_tx_thread(void *arg){
 
     int tx_valid = validate_tx_incoming(popped_tx);
 
-
     if(tx_valid == 0){
-      //Now aquire additional locks for handling
       handle_tx(popped_tx);
+      propogate_object(globals, popped_tx, TX_ID);
       free_tx(popped_tx);
     }
+
     pthread_mutex_unlock(&globals->mempool_lock);
     pthread_mutex_unlock(&globals->utxo_to_tx_lock);
     pthread_mutex_unlock(&globals->utxo_pool_lock);
-    printf("NodeTX Thread unlocked from validation\n");
+    //printf("NodeTX Thread unlocked from validation\n");
   }
   return NULL;
 }
@@ -119,20 +182,20 @@ void *miner_thread(void *arg){
   unsigned long hash_check_flag = 10000;
   int new_block_in_chain = 1; //1 is false 0 is true
   while(1){
-    printf("Miner Thread waiting on lock to create Block\n");
+    //printf("Miner Thread waiting on lock to create Block\n");
     //Now aquire locks for creating a block!
     pthread_mutex_lock(&globals->utxo_pool_lock);
     pthread_mutex_lock(&globals->blockchain_lock);
     pthread_mutex_lock(&globals->key_pool_lock) ;
     pthread_mutex_lock(&globals->mempool_lock);
-    printf("Miner Thread got lock to create Block\n");
+    //printf("Miner Thread got lock to create Block\n");
     Block *new_block = create_block_alloc();
 
     pthread_mutex_unlock(&globals->utxo_pool_lock);
     pthread_mutex_unlock(&globals->blockchain_lock);
     pthread_mutex_unlock(&globals->key_pool_lock) ;
     pthread_mutex_unlock(&globals->mempool_lock);
-    printf("Miner Thread done creating Block\n");
+    //printf("Miner Thread done creating Block\n");
 
     while(try_header_hash(&(new_block->header)) != 0){
       change_nonce(new_block);
@@ -160,6 +223,7 @@ void *miner_thread(void *arg){
   return NULL;
 }
 
+
 void *shell_thread(void *arg){
   Globals *globals = arg;
   shell_init();
@@ -174,31 +238,35 @@ int main() {
   // Intitialize the globabls!
   node_init(PROD_DB_LOC);
 
-  pthread_t node_block, node_tx, shell, miner;
-  int node_block_ret, node_tx_ret, shell_ret, miner_ret;
-  /* Create independent threads each of which will execute function */
+  pthread_t node_block, node_tx, shell, miner, server, client;
+  int node_block_ret, node_tx_ret, shell_ret, miner_ret, server_ret, client_ret;
 
-  // node_block_ret = pthread_create( &node_block, NULL, pop, (void*) globals->queue_block);
-  // sleep(1);
-  // node_tx_ret = pthread_create( &node_tx, NULL, add_and_delay, (void*) globals->queue_block);
-  
+  /* Create independent threads each of which will execute function */
+  server_ret = pthread_create( &server, NULL, server_thread, (void*) globals);
+  sleep(5);
+  // Now Create the Client Thread
+  client_ret = pthread_create( &client, NULL, client_thread, (void*) globals);
+
   node_block_ret = pthread_create( &node_block, NULL, node_block_thread, (void*) globals);
   node_tx_ret = pthread_create( &node_tx, NULL, node_tx_thread, (void*) globals);
   shell_ret = pthread_create( &shell, NULL, shell_thread, (void*) globals);
   miner_ret = pthread_create( &miner, NULL, miner_thread, (void*) globals);
-  
+
   /* Wait till threads are complete before main continues. Unless we  */
   /* wait we run the risk of executing an exit which will terminate   */
   /* the process and all threads before the threads have completed.   */
 
   pthread_join(shell, NULL);
-  pthread_join(node_block, NULL);
-  pthread_join(node_tx, NULL);
-  pthread_join(miner, NULL); 
+  // pthread_join(server, NULL);
+  // pthread_join(node_block, NULL);
+  // pthread_join(node_tx, NULL);
+  // pthread_join(miner, NULL);
 
   printf("Node Block returns: %d\n",node_block_ret);
   printf("Node TX returns: %d\n", node_tx_ret);
   printf("Shell returns: %d\n", shell_ret);
   printf("Miner returns: %d\n", miner_ret);
-  return 0; 
+  printf("Server returns: %d\n", server_ret);
+  printf("Client returns: %d\n", client_ret);
+  return 0;
 }
