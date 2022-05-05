@@ -97,32 +97,32 @@ At a high level we switched from using uthash, an in-memory key-value store, to 
 ### Better Unit Testing
 We started our project using minunit, but found it to be lacking some features we wanted. In particular, we found ourselves writing many fixture-like functions for setting up test cases, but without the proper support fixtures normally received. This meant things like teardown were inconsistent and error prone, making tests harder to maintain. This was exacerbated with the switch to persistent storage – suddenly, failing to tear down objects could cause strange and inconsistent behavior between test runs. Additionally, in order to support networking down the line, we wanted the ability to set up mocks. Together, this pushed us to make the switch from minunit to CMocka, which is a pure C testing framework that supports both mocking and fixtures.
 ```C
-  const struct CMUnitTest tests[] = {
-    cmocka_unit_test_prestate_setup_teardown(
-      test_utxo_pool_init,
-      fixture_setup_utxo_pool,
-      fixture_teardown_utxo_pool,
-      NULL
-    ),
-    cmocka_unit_test_prestate_setup_teardown(
-      test_utxo_pool_add,
-      fixture_setup_compose,
-      fixture_teardown_compose,
-      &composition
-    ),
-    cmocka_unit_test_prestate_setup_teardown(
-      test_utxo_pool_find,
-      fixture_setup_compose,
-      fixture_teardown_compose,
-      &composition
-    ),
-    cmocka_unit_test_prestate_setup_teardown(
-      test_utxo_pool_remove,
-      fixture_setup_compose,
-      fixture_teardown_compose,
-      &composition
-    )
-  };
+const struct CMUnitTest tests[] = {
+  cmocka_unit_test_prestate_setup_teardown(
+    test_utxo_pool_init,
+    fixture_setup_utxo_pool,
+    fixture_teardown_utxo_pool,
+    NULL
+  ),
+  cmocka_unit_test_prestate_setup_teardown(
+    test_utxo_pool_add,
+    fixture_setup_compose,
+    fixture_teardown_compose,
+    &composition
+  ),
+  cmocka_unit_test_prestate_setup_teardown(
+    test_utxo_pool_find,
+    fixture_setup_compose,
+    fixture_teardown_compose,
+    &composition
+  ),
+  cmocka_unit_test_prestate_setup_teardown(
+    test_utxo_pool_remove,
+    fixture_setup_compose,
+    fixture_teardown_compose,
+    &composition
+  )
+};
 ```
 
 In the end, most of our tests have been converted to CMocka and use proper setup / teardown functions to build their test environments. This has allowed us to ensure we always use a test database and always clear the test database between tests. In addition, we added a simple CI pipeline with Github Actions that ensures all our tests build and pass before merging PRs.
@@ -134,13 +134,13 @@ This architecture was achieved with a number of mutexes and inter-thread queues.
 
 Below are the threads we used:
 ```C
-  /* Create independent threads each of which will execute function */
-  node_block_ret = pthread_create(&node_block, NULL, node_block_thread, (void*) globals);
-  node_tx_ret = pthread_create(&node_tx, NULL, node_tx_thread, (void*) globals);
-  shell_ret = pthread_create(&shell, NULL, shell_thread, (void*) globals);
-  miner_ret = pthread_create(&miner, NULL, miner_thread, (void*) globals);
-  server_ret = pthread_create(&server, NULL, server_thread, (void*) globals);
-  client_ret = pthread_create(&client, NULL, client_thread, (void*) globals);
+/* Create independent threads each of which will execute function */
+node_block_ret = pthread_create(&node_block, NULL, node_block_thread, (void*) globals);
+node_tx_ret = pthread_create(&node_tx, NULL, node_tx_thread, (void*) globals);
+shell_ret = pthread_create(&shell, NULL, shell_thread, (void*) globals);
+miner_ret = pthread_create(&miner, NULL, miner_thread, (void*) globals);
+server_ret = pthread_create(&server, NULL, server_thread, (void*) globals);
+client_ret = pthread_create(&client, NULL, client_thread, (void*) globals);
 ```
 
 * Shell (Responsible for running interactive shell and making new transactions)
@@ -185,5 +185,7 @@ __Nathan__
 This has been one of my favorite projects that I’ve ever done. My learning goals were to run this on a Raspberry Pi, learn how to implement multi-threading and multi-processed applications, implement TCP networking, and make a cool demo. I wrote the first pass of our multi-threading and multi-processed code. This, in addition to architecting our solution with Eamon was a huge point of learning and accomplishment. A Raspberry Pi 3 was used to do our networking test and development. We simulated a network in which there was only one miner and watched the block propagate through the Pi to an additional computer. This was our moment of truth that we were working towards for the last 3 months! Overall, this was an awesome project! I’m sad we don’t have an additional 2-3 weeks to polish some of our things up and then think about implementing the API. This being said, implementing an API is likely the size of another project! This project has also made me less scared of multi-threading and processing and has made me a stronger software engineer. 
 
 Github: [https://github.com/teadetime/SoftSysOlinCoin](https://github.com/teadetime/SoftSysOlinCoin)
+
 Tasks: [https://github.com/users/teadetime/projects/1](https://github.com/users/teadetime/projects/1)
+
 Docs: [https://teadetime.github.io/SoftSysOlinCoin/](https://teadetime.github.io/SoftSysOlinCoin/)
