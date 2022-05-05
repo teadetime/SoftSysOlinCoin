@@ -1,5 +1,8 @@
 # SoftSysOlinCoin
 
+# Documenation
+https://teadetime.github.io/SoftSysOlinCoin/
+
 # What is this?
 This repo is the source code for a project for the class [Software Systems](https://softsys.olin.edu/) @[Olin College](https://olin.edu).
 
