@@ -1,3 +1,12 @@
+/**
+* @file ser_block.h
+* @author Eamon Ito-Fisher (efisher@olin.edu.com)
+* @brief Serilaization and Deserializatoin functions for Block and BlockHeader
+* @version 0.1
+* @date 2022-03-17
+* 
+*/
+
 #pragma once
 
 #include "base_block.h"

@@ -73,6 +73,7 @@ _deps
 
 
 # iginore bin
-external/*
 compile_flags.txt
 .cache
+html
+latex
