@@ -28,6 +28,7 @@ We used a couple different libraries:
 - [mbed-tls](https://tls.mbed.org/)
 - [LevelDB](https://github.com/google/leveldb)
 - [CMocka](https://cmocka.org/)
+
 We also used several different resources for learning about the Bitcoin network and networking:
 - [Mastering Bitcoin](https://github.com/bitcoinbook/bitcoinbook)
 - [Beej’s Guide to Networking](https://beej.us/guide/bgnet/)
