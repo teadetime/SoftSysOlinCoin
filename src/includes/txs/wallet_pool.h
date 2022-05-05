@@ -92,6 +92,13 @@ int wallet_pool_remove_leveldb(unsigned char *tx_hash, unsigned int vout);
 int wallet_pool_count(unsigned int *num_entries);
 
 /**
+ * @brief Frees a wallet entry
+ *
+ * @param entry Wallet entry to free
+ */
+void free_wallet_entry(WalletEntry *entry);
+
+/**
  * @brief Add a keypair to the keypool
  * 
  * @param key_pair keypair to add to key pool

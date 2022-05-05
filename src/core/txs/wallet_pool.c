@@ -117,6 +117,14 @@ int wallet_pool_count(unsigned int *num_entries){
   return db_count(wallet_pool_db, num_entries);
 }
 
+void free_wallet_entry(WalletEntry *entry) {
+  if (entry == NULL)
+    return;
+  if (entry->key_pair != NULL)
+    mbedtls_ecp_keypair_free(entry->key_pair);
+  free(entry);
+}
+
 /* KEY POOL FUNCS */
 int key_pool_add_leveldb(mbedtls_ecp_keypair *key_pair) {
   unsigned char db_key[PUB_KEY_HASH_LEN];
@@ -161,7 +169,7 @@ int key_pool_find_leveldb(mbedtls_ecdsa_context **keypair, unsigned char *public
   if(read == NULL){
     return 1;
   }
-  
+
   size_t read_bytes;
   *keypair = deser_keypair_alloc(&read_bytes, (unsigned char*) read);
   free(read);

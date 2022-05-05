@@ -1,283 +1,246 @@
 #include <stdio.h>
-#include "minunit.h"
+
+#include <setjmp.h>
+#include <cmocka.h>
+
 #include "wallet_pool.h"
 #include "crypto.h"
+#include "fixtures_wallet.h"
+#include "fixtures_global.h"
 
-int tests_run = 0;
-
-Transaction *_make_tx() {
-  Transaction *tx;
-  Input *in;
-  Output *out;
-  mbedtls_ecdsa_context *key_pair;
-
-  tx = malloc(sizeof(Transaction));
-  in = malloc(sizeof(Input));
-  out = malloc(sizeof(Output));
-
-  memset(in, 0x25, sizeof(Input));
-  key_pair = gen_keys();
-  in->pub_key = &(key_pair->private_Q);
-
-  memset(out, 0x50, sizeof(Output));
-
-  tx->num_inputs = 1;
-  tx->inputs = in;
-  tx->num_outputs = 1;
-  tx->outputs = out;
-
-  return tx;
-}
-
-void _free_tx(Transaction *tx) {
-  free(tx->inputs);
-  free(tx->outputs);
-  free(tx);
-}
-
-static char *test_wallet_init() {
-  wallet_init_leveldb(TEST_DB_LOC);
-  destroy_wallet();
+static void test_wallet_init(void **state) {
   int init_ret = wallet_init_leveldb(TEST_DB_LOC);
-  unsigned int wallet_count;
+  unsigned int wallet_count, key_count;
+  (void)state;
   wallet_pool_count(&wallet_count);
-  unsigned int key_count;
   key_pool_count(&key_count);
-  mu_assert(
-    "Init wallet returned failure code",
-    init_ret == 0
-  );
-  mu_assert(
-    "Wallet pool is not empty",
-    wallet_count == 0
-  );
-  mu_assert(
-    "Key pool is not empty",
-    key_count == 0
-  );
+  assert_int_equal(init_ret, 0);
+  assert_int_equal(wallet_count, 0);
+  assert_int_equal(key_count, 0);
   destroy_wallet();
-  return NULL;
 }
 
-static char  *test_wallet_pool_add() {
+static void test_wallet_pool_add(void **state) {
   Transaction *tx;
   mbedtls_ecdsa_context *key_pair;
 
-  tx = _make_tx();
-  key_pair = gen_keys();
-
-  wallet_init_leveldb(TEST_DB_LOC);
+  tx = ((void**)*state)[0];
+  key_pair = ((void**)*state)[1];
 
   int ret_add = wallet_pool_build_add_leveldb(tx, 0, key_pair);
   unsigned int wallet_pool_sz;
   wallet_pool_count(&wallet_pool_sz);
-  mu_assert(
-    "Wallet pool add returned error status",
-    ret_add == 0
-  );
-  mu_assert(
-    "Wallet pool not correct size",
-    wallet_pool_sz == 1
-  );
-  // Note find tests if the found data is correct
-  _free_tx(tx);
-  mbedtls_ecp_keypair_free(key_pair);
-  destroy_wallet();
-  return NULL;
+
+  assert_int_equal(ret_add, 0);
+  assert_int_equal(wallet_pool_sz, 1);
 }
 
-static char  *test_wallet_pool_find() {
+static void test_wallet_pool_find(void **state) {
   Transaction *tx;
   WalletEntry *ret_entry;
   mbedtls_ecdsa_context *key_pair;
   unsigned char hash[TX_HASH_LEN];
 
-  tx = _make_tx();
+  tx = ((void**)*state)[0];
+  key_pair = ((void**)*state)[1];
   hash_tx(hash, tx);
-  key_pair = gen_keys();
-
-  wallet_init_leveldb(TEST_DB_LOC);
 
   wallet_pool_build_add_leveldb(tx, 0, key_pair);
   int ret_find = wallet_pool_find_leveldb(&ret_entry, hash, 0);
-  mu_assert(
-    "Wallet pool find returned an error",
-    ret_find == 0
+
+  assert_int_equal(ret_find, 0);
+  assert_int_equal(ret_entry->amt, tx->outputs[0].amt);
+  assert_int_equal(ret_entry->spent, 0);
+  assert_true(
+    mbedtls_ecp_point_cmp(
+      &ret_entry->key_pair->private_Q,
+      &key_pair->private_Q
+    ) == 0
   );
-  mu_assert(
-    "Wallet amt incorrect",
-    ret_entry->amt == tx->outputs[0].amt
+  assert_true(
+    mbedtls_mpi_cmp_mpi(
+      &ret_entry->key_pair->private_d,
+      &key_pair->private_d
+    ) == 0
   );
-  mu_assert(
-    "Wallet key pair private Q incorrect",
-    mbedtls_ecp_point_cmp(&ret_entry->key_pair->private_Q, &key_pair->private_Q) == 0
-  );
-  mu_assert(
-    "Wallet key pair private d incorrect",
-    mbedtls_mpi_cmp_mpi(&ret_entry->key_pair->private_d, &key_pair->private_d) == 0
-  );
-  mu_assert(
-    "Wallet entry spent incorrect",
-    ret_entry->spent == 0
-  );
-  _free_tx(tx);
-  mbedtls_ecp_keypair_free(key_pair);
-  destroy_wallet();
-  return NULL;
+
+  free_wallet_entry(ret_entry);
 }
 
-static char  *test_wallet_pool_remove() {
+static void test_wallet_pool_remove(void **state) {
   Transaction *tx;
   WalletEntry *ret_entry = NULL;
   mbedtls_ecdsa_context *key_pair;
   unsigned char hash[TX_HASH_LEN];
+  unsigned int prev_count, count;
 
-  tx = _make_tx();
+  tx = ((void**)*state)[0];
+  key_pair = ((void**)*state)[1];
   hash_tx(hash, tx);
-  key_pair = gen_keys();
-
-  wallet_init_leveldb(TEST_DB_LOC);
 
   wallet_pool_build_add_leveldb(tx, 0, key_pair);
+  wallet_pool_count(&prev_count);
+
   int ret_rem = wallet_pool_remove_leveldb(hash, 0);
+  wallet_pool_count(&count);
+  assert_int_equal(ret_rem, 0);
+  assert_int_equal(count, prev_count - 1);
+
   int ret_find = wallet_pool_find_leveldb(&ret_entry, hash, 0);
-  mu_assert(
-    "Wallet remove returned error code",
-    ret_rem == 0
-  );
-  mu_assert(
-    "Entry was not removed",
-    ret_entry == NULL
-  );
-  mu_assert(
-    "Wallet found deleted entry",
-    ret_find != 0
-  );
-  _free_tx(tx);
-  mbedtls_ecp_keypair_free(key_pair);
-  destroy_wallet();
-  return NULL;
+  assert_ptr_equal(ret_entry, NULL);
+  assert_int_not_equal(ret_find, 0);
 }
 
-static char  *test_key_pool_add() {
+static void test_key_pool_add(void **state) {
   mbedtls_ecdsa_context *key_pair;
 
-  key_pair = gen_keys();
-
-  wallet_init_leveldb(TEST_DB_LOC);
+  key_pair = *state;
 
   int ret_add = key_pool_add_leveldb(key_pair);
-  mu_assert(
-    "Keypool add returned failure",
-    ret_add == 0
-  );
 
-  mbedtls_ecp_keypair_free(key_pair);
-  destroy_wallet();
-  return NULL;
+  assert_int_equal(ret_add, 0);
 }
 
-static char  *test_key_pool_find() {
+static void test_key_pool_find(void **state) {
   mbedtls_ecdsa_context *key_pair, *ret_pair;
   unsigned char hash[PUB_KEY_HASH_LEN];
 
-  key_pair = gen_keys();
+  key_pair = *state;
   hash_pub_key(hash, key_pair);
-
-  wallet_init_leveldb(TEST_DB_LOC);
 
   key_pool_add_leveldb(key_pair);
   int ret_find = key_pool_find_leveldb(&ret_pair, hash);
-  mu_assert(
-    "Keypool find returned failure",
-    ret_find == 0
+
+  assert_int_equal(ret_find, 0);
+  assert_true(
+    mbedtls_ecp_point_cmp(
+      &ret_pair->private_Q,
+      &key_pair->private_Q
+    ) == 0
   );
 
-  mu_assert(
-    "Key Pool pair private Q incorrect",
-    mbedtls_ecp_point_cmp(&ret_pair->private_Q, &key_pair->private_Q) == 0
-  );
-  mbedtls_ecp_keypair_free(key_pair);
-  destroy_wallet();
-  return NULL;
+  mbedtls_ecp_keypair_free(ret_pair);
 }
 
-static char  *test_output_unlockable() {
+static void test_output_unlockable(void **state) {
   Transaction *tx;
   mbedtls_ecdsa_context *key_pair, *ret_pair;
-  tx = _make_tx();
 
-  key_pair = gen_keys();
+  tx = ((void**)*state)[0];
+  key_pair = ((void**)*state)[1];
   hash_pub_key(tx->outputs[0].public_key_hash, key_pair);
-
-  wallet_init_leveldb(TEST_DB_LOC);
 
   key_pool_add_leveldb(key_pair);
   ret_pair = check_if_output_unlockable_leveldb(tx, 0);
-  mu_assert(
-    "Returned pair is NULL",
-    ret_pair != NULL
+  assert_ptr_not_equal(ret_pair, NULL);
+  assert_true(
+    mbedtls_ecp_point_cmp(
+      &ret_pair->private_Q,
+      &key_pair->private_Q
+    ) == 0
   );
-  mu_assert(
-    "Returned key pair private Q incorrect",
-    mbedtls_ecp_point_cmp(&ret_pair->private_Q, &key_pair->private_Q) == 0
-  );
-  mbedtls_ecp_keypair_free(key_pair);
-  destroy_wallet();
-  return NULL;
 }
 
-static char  *test_key_pool_remove() {
+static void test_key_pool_remove(void **state) {
   mbedtls_ecdsa_context *key_pair, *ret_pair = NULL;
   unsigned char hash[PUB_KEY_HASH_LEN];
+  unsigned int prev_count, count;
 
-  key_pair = gen_keys();
+  key_pair = *state;
   hash_pub_key(hash, key_pair);
 
-  wallet_init_leveldb(TEST_DB_LOC);
-
   key_pool_add_leveldb(key_pair);
+  key_pool_count(&prev_count);
+
   int ret_rem = key_pool_remove_leveldb(hash);
-  mu_assert(
-    "Remove returned error code",
-    ret_rem == 0
-  );
+  key_pool_count(&count);
+  assert_int_equal(ret_rem, 0);
+  assert_int_equal(count, prev_count - 1);
+
   int ret_found = key_pool_find_leveldb(&ret_pair, hash);
-  mu_assert(
-    "Key pair was found after removed",
-    ret_found != 0
-  );
-  mu_assert(
-    "Key pair return value not null",
-    ret_pair == NULL
-  );
-
-  mbedtls_ecp_keypair_free(key_pair);
-  destroy_wallet();
-  return NULL;
-}
-
-static char *all_tests() {
-  mu_run_test(test_wallet_init);
-  mu_run_test(test_wallet_pool_add);
-  mu_run_test(test_wallet_pool_find);
-  mu_run_test(test_wallet_pool_remove);
-  mu_run_test(test_key_pool_add);
-  mu_run_test(test_key_pool_find);
-  mu_run_test(test_output_unlockable);
-  mu_run_test(test_key_pool_remove);
-  return NULL;
+  assert_int_not_equal(ret_found, 0);
+  assert_ptr_equal(ret_pair, NULL);
 }
 
 int main() {
-  create_proj_folders();
-  char *result = all_tests();
-  if (result != NULL) {
-    printf("%s\n", result);
-  } else {
-    printf("wallet_pool.c passing!\n");
-  }
-  printf("Tests run: %d\n", tests_run);
+  int (*wallet_pool_setup[])(void**) = {
+    fixture_setup_wallet,
+    fixture_setup_unlinked_tx_keypair,
+    NULL
+  };
+  int (*wallet_pool_teardown[])(void**) = {
+    fixture_teardown_wallet,
+    fixture_teardown_unlinked_tx_keypair,
+    NULL
+  };
+  ComposedFixture wallet_pool_composition;
+  wallet_pool_composition.setup = wallet_pool_setup;
+  wallet_pool_composition.teardown = wallet_pool_teardown;
 
-  return result != 0;
+  int (*key_pool_setup[])(void**) = {
+    fixture_setup_wallet,
+    fixture_setup_unlinked_keypair,
+    NULL
+  };
+  int (*key_pool_teardown[])(void**) = {
+    fixture_teardown_wallet,
+    fixture_teardown_unlinked_keypair,
+    NULL
+  };
+  ComposedFixture key_pool_composition;
+  key_pool_composition.setup = key_pool_setup;
+  key_pool_composition.teardown = key_pool_teardown;
+
+  const struct CMUnitTest tests[] = {
+    cmocka_unit_test_prestate_setup_teardown(
+      test_wallet_init,
+      NULL,
+      NULL,
+      NULL
+    ),
+    cmocka_unit_test_prestate_setup_teardown(
+      test_wallet_pool_add,
+      fixture_setup_compose,
+      fixture_teardown_compose,
+      &wallet_pool_composition
+    ),
+    cmocka_unit_test_prestate_setup_teardown(
+      test_wallet_pool_find,
+      fixture_setup_compose,
+      fixture_teardown_compose,
+      &wallet_pool_composition
+    ),
+    cmocka_unit_test_prestate_setup_teardown(
+      test_wallet_pool_remove,
+      fixture_setup_compose,
+      fixture_teardown_compose,
+      &wallet_pool_composition
+    ),
+    cmocka_unit_test_prestate_setup_teardown(
+      test_key_pool_add,
+      fixture_setup_compose,
+      fixture_teardown_compose,
+      &key_pool_composition
+    ),
+    cmocka_unit_test_prestate_setup_teardown(
+      test_key_pool_find,
+      fixture_setup_compose,
+      fixture_teardown_compose,
+      &key_pool_composition
+    ),
+    cmocka_unit_test_prestate_setup_teardown(
+      test_output_unlockable,
+      fixture_setup_compose,
+      fixture_teardown_compose,
+      &wallet_pool_composition
+    ),
+    cmocka_unit_test_prestate_setup_teardown(
+      test_key_pool_remove,
+      fixture_setup_compose,
+      fixture_teardown_compose,
+      &key_pool_composition
+    ),
+  };
+
+  return cmocka_run_group_tests(tests, fixture_clear_wallet, NULL);
 }

@@ -14,6 +14,20 @@ void hash_blockheader(unsigned char *dest, BlockHeader *header) {
   free(header_buf);
 }
 
+void free_block(Block *block) {
+  if (block == NULL)
+    return;
+
+  if (block->txs != NULL) {
+    for (unsigned int i = 0; i < block->num_txs; i++)
+      if (block->txs[i] != NULL)
+        free_tx(block->txs[i]);
+    free(block->txs);
+  }
+
+  free(block);
+}
+
 void print_block_header(BlockHeader *header, char *prefix){
   char *sub_prefix = malloc(strlen(prefix)+strlen(PRINT_TAB)+1);
   strcpy(sub_prefix, prefix);

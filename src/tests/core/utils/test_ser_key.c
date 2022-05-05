@@ -2,158 +2,173 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "minunit.h"
-#include "crypto.h"
+#include <setjmp.h>
+#include <cmocka.h>
+
 #include "ser_key.h"
+#include "fixtures_wallet.h"
 
-int tests_run = 0;
-
-static char  *test_ser_pub_key() {
+static void test_ser_pub_key_equal(void **state) {
   mbedtls_ecdsa_context *keypair;
   mbedtls_ecp_point *pub_key, *desered_pub_key;
   unsigned char *sered_pub_key;
-  unsigned char sered_pub_key_2[PUB_KEY_SER_LEN];
   ssize_t read, written;
 
-  keypair = gen_keys();
+  keypair = *state;
   pub_key = &keypair->private_Q;
   sered_pub_key = ser_pub_key_alloc(&read, pub_key);
   desered_pub_key = deser_pub_key_alloc(&written, sered_pub_key);
 
-  mu_assert(
-    "Num of bytes read incorrect",
-    read == PUB_KEY_SER_LEN
-  );
-  mu_assert(
-    "Num of bytes read and written don't match up",
-    read == written
-  );
+  assert_int_equal(read, PUB_KEY_SER_LEN);
+  assert_int_equal(read, written);
+  assert_true(mbedtls_ecp_point_cmp(pub_key, desered_pub_key) == 0);
 
-  mu_assert(
-    "Pub key isn't consistent after serialization",
-    mbedtls_ecp_point_cmp(pub_key, desered_pub_key) == 0
-  );
+  free(sered_pub_key);
+  free(desered_pub_key);
+}
+
+static void test_ser_pub_key_fill_buff(void **state) {
+  mbedtls_ecdsa_context *keypair;
+  mbedtls_ecp_point *pub_key;
+  unsigned char *sered_pub_key;
+  unsigned char sered_fill_pub_key[PUB_KEY_SER_LEN];
+
+  keypair = *state;
+  pub_key = &keypair->private_Q;
+  sered_pub_key = ser_pub_key_alloc(NULL, pub_key);
 
   // Ensure that we are actually filling the serialization buffer
   for (int i = 0; i < 5; i++) {
-    memset(sered_pub_key_2, i, PUB_KEY_SER_LEN);
-    ser_pub_key(sered_pub_key_2, pub_key);
-    mu_assert(
-      "Entire serialization buffer is not being overwritten",
-      memcmp(sered_pub_key, sered_pub_key_2, PUB_KEY_SER_LEN) == 0
-    );
+    memset(sered_fill_pub_key, i, PUB_KEY_SER_LEN);
+    ser_pub_key(sered_fill_pub_key, pub_key);
+    assert_memory_equal(sered_pub_key, sered_fill_pub_key, PUB_KEY_SER_LEN);
   }
 
-  mbedtls_ecp_keypair_free(keypair);
   free(sered_pub_key);
-  free(desered_pub_key);
-
-  return NULL;
 }
 
-static char  *test_ser_priv_key() {
+static void test_ser_priv_key_equal(void **state) {
   mbedtls_ecdsa_context *keypair;
   mbedtls_mpi *priv_key, *desered_priv_key;
   unsigned char *sered_priv_key;
-  unsigned char sered_priv_key_2[PRIV_KEY_SER_LEN];
   ssize_t read, written;
 
-  keypair = gen_keys();
+  keypair = *state;
   priv_key = &keypair->private_d;
   sered_priv_key = ser_priv_key_alloc(&read, priv_key);
   desered_priv_key = deser_priv_key_alloc(&written, sered_priv_key);
 
-  mu_assert(
-    "Num of bytes read incorrect",
-    read == PRIV_KEY_SER_LEN
-  );
-  mu_assert(
-    "Num of bytes read and written don't match up",
-    read == written
-  );
+  assert_int_equal(read, PRIV_KEY_SER_LEN);
+  assert_int_equal(read, written);
+  assert_true(mbedtls_mpi_cmp_mpi(priv_key, desered_priv_key) == 0);
 
-  mu_assert(
-    "Priv key isn't consistent after serialization",
-    mbedtls_mpi_cmp_mpi(priv_key, desered_priv_key) == 0
-  );
+  free(sered_priv_key);
+  free(desered_priv_key);
+}
+
+static void test_ser_priv_key_fill_buf(void **state) {
+  mbedtls_ecdsa_context *keypair;
+  mbedtls_mpi *priv_key;
+  unsigned char *sered_priv_key;
+  unsigned char sered_fill_priv_key[PRIV_KEY_SER_LEN];
+
+  keypair = *state;
+  priv_key = &keypair->private_d;
+  sered_priv_key = ser_priv_key_alloc(NULL, priv_key);
 
   // Ensure that we are actually filling the serialization buffer
   for (int i = 0; i < 5; i++) {
-    memset(sered_priv_key_2, i, PRIV_KEY_SER_LEN);
-    ser_priv_key(sered_priv_key_2, priv_key);
-    mu_assert(
-      "Entire serialization buffer is not being overwritten",
-      memcmp(sered_priv_key, sered_priv_key_2, PRIV_KEY_SER_LEN) == 0
-    );
+    memset(sered_fill_priv_key, i, PRIV_KEY_SER_LEN);
+    ser_priv_key(sered_fill_priv_key, priv_key);
+    assert_memory_equal(sered_priv_key, sered_fill_priv_key, PRIV_KEY_SER_LEN);
   }
 
-  mbedtls_ecp_keypair_free(keypair);
   free(sered_priv_key);
-  free(desered_priv_key);
-
-  return NULL;
 }
 
-static char  *test_ser_keypair() {
+static void test_ser_keypair_equal(void **state) {
   mbedtls_ecdsa_context *keypair, *desered_keypair;
   unsigned char *sered_keypair;
-  unsigned char sered_keypair_2[KEYPAIR_SER_LEN];
   ssize_t read, written;
 
-  keypair = gen_keys();
+  keypair = *state;
   sered_keypair = ser_keypair_alloc(&read, keypair);
   desered_keypair = deser_keypair_alloc(&written, sered_keypair);
 
-  mu_assert(
-    "Num of bytes read incorrect",
-    read == KEYPAIR_SER_LEN
-  );
-  mu_assert(
-    "Num of bytes read and written don't match up",
-    read == written
-  );
+  assert_int_equal(read, KEYPAIR_SER_LEN);
+  assert_int_equal(read, written);
 
-  mu_assert(
-    "Keypair pub key isn't consistent after serialization",
-    mbedtls_ecp_point_cmp(&keypair->private_Q, &keypair->private_Q) == 0
+  assert_true(mbedtls_ecp_point_cmp(
+      &keypair->private_Q,
+      &keypair->private_Q
+    ) == 0
   );
-  mu_assert(
-    "Keypair priv key isn't consistent after serialization",
-    mbedtls_mpi_cmp_mpi(&keypair->private_d, &desered_keypair->private_d) == 0
+  assert_true(mbedtls_mpi_cmp_mpi(
+      &keypair->private_d,
+      &desered_keypair->private_d
+    ) == 0
   );
+  assert_true(mbedtls_ecp_check_privkey(
+      &keypair->private_grp,
+      &keypair->private_d
+    ) == 0
+  );  // Proxy for checking group, breaks if group if wrong
+
+  free(sered_keypair);
+  free(desered_keypair);
+}
+
+static void test_ser_keypair_fill_buf(void **state) {
+  mbedtls_ecdsa_context *keypair;
+  unsigned char *sered_keypair;
+  unsigned char sered_fill_keypair[KEYPAIR_SER_LEN];
+
+  keypair = *state;
+  sered_keypair = ser_keypair_alloc(NULL, keypair);
 
   // Ensure that we are actually filling the serialization buffer
   for (int i = 0; i < 5; i++) {
-    memset(sered_keypair_2, i, KEYPAIR_SER_LEN);
-    ser_keypair(sered_keypair_2, keypair);
-    mu_assert(
-      "Entire serialization buffer is not being overwritten",
-      memcmp(sered_keypair, sered_keypair_2, KEYPAIR_SER_LEN) == 0
-    );
+    memset(sered_fill_keypair, i, KEYPAIR_SER_LEN);
+    ser_keypair(sered_fill_keypair, keypair);
+    assert_memory_equal(sered_keypair, sered_fill_keypair, KEYPAIR_SER_LEN);
   }
 
-  mbedtls_ecp_keypair_free(keypair);
   free(sered_keypair);
-  free(desered_keypair);
-
-  return NULL;
-}
-
-static char *all_tests() {
-  mu_run_test(test_ser_pub_key);
-  mu_run_test(test_ser_priv_key);
-  mu_run_test(test_ser_keypair);
-  return NULL;
 }
 
 int main() {
-  char *result = all_tests();
-  if (result != NULL) {
-    printf("%s\n", result);
-  } else {
-    printf("ser_key.c passing!\n");
-  }
-  printf("Tests run: %d\n", tests_run);
+  const struct CMUnitTest tests[] = {
+    cmocka_unit_test_setup_teardown(
+      test_ser_pub_key_equal,
+      fixture_setup_unlinked_keypair,
+      fixture_teardown_unlinked_keypair
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_pub_key_fill_buff,
+      fixture_setup_unlinked_keypair,
+      fixture_teardown_unlinked_keypair
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_priv_key_equal,
+      fixture_setup_unlinked_keypair,
+      fixture_teardown_unlinked_keypair
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_priv_key_fill_buf,
+      fixture_setup_unlinked_keypair,
+      fixture_teardown_unlinked_keypair
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_keypair_equal,
+      fixture_setup_unlinked_keypair,
+      fixture_teardown_unlinked_keypair
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_keypair_fill_buf,
+      fixture_setup_unlinked_keypair,
+      fixture_teardown_unlinked_keypair
+    ),
+  };
 
-  return result != 0;
+  return cmocka_run_group_tests(tests, NULL, NULL);
 }

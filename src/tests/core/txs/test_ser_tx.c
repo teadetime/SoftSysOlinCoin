@@ -1,192 +1,249 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "minunit.h"
+
+#include <setjmp.h>
+#include <cmocka.h>
+
 #include "base_tx.h"
 #include "ser_tx.h"
-#include "ser_key.h"
 #include "crypto.h"
+#include "fixtures_tx.h"
 
-int tests_run = 0;
-
-Transaction *_make_tx() {
-  Transaction *a_Tx = malloc(sizeof(Transaction));
-  a_Tx->num_inputs = 2;
-  a_Tx->num_outputs = 1;
-
-  a_Tx->inputs = malloc(sizeof(Input) * (a_Tx->num_inputs));
-  a_Tx->outputs = malloc(sizeof(Output) * (a_Tx->num_outputs));
-
-  Output *an_Output = &(a_Tx->outputs[0]);
-  memset(an_Output, 0, sizeof(Output));
-  an_Output->amt = 5;
-  strcpy((char*)an_Output->public_key_hash, "a_val");
-
-  Input *input_1 = &(a_Tx->inputs[0]);
-  memset(input_1, 0, sizeof(Input));
-  input_1->prev_utxo_output = 2;
-  mbedtls_ecdsa_context *key_pair_1 = gen_keys();
-  input_1->pub_key = &key_pair_1->private_Q;
-
-  Input *input_2 = &(a_Tx->inputs[1]);
-  memset(input_2, 0, sizeof(Input));
-  input_2->prev_utxo_output = 4;
-  mbedtls_ecdsa_context *key_pair_2 = gen_keys();
-  input_2->pub_key = &key_pair_2->private_Q;
-
-  return a_Tx;
-}
-
-UTXO *_make_utxo() {
-  UTXO *utxo;
-  utxo = malloc(sizeof(UTXO));
-  utxo->amt = 100;
-  memset(utxo->public_key_hash, 0xAA, PUB_KEY_HASH_LEN);
-  return utxo;
-}
-
-static char  *test_ser_tx() {
+static void test_ser_tx_equal(void **state) {
   ssize_t written_ser_tx, read_ser_tx;
+  Transaction *tx, *desered_tx;
+  unsigned char *sered_tx;
+  unsigned char buf_1[PUB_KEY_SER_LEN], buf_2[PUB_KEY_SER_LEN];
+  unsigned char output_hash[TX_HASH_LEN], deser_output_hash[TX_HASH_LEN];
 
-  Transaction *a_Tx = _make_tx();
-  unsigned char *char_tx = ser_tx_alloc(&read_ser_tx, a_Tx);
-  Transaction *other_tx = deser_tx_alloc(&written_ser_tx, char_tx);
+  tx = *state;
+  sered_tx = ser_tx_alloc(&read_ser_tx, tx);
+  desered_tx = deser_tx_alloc(&written_ser_tx, sered_tx);
 
-  mu_assert(
-    "Num of bytes read incorrect",
-    read_ser_tx == (ssize_t)size_ser_tx(a_Tx)
-  );
-  mu_assert(
-    "Num of bytes read and written don't match up",
-    read_ser_tx == written_ser_tx
-  );
+  assert_int_equal(read_ser_tx, (ssize_t)size_ser_tx(tx));
+  assert_int_equal(read_ser_tx, written_ser_tx);
+  assert_int_equal(tx->num_inputs, desered_tx->num_inputs);
+  assert_int_equal(tx->num_outputs, desered_tx->num_outputs);
 
-  mu_assert(
-    "Num inputs doesn't match after serialization",
-    a_Tx->num_inputs == other_tx->num_inputs
-  );
-  mu_assert(
-    "Num outputs doesn't match after serialization",
-    a_Tx->num_outputs == other_tx->num_outputs
-  );
-
-  // Test Inputs
-  unsigned char buf_1[PUB_KEY_SER_LEN];
-  unsigned char buf_2[PUB_KEY_SER_LEN];
-  for (size_t i = 0; i < a_Tx->num_inputs; i++) {
-    mu_assert(
-      "Input vout doesn't match up after de/serialization",
-      a_Tx->inputs[i].prev_utxo_output == other_tx->inputs[i].prev_utxo_output
+  for (size_t i = 0; i < tx->num_inputs; i++) {
+    assert_int_equal(
+      tx->inputs[i].prev_utxo_output, desered_tx->inputs[i].prev_utxo_output
     );
-    mu_assert(
-      "Input tx hash doesn't match up after de/serialization",
-      memcmp(
-        a_Tx->inputs[i].prev_tx_id,
-        other_tx->inputs[i].prev_tx_id,
-        TX_HASH_LEN
-      ) == 0
+    assert_memory_equal(
+      tx->inputs[i].prev_tx_id,
+      desered_tx->inputs[i].prev_tx_id,
+      TX_HASH_LEN
     );
-    mu_assert(
-      "Input signature length doesn't match up after de/serialization",
-      a_Tx->inputs[i].sig_len == other_tx->inputs[i].sig_len
+    assert_memory_equal(
+      tx->inputs[i].signature,
+      desered_tx->inputs[i].signature,
+      SIGNATURE_LEN
     );
-    mu_assert(
-      "Input signature doesn't match up after de/serialization",
-      memcmp(
-        a_Tx->inputs[i].signature,
-        other_tx->inputs[i].signature,
-        SIGNATURE_LEN
-      ) == 0
-    );
+    assert_int_equal(tx->inputs[i].sig_len, desered_tx->inputs[i].sig_len);
 
-    ser_pub_key(buf_1, a_Tx->inputs[i].pub_key);
-    ser_pub_key(buf_2, other_tx->inputs[i].pub_key);
-    mu_assert(
-      "Input pub key doesn't match up after de/serialization",
-      memcmp(buf_1, buf_2, PUB_KEY_SER_LEN) == 0
+    ser_pub_key(buf_1, tx->inputs[i].pub_key);
+    ser_pub_key(buf_2, desered_tx->inputs[i].pub_key);
+    assert_memory_equal(buf_1, buf_2, PUB_KEY_SER_LEN);
+  }
+
+  for (size_t i = 0; i < tx->num_outputs; i++) {
+    assert_int_equal(tx->outputs[i].amt, desered_tx->outputs[i].amt);
+    assert_memory_equal(
+      tx->outputs[i].public_key_hash,
+      desered_tx->outputs[i].public_key_hash,
+      PUB_KEY_HASH_LEN
     );
   }
 
-  mu_assert(
-    "Outputs doesn't match after de/serialization",
-    memcmp(a_Tx->outputs, other_tx->outputs, sizeof(Transaction)) == 0
-  );
+  hash_tx(output_hash, tx);
+  hash_tx(deser_output_hash, desered_tx);
+  assert_memory_equal(output_hash, deser_output_hash, TX_HASH_LEN);
 
-  unsigned char output_hash[TX_HASH_LEN];
-  hash_tx(output_hash, a_Tx);
-  unsigned char deser_output_hash[TX_HASH_LEN];
-  hash_tx(deser_output_hash, other_tx);
-
-  mu_assert(
-    "Hashing isn't consistent after de/serialization",
-    memcmp(output_hash, deser_output_hash, TX_HASH_LEN) == 0
-  );
-
-  return NULL;
+  free(sered_tx);
+  free(desered_tx);
 }
 
-static char  *test_ser_utxo() {
+static void test_ser_tx_fill_buf(void **state) {
+  Transaction *tx;
+  unsigned char *sered_tx, *sered_fill_tx;
+  size_t tx_ser_size;
+
+  tx = *state;
+  sered_tx = ser_tx_alloc(NULL, tx);
+
+  // Ensure that we fill the entire buffer
+  tx_ser_size = size_ser_tx(tx);
+  sered_fill_tx = malloc(tx_ser_size);
+  for (int i = 0; i < 5; i++) {
+    memset(sered_fill_tx, i, tx_ser_size);
+    ser_tx(sered_fill_tx, tx);
+    assert_memory_equal(sered_tx, sered_fill_tx, tx_ser_size);
+  }
+
+  free(sered_tx);
+  free(sered_fill_tx);
+}
+
+static void test_ser_tx_pad_bytes(void **state) {
+  Transaction *tx, *pad_tx;
+  unsigned char *sered_tx, *sered_pad_tx;
+  size_t tx_ser_size;
+
+  tx = *state;
+  sered_tx = ser_tx_alloc(NULL, tx);
+
+  tx_ser_size = size_ser_tx(tx);
+  sered_pad_tx = malloc(tx_ser_size);
+  pad_tx = malloc(sizeof(Transaction));
+  for (int i = 0; i < 5; i++) {
+    memset(pad_tx, i, sizeof(Transaction));
+
+    // Copy everything but padding bytes
+    // Fill new mallocs with random bytes to simulate new paddinig
+    pad_tx->num_inputs = tx->num_inputs;
+    pad_tx->inputs = malloc(tx->num_inputs * sizeof(Input));
+    memset(pad_tx->inputs, i, tx->num_inputs * sizeof(Input));
+    for(unsigned int j = 0; j < tx->num_inputs; j++){
+      pad_tx->inputs[j].pub_key = malloc(sizeof(mbedtls_ecp_point));
+      memset(pad_tx->inputs[j].pub_key, i, sizeof(mbedtls_ecp_point));
+      mbedtls_ecp_point_init(pad_tx->inputs[j].pub_key);
+      mbedtls_ecp_copy(
+        pad_tx->inputs[j].pub_key,
+        tx->inputs[j].pub_key
+      );
+
+      pad_tx->inputs[j].prev_utxo_output = tx->inputs[j].prev_utxo_output;
+      memcpy(
+        pad_tx->inputs[j].prev_tx_id,
+        tx->inputs[j].prev_tx_id,
+        TX_HASH_LEN
+      );
+
+      pad_tx->inputs[j].sig_len = tx->inputs[j].sig_len;
+      memcpy(
+        pad_tx->inputs[j].signature,
+        tx->inputs[j].signature,
+        pad_tx->inputs[j].sig_len
+      );
+    }
+
+    pad_tx->num_outputs = tx->num_outputs;
+    pad_tx->outputs = malloc(tx->num_outputs * sizeof(Output));
+    memset(pad_tx->outputs, i, tx->num_outputs * sizeof(Output));
+    for (unsigned int j = 0; j < tx->num_outputs; j++) {
+      pad_tx->outputs[j].amt = tx->outputs[j].amt;
+      memcpy(
+        pad_tx->outputs[j].public_key_hash,
+        tx->outputs[j].public_key_hash,
+        PUB_KEY_HASH_LEN
+      );
+    }
+
+    ser_tx(sered_pad_tx, pad_tx);
+    assert_memory_equal(sered_tx, sered_pad_tx, tx_ser_size);
+  }
+
+  free(pad_tx);
+  free(sered_tx);
+  free(sered_pad_tx);
+}
+
+static void test_ser_utxo_equal(void **state) {
   UTXO *utxo, *desered_utxo;
-  unsigned char *sered_utxo, *sered_utxo_2;
+  unsigned char *sered_utxo;
   ssize_t read_ser_utxo, written_ser_utxo;
 
-  utxo = _make_utxo();
+  utxo = *state;
   sered_utxo = ser_utxo_alloc(&read_ser_utxo, utxo);
   desered_utxo = deser_utxo_alloc(&written_ser_utxo, sered_utxo);
 
-  mu_assert(
-    "Num of bytes read incorrect",
-    read_ser_utxo == UTXO_SER_LEN
-  );
-  mu_assert(
-    "Num of bytes read and written don't match up",
-    read_ser_utxo == written_ser_utxo
-  );
-
-  mu_assert(
-    "Amount isn't consistent after de-serialization",
-    utxo->amt == desered_utxo->amt
-  );
-  mu_assert(
-    "Public key hash isn't consistent after de-serialization",
-    memcmp(
-      utxo->public_key_hash,
-      desered_utxo->public_key_hash,
-      PUB_KEY_HASH_LEN
-    ) == 0
+  assert_int_equal(read_ser_utxo, UTXO_SER_LEN);
+  assert_int_equal(read_ser_utxo, written_ser_utxo);
+  assert_int_equal(utxo->amt, desered_utxo->amt);
+  assert_memory_equal(
+    utxo->public_key_hash,
+    desered_utxo->public_key_hash,
+    PUB_KEY_HASH_LEN
   );
 
-  // Ensure that we don't have padding bytes
-  for (int i = 0; i < 10; i++) {
-    sered_utxo_2 = ser_utxo_alloc(NULL, utxo);
-    mu_assert(
-      "Serialization of UTXOs isn't consistent",
-      memcmp(sered_utxo, sered_utxo_2, UTXO_SER_LEN) == 0
-    );
-    free(sered_utxo_2);
-  }
-
-  free(utxo);
   free(sered_utxo);
   free(desered_utxo);
-
-  return NULL;
 }
 
-static char *all_tests() {
-  mu_run_test(test_ser_tx);
-  mu_run_test(test_ser_utxo);
-  return NULL;
+static void test_ser_utxo_fill_buf(void **state) {
+  UTXO *utxo;
+  unsigned char *sered_utxo;
+  unsigned char sered_fill_utxo[UTXO_SER_LEN];
+
+  utxo = *state;
+  sered_utxo = ser_utxo_alloc(NULL, utxo);
+
+  // Ensure that we fill the entire buffer
+  for (int i = 0; i < 5; i++) {
+    memset(sered_fill_utxo, i, UTXO_SER_LEN);
+    ser_utxo(sered_fill_utxo, utxo);
+    assert_memory_equal(sered_utxo, sered_fill_utxo, UTXO_SER_LEN);
+  }
+
+  free(sered_utxo);
+}
+
+static void test_ser_utxo_pad_bytes(void **state) {
+  UTXO *utxo, *pad_utxo;
+  unsigned char *sered_utxo;
+  unsigned char sered_pad_utxo[UTXO_SER_LEN];
+
+  utxo = *state;
+  sered_utxo = ser_utxo_alloc(NULL, utxo);
+
+  // Ensure we don't serialize padding bytes
+  pad_utxo = malloc(sizeof(UTXO));
+  for (int i = 0; i < 5; i++) {
+    memset(pad_utxo, i, sizeof(UTXO));
+    pad_utxo->amt = utxo->amt;
+    memcpy(pad_utxo->public_key_hash, utxo->public_key_hash, PUB_KEY_HASH_LEN);
+    ser_utxo(sered_pad_utxo, pad_utxo);
+    assert_memory_equal(sered_utxo, sered_pad_utxo, UTXO_SER_LEN);
+  }
+
+  free(pad_utxo);
+  free(sered_utxo);
 }
 
 int main() {
-    char *result = all_tests();
-  if (result != NULL) {
-    printf("%s\n", result);
-  } else {
-    printf("ser_tx.c passing!\n");
-  }
-  printf("Tests run: %d\n", tests_run);
+  const struct CMUnitTest tests[] = {
+    cmocka_unit_test_setup_teardown(
+      test_ser_tx_equal,
+      fixture_setup_unlinked_tx,
+      fixture_teardown_unlinked_tx
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_tx_fill_buf,
+      fixture_setup_unlinked_tx,
+      fixture_teardown_unlinked_tx
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_tx_pad_bytes,
+      fixture_setup_unlinked_tx,
+      fixture_teardown_unlinked_tx
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_utxo_equal,
+      fixture_setup_unlinked_utxo,
+      fixture_teardown_unlinked_utxo
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_utxo_fill_buf,
+      fixture_setup_unlinked_utxo,
+      fixture_teardown_unlinked_utxo
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_utxo_pad_bytes,
+      fixture_setup_unlinked_utxo,
+      fixture_teardown_unlinked_utxo
+    )
+  };
 
-  return result != 0;
+  return cmocka_run_group_tests(tests, NULL, NULL);
 }

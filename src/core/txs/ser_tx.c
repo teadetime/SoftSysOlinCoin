@@ -65,7 +65,8 @@ ssize_t ser_input(unsigned char *dest, Input *input) {
   memcpy(sig_len, &(input->sig_len), sizeof(input->sig_len));
 
   unsigned char *sig = sig_len + sizeof(input->sig_len);
-  memcpy(sig, input->signature, SIGNATURE_LEN);
+  memset(sig, 0, SIGNATURE_LEN);
+  memcpy(sig, input->signature, input->sig_len);
 
   unsigned char *prev_tx = sig + SIGNATURE_LEN;
   memcpy(prev_tx, input->prev_tx_id, TX_HASH_LEN);

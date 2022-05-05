@@ -15,13 +15,6 @@
     return data; \
   }
 
-size_t size_ser_blockheader() {
-  return sizeof(((BlockHeader*)0)->timestamp) +
-    sizeof(((BlockHeader*)0)->all_tx) +
-    sizeof(((BlockHeader*)0)->prev_header_hash) +
-    sizeof(((BlockHeader*)0)->nonce);
-}
-
 ssize_t ser_blockheader(unsigned char *dest, BlockHeader *blockheader) {
   memcpy(dest, &(blockheader->timestamp), sizeof(blockheader->timestamp));
 
@@ -42,7 +35,7 @@ ssize_t ser_blockheader(unsigned char *dest, BlockHeader *blockheader) {
 unsigned char *ser_blockheader_alloc(ssize_t *written, BlockHeader *blockheader) {
   unsigned char *data;
   ssize_t ret;
-  data = malloc(size_ser_blockheader());
+  data = malloc(BLOCKHEADER_SER_LEN);
   ret = ser_blockheader(data, blockheader);
   RETURN_SER(data, ret, written)
 }
@@ -75,7 +68,7 @@ BlockHeader *deser_blockheader_alloc(ssize_t *read, unsigned char *src) {
 }
 
 size_t size_ser_block(Block *block){
-  size_t size = sizeof(block->num_txs) + size_ser_blockheader();
+  size_t size = sizeof(block->num_txs) + BLOCKHEADER_SER_LEN;
   for(unsigned int i = 0; i < block->num_txs; i++)
       size += size_ser_tx(block->txs[i]);
   return size;

@@ -1,58 +1,40 @@
 #include <stdio.h>
-#include "minunit.h"
+
+#include <setjmp.h>
+#include <cmocka.h>
+
 #include "list.h"
 
-int tests_run = 0;
-
-static char *test_list_build() {
+static void test_list_build(void **state) {
   List *list;
 
+  (void)state;
+
   list = build_list(sizeof(long));
-
-  mu_assert(
-      "List was not initialized",
-      list->data != NULL
-  );
-  mu_assert(
-      "List length incorrect",
-      list->len == 0
-  );
-  mu_assert(
-      "List total length incorrect",
-      list->total_len == 1
-  );
-  mu_assert(
-      "List element size incorrect",
-      list->element_size == sizeof(long)
-  );
-
-  return NULL;
+  assert_ptr_not_equal(list->data, NULL);
+  assert_int_equal(list->len, 0);
+  assert_int_equal(list->total_len, 1);
+  assert_int_equal(list->element_size, sizeof(long));
 }
 
-static char *test_list_append() {
+static void test_list_append(void **state) {
   List *list;
   long entry;
 
+  (void)state;
+
   list = build_list(sizeof(long));
   entry = 42;
-
   list_append(list, &entry);
-
-  mu_assert(
-      "List entry not appended",
-      **(long**)list->data == entry
-  );
-  mu_assert(
-      "List length post append incorrect",
-      list->len == 1
-  );
-
-  return NULL;
+  assert_int_equal(*(long*)(list->data[0]), entry);
+  assert_int_equal(list->len, 1);
 }
 
-static char *test_list_pop() {
+static void test_list_pop(void **state) {
   List *list;
   long entry, *ret;
+
+  (void)state;
 
   list = build_list(sizeof(long));
   entry = 42;
@@ -60,37 +42,17 @@ static char *test_list_pop() {
   list_append(list, &entry);
   ret = list_pop(list);
 
-  mu_assert(
-      "List entry address wrong",
-      ret == &entry
-  );
-  mu_assert(
-      "List entry value wrong",
-      *ret == entry
-  );
-  mu_assert(
-      "List length post pop incorrect",
-      list->len == 0
-  );
-
-  return NULL;
-}
-
-static char *all_tests() {
-  mu_run_test(test_list_build);
-  mu_run_test(test_list_append);
-  mu_run_test(test_list_pop);
-  return NULL;
+  assert_ptr_equal(ret, &entry);
+  assert_int_equal(*ret, entry);
+  assert_int_equal(list->len, 0);
 }
 
 int main() {
-  char *result = all_tests();
-  if (result != NULL) {
-    printf("%s\n", result);
-  } else {
-    printf("list.c passing!\n");
-  }
-  printf("Tests run: %d\n", tests_run);
+  const struct CMUnitTest tests[] = {
+    cmocka_unit_test(test_list_build),
+    cmocka_unit_test(test_list_append),
+    cmocka_unit_test(test_list_pop),
+  };
 
-  return result != 0;
+  return cmocka_run_group_tests(tests, NULL, NULL);
 }

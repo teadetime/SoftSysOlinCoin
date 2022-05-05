@@ -2,67 +2,68 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "minunit.h"
-#include "ser_tx.h"
-#include "ser_key.h"
+#include <setjmp.h>
+#include <cmocka.h>
+
 #include "ser_wallet.h"
-#include "crypto.h"
+#include "fixtures_wallet.h"
 
-int tests_run = 0;
-
-WalletEntry *_make_wallet_entry() {
-  WalletEntry *content;
-  content = malloc(sizeof(WalletEntry));
-  content->amt = 90;
-  content->key_pair = gen_keys();
-  content->spent = 1;
-  return content;
-}
-
-static char  *test_ser_wallet() {
-  WalletEntry *entry, *desered_entry, *pad_entry;
+static void test_ser_wallet_equal(void **state) {
+  WalletEntry *entry, *desered_entry;
   unsigned char *sered_entry;
-  unsigned char sered_entry_2[WALLET_ENTRY_SER_LEN];
-  unsigned char ser_pair_1[KEYPAIR_SER_LEN], ser_pair_2[KEYPAIR_SER_LEN];
   ssize_t read_ser_entry, written_ser_entry;
 
-  entry = _make_wallet_entry();
+  entry = *state;
   sered_entry = ser_wallet_entry_alloc(&read_ser_entry, entry);
   desered_entry = deser_wallet_entry_alloc(&written_ser_entry, sered_entry);
 
-  mu_assert(
-    "Num of bytes read incorrect",
-    read_ser_entry == WALLET_ENTRY_SER_LEN
-  );
-  mu_assert(
-    "Num of bytes read and written don't match up",
-    read_ser_entry == written_ser_entry
-  );
+  assert_int_equal(read_ser_entry, WALLET_ENTRY_SER_LEN);
+  assert_int_equal(read_ser_entry, written_ser_entry);
 
-  mu_assert(
-    "Amount isn't consistent after de-serialization",
-    entry->amt == desered_entry->amt
-  );
-  mu_assert(
-    "Spent isn't consistent after de-serialization",
-    entry->amt == desered_entry->amt
-  );
-  ser_keypair(ser_pair_1, entry->key_pair);
-  ser_keypair(ser_pair_2, desered_entry->key_pair);
-  mu_assert(
-    "Key pair hash isn't consistent after de-serialization",
-    memcmp(ser_pair_1, ser_pair_2, KEYPAIR_SER_LEN) == 0
-  );
+  assert_int_equal(entry->amt, desered_entry->amt);
+  assert_int_equal(entry->spent, desered_entry->spent);
 
+  assert_true(mbedtls_ecp_point_cmp(
+    &entry->key_pair->private_Q,
+    &desered_entry->key_pair->private_Q
+  ) == 0);
+  assert_true(mbedtls_mpi_cmp_mpi(
+    &entry->key_pair->private_d,
+    &desered_entry->key_pair->private_d
+  ) == 0);
+  assert_true(mbedtls_ecp_check_privkey(
+    &entry->key_pair->private_grp,
+    &desered_entry->key_pair->private_d
+  ) == 0);  // Proxy for checking group, breaks if group if wrong
+
+  free(sered_entry);
+  free(desered_entry);
+}
+
+static void test_ser_wallet_fill_buf(void **state) {
+  WalletEntry *entry;
+  unsigned char *sered_entry;
+  unsigned char sered_fill_entry[WALLET_ENTRY_SER_LEN];
+
+  entry = *state;
+  sered_entry = ser_wallet_entry_alloc(NULL, entry);
   // Ensure that we are actually filling the serialization buffer
   for (int i = 0; i < 5; i++) {
-    memset(sered_entry_2, i, WALLET_ENTRY_SER_LEN);
-    ser_wallet_entry(sered_entry_2, entry);
-    mu_assert(
-      "Entire serialization buffer is not being overwritten",
-      memcmp(sered_entry, sered_entry_2, WALLET_ENTRY_SER_LEN) == 0
-    );
+    memset(sered_fill_entry, i, WALLET_ENTRY_SER_LEN);
+    ser_wallet_entry(sered_fill_entry, entry);
+    assert_memory_equal(sered_entry, sered_fill_entry, WALLET_ENTRY_SER_LEN);
   }
+
+  free(sered_entry);
+}
+
+static void test_ser_wallet_pad_bytes(void **state) {
+  WalletEntry *entry, *pad_entry;
+  unsigned char *sered_entry;
+  unsigned char sered_pad_entry[WALLET_ENTRY_SER_LEN];
+
+  entry = *state;
+  sered_entry = ser_wallet_entry_alloc(NULL, entry);
 
   // Ensure that we don't have padding bytes
   pad_entry = malloc(sizeof(WalletEntry));
@@ -71,35 +72,32 @@ static char  *test_ser_wallet() {
     pad_entry->amt = entry->amt;
     pad_entry->spent = entry->spent;
     pad_entry->key_pair = entry->key_pair;
-    ser_wallet_entry(sered_entry_2, entry);
-    mu_assert(
-      "Padding bytes were copied into serialization",
-      memcmp(sered_entry, sered_entry_2, WALLET_ENTRY_SER_LEN) == 0
-    );
+    ser_wallet_entry(sered_pad_entry, pad_entry);
+    assert_memory_equal(sered_entry, sered_pad_entry, WALLET_ENTRY_SER_LEN);
   }
 
-  free(entry);
   free(pad_entry);
   free(sered_entry);
-  free(desered_entry);
-
-  return NULL;
-}
-
-static char *all_tests() {
-  mu_run_test(test_ser_wallet);
-  return NULL;
 }
 
 int main() {
-  create_proj_folders();
-  char *result = all_tests();
-  if (result != NULL) {
-    printf("%s\n", result);
-  } else {
-    printf("ser_wallet.c passing!\n");
-  }
-  printf("Tests run: %d\n", tests_run);
+  const struct CMUnitTest tests[] = {
+    cmocka_unit_test_setup_teardown(
+      test_ser_wallet_equal,
+      fixture_setup_unlinked_wallet_entry,
+      fixture_teardown_unlinked_wallet_entry
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_wallet_fill_buf,
+      fixture_setup_unlinked_wallet_entry,
+      fixture_teardown_unlinked_wallet_entry
+    ),
+    cmocka_unit_test_setup_teardown(
+      test_ser_wallet_pad_bytes,
+      fixture_setup_unlinked_wallet_entry,
+      fixture_teardown_unlinked_wallet_entry
+    )
+  };
 
-  return result != 0;
+  return cmocka_run_group_tests(tests, NULL, NULL);
 }

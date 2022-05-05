@@ -1,127 +1,115 @@
 #include <stdio.h>
-#include "minunit.h"
+
+#include <setjmp.h>
+#include <cmocka.h>
+
 #include "mempool.h"
 #include "crypto.h"
+#include "fixtures_tx.h"
+#include "fixtures_global.h"
 
-int tests_run = 0;
-
-Transaction *_make_tx() {
-  Transaction *tx;
-  Input *in;
-  Output *out;
-  mbedtls_ecdsa_context *key_pair;
-
-  tx = malloc(sizeof(Transaction));
-  in = malloc(sizeof(Input));
-  out = malloc(sizeof(Output));
-
-  memset(in, 0, sizeof(Input));
-  key_pair = gen_keys();
-  in->pub_key = &(key_pair->private_Q);
-
-  memset(out, 0, sizeof(Output));
-
-  tx->num_inputs = 1;
-  tx->inputs = in;
-  tx->num_outputs = 1;
-  tx->outputs = out;
-
-  return tx;
-}
-
-static char *test_mempool_init() {
+static void test_mempool_init(void **state) {
+  (void)state;
   mempool_init();
-  mu_assert(
-      "Mempool was not initialized",
-      mempool == NULL
-  );
-  return NULL;
+  assert_ptr_equal(mempool, NULL);
 }
 
-static char  *test_mempool_add() {
+static void test_mempool_add(void **state) {
   Transaction *tx, *ret_tx;
+  unsigned int prev_count, count;
+  unsigned char tx_hash[TX_HASH_LEN], ret_hash[TX_HASH_LEN];
 
-  tx = _make_tx();
-  mempool_init();
+  tx = *state;
+  prev_count = HASH_COUNT(mempool);
   ret_tx = mempool_add(tx);
-  mu_assert(
-    "Add did not return correct tx",
-    ret_tx == tx
-  );
+  count = HASH_COUNT(mempool);
+  hash_tx(tx_hash, tx);
+  hash_tx(ret_hash, ret_tx);
 
-  free(tx->inputs);
-  free(tx->outputs);
-  free(tx);
-
-  return NULL;
+  assert_ptr_not_equal(ret_tx, NULL);
+  assert_int_equal(count, prev_count + 1);
+  assert_memory_equal(tx_hash, ret_hash, TX_HASH_LEN);
 }
 
-static char  *test_mempool_find() {
+static void test_mempool_find(void **state) {
   Transaction *tx, *ret_tx;
-  unsigned char hash[TX_HASH_LEN];
+  unsigned char tx_hash[TX_HASH_LEN], ret_hash[TX_HASH_LEN];
 
-  tx = _make_tx();
-  hash_tx(hash, tx);
-
-  mempool_init();
+  tx = *state;
   mempool_add(tx);
-  ret_tx = mempool_find(hash);
-  mu_assert(
-    "Find did not return correct tx",
-    ret_tx == tx
-  );
+  hash_tx(tx_hash, tx);
 
-  free(tx->inputs);
-  free(tx->outputs);
-  free(tx);
+  ret_tx = mempool_find(tx_hash);
+  hash_tx(ret_hash, ret_tx);
 
-  return NULL;
+  assert_ptr_not_equal(ret_tx, NULL);
+  assert_memory_equal(tx_hash, ret_hash, TX_HASH_LEN);
 }
 
-static char  *test_mempool_remove() {
+static void test_mempool_remove(void **state) {
   Transaction *tx, *ret_tx;
   unsigned char hash[TX_HASH_LEN];
+  unsigned int prev_count, count;
 
-  tx = _make_tx();
+  tx = *state;
   hash_tx(hash, tx);
 
-  mempool_init();
   mempool_add(tx);
+  prev_count = HASH_COUNT(mempool);
+
   ret_tx = mempool_remove(hash);
-  mu_assert(
-    "Remove did not return correct tx",
-    ret_tx == tx
-  );
+  count = HASH_COUNT(mempool);
+  assert_ptr_not_equal(ret_tx, NULL);
+  assert_int_equal(count, prev_count - 1);
 
   ret_tx = mempool_find(hash);
-  mu_assert(
-    "Tx was not removed",
-    ret_tx == NULL
-  );
+  assert_ptr_equal(ret_tx, NULL);
 
-  free(tx->inputs);
-  free(tx->outputs);
-  free(tx);
-
-  return NULL;
-}
-
-static char *all_tests() {
-  mu_run_test(test_mempool_init);
-  mu_run_test(test_mempool_add);
-  mu_run_test(test_mempool_find);
-  mu_run_test(test_mempool_remove);
-  return NULL;
+  free_tx(ret_tx);
 }
 
 int main() {
-  char *result = all_tests();
-  if (result != NULL) {
-    printf("%s\n", result);
-  } else {
-    printf("mempool.c passing!\n");
-  }
-  printf("Tests run: %d\n", tests_run);
+  int (*mempool_setup[])(void**) = {
+    fixture_setup_mempool,
+    fixture_setup_unlinked_tx,
+    NULL
+  };
+  int (*mempool_teardown[])(void**) = {
+    fixture_teardown_mempool,
+    fixture_teardown_unlinked_tx,
+    NULL
+  };
+  ComposedFixture composition;
 
-  return result != 0;
+  composition.setup = mempool_setup;
+  composition.teardown = mempool_teardown;
+
+  const struct CMUnitTest tests[] = {
+    cmocka_unit_test_prestate_setup_teardown(
+      test_mempool_init,
+      fixture_setup_mempool,
+      fixture_teardown_mempool,
+      NULL
+    ),
+    cmocka_unit_test_prestate_setup_teardown(
+      test_mempool_add,
+      fixture_setup_compose,
+      fixture_teardown_compose,
+      &composition
+    ),
+    cmocka_unit_test_prestate_setup_teardown(
+      test_mempool_find,
+      fixture_setup_compose,
+      fixture_teardown_compose,
+      &composition
+    ),
+    cmocka_unit_test_prestate_setup_teardown(
+      test_mempool_remove,
+      fixture_setup_compose,
+      fixture_teardown_compose,
+      &composition
+    )
+  };
+
+  return cmocka_run_group_tests(tests, NULL, NULL);
 }
