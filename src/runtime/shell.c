@@ -8,7 +8,7 @@
 #include "init_globals.h"
 #include "mempool.h"
 #include "blockchain.h"
-
+#include "runtime.h"
 #include "wallet.h"
 #include "create_block.h"
 #include "handle_block.h"
@@ -19,10 +19,10 @@
 #define ARG_SIZE 32
 
 Command shell_commands[] = {
-  {
-    .name = "mine", .func = &shell_mine, .num_args = 1,
-    .help = "Usage: mine\nMine a new block"
-  },
+  // {
+  //   .name = "mine", .func = &shell_mine, .num_args = 1,
+  //   .help = "Usage: mine\nMine a new block"
+  // },
   {
     .name = "create_tx", .func = &shell_build_tx, .num_args = 4,
     .help = "Usage: create_tx ADDRESS AMT FEE\nCreate a new transaction"
@@ -83,27 +83,27 @@ void str_to_buf(
   }
 }
 
-int shell_mine(char **args) {
-  (void)args;
-  Block *block;
-  unsigned char header_hash[BLOCK_HASH_LEN];
+// int shell_mine(Globals *globals, char **args) {
+//   (void)args;
+//   Block *block;
+//   unsigned char header_hash[BLOCK_HASH_LEN];
 
-  printf("Mining...\n");
-  block = mine_block();
-  handle_new_block(block);
+//   printf("Mining...\n");
+//   block = mine_block();
+//   handle_new_block(block);
 
-  // This might not be needed anymore...
-  hash_blockheader(header_hash, &block->header);
-  printf("Block mined!\n\n");
-  dump_buf("", "Hash: ", header_hash, BLOCK_HASH_LEN);
-  pretty_print_block(block, "");
+//   // This might not be needed anymore...
+//   hash_blockheader(header_hash, &block->header);
+//   printf("Block mined!\n\n");
+//   dump_buf("", "Hash: ", header_hash, BLOCK_HASH_LEN);
+//   pretty_print_block(block, "");
 
-  unsigned char tx_hash[TX_HASH_LEN];
-  hash_tx(tx_hash, block->txs[0]);
-  return 0;
-}
+//   unsigned char tx_hash[TX_HASH_LEN];
+//   hash_tx(tx_hash, block->txs[0]);
+//   return 0;
+// }
 
-int shell_build_tx(char **args) {
+int shell_build_tx(Globals *globals, char **args) {
   Transaction *tx;
   TxOptions *options;
   Output *output;
@@ -121,10 +121,14 @@ int shell_build_tx(char **args) {
   options->dests = output;
   options->tx_fee = strtoul(args[3], &end, 10);
 
-  tx = build_tx(options);
-  mempool_add(tx);
+  pthread_mutex_lock(&globals->wallet_pool_lock);
+  pthread_mutex_lock(&globals->key_pool_lock);
 
-  printf("Transaction created!\n\n");
+  tx = build_tx(options);
+  queue_add_void(globals->queue_tx, tx);
+  pthread_mutex_unlock(&globals->wallet_pool_lock);
+  pthread_mutex_unlock(&globals->key_pool_lock);
+  printf("Transaction added to buffer!\n\n");
   pretty_print_tx(tx, "");
 
   free(output);
@@ -133,13 +137,15 @@ int shell_build_tx(char **args) {
   return 0;
 }
 
-int shell_print_chain(char **args) {
+int shell_print_chain(Globals *globals, char **args) {
   (void)args;
+  pthread_mutex_lock(&globals->blockchain_lock);
   pretty_print_blockchain_hashmap();
+  pthread_mutex_unlock(&globals->blockchain_lock);
   return 0;
 }
 
-int shell_print_block(char **args) {
+int shell_print_block(Globals *globals, char **args) {
   unsigned char buf[BLOCK_HASH_LEN];
   Block *block;
 
@@ -147,7 +153,9 @@ int shell_print_block(char **args) {
       buf, args[1],
       BLOCK_HASH_LEN, strlen(args[1])
   );
+  pthread_mutex_lock(&globals->blockchain_lock);
   int ret_find = blockchain_find_leveldb(&block, buf);
+  pthread_mutex_unlock(&globals->blockchain_lock);
   if (!block || ret_find != 0) {
     printf("%s: block not found\n", args[0]);
     return 0;
@@ -159,12 +167,18 @@ int shell_print_block(char **args) {
   return 0;
 }
 
-int shell_exit(char **args) {
+int shell_exit(Globals *globals, char **args) {
+  pthread_mutex_lock(&globals->utxo_pool_lock);
+  pthread_mutex_lock(&globals->blockchain_lock);
+  pthread_mutex_lock(&globals->utxo_to_tx_lock);
+  pthread_mutex_lock(&globals->wallet_pool_lock);
+  pthread_mutex_lock(&globals->key_pool_lock);
+  pthread_mutex_lock(&globals->mempool_lock);
   (void)args;
   return 1;
 }
 
-int shell_help(char **args) {
+int shell_help(Globals *globals, char **args) {
   int len;
   (void)args;
 
@@ -227,7 +241,7 @@ char **shell_tokenize(char *line) {
   return args;
 }
 
-int shell_execute(size_t num_args, char **args) {
+int shell_execute(Globals *globals, size_t num_args, char **args) {
   CommandPool *entry;
   Command *cmd;
   int len, i;
@@ -254,10 +268,10 @@ int shell_execute(size_t num_args, char **args) {
     return 0;
   }
 
-  return cmd->func(args);
+  return cmd->func(globals, args);
 }
 
-void shell_loop() {
+void shell_loop(Globals *globals) {
   char *line;
   char **args;
   int status;
@@ -272,7 +286,7 @@ void shell_loop() {
       continue;
     args = shell_tokenize(line);
     num_args = arg_len(args);
-    status = shell_execute(num_args, args);
+    status = shell_execute(globals, num_args, args);
 
     free(line);
     free(args);
@@ -303,12 +317,12 @@ void shell_init_commands() {
 }
 
 void shell_init() {
-  shell_init_globals();
+  //shell_init_globals();
   shell_init_commands();
 }
 
-int main() {
-  shell_init();
-  shell_loop();
-  return 1;
-}
+// int main() {
+//   // shell_init();
+//   // shell_loop();
+//   return 1;
+// }

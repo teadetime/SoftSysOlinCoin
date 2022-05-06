@@ -13,6 +13,8 @@ set(INCLUDE_TX "" CACHE INTERNAL "used internally")
 set(INCLUDE_BLOCK "" CACHE INTERNAL "used internally")
 set(INCLUDE_GLOBAL "" CACHE INTERNAL "used internally")
 set(INCLUDE_TEST "" CACHE INTERNAL "used internally")
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 
 set(UTHASH_IN_PROJ "src/includes/uthash/")
 set(INCLUDE_ALL 

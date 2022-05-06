@@ -16,12 +16,13 @@
 #pragma once
 
 #include <uthash.h>
+#include "runtime.h"
 
 #define COMMAND_NAME_LEN 128
 
 typedef struct {
   char *name;
-  int (*func)(char **);
+  int (*func)(Globals *, char **);
   size_t num_args;
   char *help;
 } Command;
@@ -37,17 +38,17 @@ void str_to_buf(
     size_t dest_len, size_t src_len
 );
 
-int shell_mine(char **args);
-int shell_build_tx(char **args);
-int shell_print_chain(char **args);
-int shell_print_block(char **args);
-int shell_exit(char **args);
-int shell_help(char **args);
+int shell_mine(Globals *globals, char **args);
+int shell_build_tx(Globals *globals, char **args);
+int shell_print_chain(Globals *globals, char **args);
+int shell_print_block(Globals *globals, char **args);
+int shell_exit(Globals *globals, char **args);
+int shell_help(Globals *globals, char **args);
 
 char *shell_read_line();
 char **shell_tokenize(char *line);
-int shell_execute(size_t num_args, char **args);
-void shell_loop();
+int shell_execute(Globals *globals, size_t num_args, char **args);
+void shell_loop(Globals *globals);
 
 void shell_init_globals();
 void shell_init_commands();

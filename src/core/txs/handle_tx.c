@@ -4,7 +4,8 @@
 #include "utxo_to_tx.h"
 
 int handle_tx(Transaction *tx){
-  if(mempool_add(tx) == NULL){
+  Transaction *coppied_tx = copy_tx(tx);
+  if(mempool_add(coppied_tx) == NULL){
     return 1;
   }
   return 0;
