@@ -1,11 +1,10 @@
 /**
 * @file create_block.h
 * @author Nathan Faber (nfaber@olin.edu.com)
-* @brief Functions to handle block creation for mining functionality as 
+* @brief Functions to handle Block creation for mining functionality as 
 well as mining
 * @version 0.1
 * @date 2022-03-17
-* 
 */
 
 #pragma once
