@@ -1,3 +1,14 @@
+/**
+ * @file double_spend_set.h
+ * @author nfaber@olin.edu and efisher@olin.edu
+ * @brief Double Spend implementation for in-memory checkin if there are 
+ * duplicate UTXO inputs to a block or transaction
+ * @version 0.1
+ * @date 2022-05-06
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include "utxo_pool.h"
 
 /**

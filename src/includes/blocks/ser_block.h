@@ -4,7 +4,6 @@
 * @brief Serilaization and Deserializatoin functions for Block and BlockHeader
 * @version 0.1
 * @date 2022-03-17
-* 
 */
 
 #pragma once

@@ -4,7 +4,6 @@
 * @brief Functions to "handle" a Block after it has been validated
 * @version 0.1
 * @date 2022-03-17
-* 
 */
 
 #pragma once

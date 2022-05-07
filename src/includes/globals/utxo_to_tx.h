@@ -1,7 +1,23 @@
+/**
+ * @file utxo_to_tx.h
+ * @author nfaber@olin.edu and efisher@olin.edu
+ * @brief Mapping from UTXO to transactions in the mempool to check for 
+ * conflicts in blocks and the Blockchain
+ * @version 0.1
+ * @date 2022-05-06
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #pragma once
 
 #include "utxo_pool.h"
 
+/**
+ * @brief UTHASH Hashmap of UTXO's to Transactions
+ * 
+ */
 typedef struct {
   UTXOPoolKey id;
   unsigned char tx_hash[TX_HASH_LEN];

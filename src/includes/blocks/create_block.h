@@ -5,7 +5,6 @@
 well as mining
 * @version 0.1
 * @date 2022-03-17
-* 
 */
 
 #pragma once

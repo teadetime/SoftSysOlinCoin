@@ -1,23 +1,56 @@
+/**
+ * @file utxo_pool.h
+ * @author nfaber@olin.edu and efisher@olin.edu
+ * @brief Unspent Transaction Pool Hashmap and associated functions, 
+ * concept of currency in this blockchain
+ * @version 0.1
+ * @date 2022-05-06
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #pragma once
 
 #include "constants.h"
 #include "uthash.h"
 #include "base_tx.h"
 #include "leveldb/c.h"
+
+/**
+ * @brief Length of UTXO POOL KEY
+ * 
+ */
 #define UTXO_POOL_KEY_LEN TX_HASH_LEN+sizeof(((Transaction*)0)->inputs->prev_utxo_output)
 
+/**
+ * @brief Key used in UTHASH UTXOPool hashmap
+ * 
+ */
 typedef struct UTXOPoolKey {
   unsigned char tx_hash[TX_HASH_LEN];
   unsigned int vout;
 } UTXOPoolKey;
 
+/**
+ * @brief UTHASH UTXO Pool hashmap
+ * 
+ */
 typedef struct UTXOPool {
   UTXOPoolKey id;
   UTXO *utxo;
   UT_hash_handle hh;
 } UTXOPool;
 
+/**
+ * @brief Path to perisitent UTXO Pool
+ * 
+ */
 char *utxo_pool_path;
+
+/**
+ * @brief LevelDB UTXO Pool Database object
+ * 
+ */
 leveldb_t *utxo_pool_db;  // Level DB Database
 
 /**

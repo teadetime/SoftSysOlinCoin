@@ -1,3 +1,13 @@
+/**
+ * @file init_globals.h
+ * @author nfaber@olin.edu and efisher@olin.edu
+ * @brief Initialize the global datastructures required for a node to run
+ * @version 0.1
+ * @date 2022-05-06
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #pragma once
 
 /**
